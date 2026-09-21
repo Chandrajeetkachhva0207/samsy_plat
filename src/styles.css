@@ -1,0 +1,161 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * मा नर्मदा आध्यात्मिक शिक्षण संस्था — design system
+ * Palette: saffron (kesari), sandalwood, warm brown, deep maroon.
+ * All colours are semantic tokens. Never hardcode colours in components.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --font-sans: "Mukta", "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-display: "Tiro Devanagari Marathi", "Mukta", serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sand: var(--sand);
+  --color-sand-deep: var(--sand-deep);
+  --color-maroon: var(--maroon);
+
+  --shadow-soft: 0 6px 24px -12px color-mix(in oklab, var(--maroon) 32%, transparent);
+  --shadow-card: 0 10px 34px -18px color-mix(in oklab, var(--maroon) 40%, transparent);
+}
+
+:root {
+  --radius: 0.875rem;
+  --background: oklch(0.992 0.006 90);
+  --foreground: oklch(0.32 0.055 35);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.32 0.055 35);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.32 0.055 35);
+  --primary: oklch(0.7 0.155 58);
+  --primary-foreground: oklch(0.99 0.008 90);
+  --secondary: oklch(0.955 0.018 82);
+  --secondary-foreground: oklch(0.36 0.06 40);
+  --muted: oklch(0.962 0.014 84);
+  --muted-foreground: oklch(0.52 0.04 55);
+  --accent: oklch(0.93 0.03 80);
+  --accent-foreground: oklch(0.34 0.07 32);
+  --destructive: oklch(0.55 0.19 27);
+  --destructive-foreground: oklch(0.99 0.008 90);
+  --border: oklch(0.9 0.022 80);
+  --input: oklch(0.9 0.022 80);
+  --ring: oklch(0.7 0.155 58);
+  --sand: oklch(0.955 0.018 82);
+  --sand-deep: oklch(0.56 0.055 68);
+  --maroon: oklch(0.36 0.085 30);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--maroon);
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+}
+
+/* Thin saffron top rule used on sections and cards */
+@utility saffron-rule {
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-primary) 20%,
+    var(--color-primary) 80%,
+    transparent
+  );
+  height: 2px;
+  width: 100%;
+}
+
+/* Tulsi-mala style divider */
+@utility mala-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  color: var(--sand-deep);
+}
+
+@utility card-soft {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+@utility fade-up {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+
+  &[data-visible="true"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .fade-up {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
