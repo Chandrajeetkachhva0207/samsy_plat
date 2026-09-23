@@ -8,10 +8,16 @@
 import type { Bi } from "@/lib/lang";
 
 export const PLACEHOLDER = {
-  phone: { mr: "[अधिकृत नंबर]", en: "[Official number]" },
-  email: { mr: "[अधिकृत ई-मेल]", en: "[Official e-mail]" },
+  phone: { mr: "7385501205", en: "7385501205" },
+  email: { mr: "santoshgpawar2q07@gmail.com", en: "santoshgpawar2q07@gmail.com" },
   maps: { mr: "[अधिकृत Google Maps लोकेशन]", en: "[Official Google Maps location]" },
-  whatsapp: "910000000000",
+  whatsapp: "7385501205",
+};
+
+export const socialLinks = {
+  youtube: "https://www.youtube.com/@user-qu8kv4fe3l72",
+  facebook: "https://www.facebook.com/share/v/1LeUBrXMtD/",
+  instagram: "https://www.instagram.com/santosh_maharaj_pawar_73?utm_source=qr&stkn=MWo0bWpzdHR0NGs3NQ%3D%3D",
 };
 
 export const org = {

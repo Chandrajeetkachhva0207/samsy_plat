@@ -4,6 +4,7 @@ import { nav, org } from "@/content/site";
 import { useLang } from "@/lib/lang";
 import { useAuth } from "@/lib/auth";
 import { Container } from "./ui";
+import narmadaLogo from "@/assets/narmada-logo.jpeg";
 
 export function Header() {
   const { t, lang, setLang } = useLang();
@@ -16,9 +17,9 @@ export function Header() {
       <Container className="flex items-center gap-3 py-3">
         <Link to="/" className="flex min-w-0 items-center gap-3" onClick={() => setOpen(false)}>
           <img
-            src="/images/logo.jpg"
+            src={narmadaLogo}
             alt={t(org.name)}
-            className="h-12 w-12 shrink-0 rounded-full border-2 border-primary/50 object-cover shadow-sm transition-transform hover:scale-105"
+            className="h-14 w-14 shrink-0 rounded-full border-2 border-primary/50 object-cover shadow-sm transition-transform hover:scale-105"
           />
           <span className="min-w-0">
             <span className="block truncate font-display text-base leading-tight font-semibold text-maroon sm:text-lg">

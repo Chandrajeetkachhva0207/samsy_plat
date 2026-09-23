@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { nav, org, secondaryNav, PLACEHOLDER } from "@/content/site";
+import {
+  nav,
+  org,
+  secondaryNav,
+  PLACEHOLDER,
+  socialLinks,
+} from "@/content/site";
 import { useLang } from "@/lib/lang";
 import { Container } from "./ui";
 
@@ -57,24 +63,56 @@ export function Footer() {
           <address className="mt-3 text-sm text-muted-foreground not-italic">
             {t(org.address)}
             <br />
-            {t({ mr: "दूरध्वनी", en: "Phone" })}: {t(PLACEHOLDER.phone)}
+
+            {t({ mr: "दूरध्वनी", en: "Phone" })}:{" "}
+            <a
+              href={`tel:${PLACEHOLDER.phone.en}`}
+              className="hover:text-maroon"
+            >
+              {t(PLACEHOLDER.phone)}
+            </a>
+
             <br />
-            {t({ mr: "ई-मेल", en: "E-mail" })}: {t(PLACEHOLDER.email)}
+
+            {t({ mr: "ई-मेल", en: "E-mail" })}:{" "}
+            <a
+              href={`mailto:${PLACEHOLDER.email.en.trim()}`}
+              className="hover:text-maroon"
+            >
+              {t(PLACEHOLDER.email)}
+            </a>
           </address>
           <ul className="mt-3 flex gap-3 text-sm">
             <li>
-              <a href="#" className="text-muted-foreground hover:text-maroon">
-                YouTube [लिंक]
+              <a
+                href={socialLinks.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-maroon"
+              >
+                YouTube
               </a>
             </li>
+
             <li>
-              <a href="#" className="text-muted-foreground hover:text-maroon">
-                Facebook [लिंक]
+              <a
+                href={socialLinks.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-maroon"
+              >
+                Facebook
               </a>
             </li>
+
             <li>
-              <a href="#" className="text-muted-foreground hover:text-maroon">
-                Instagram [लिंक]
+              <a
+                href={socialLinks.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-maroon"
+              >
+                Instagram
               </a>
             </li>
           </ul>
