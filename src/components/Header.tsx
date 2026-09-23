@@ -3,6 +3,7 @@ import { useState } from "react";
 import { nav, org } from "@/content/site";
 import { useLang } from "@/lib/lang";
 import { Container } from "./ui";
+import narmadaLogo from "@/assets/narmada-logo.jpeg";
 
 export function Header() {
   const { t, lang, setLang } = useLang();
@@ -13,12 +14,11 @@ export function Header() {
       <div className="saffron-rule" aria-hidden="true" />
       <Container className="flex items-center gap-3 py-3">
         <Link to="/" className="flex min-w-0 items-center gap-3" onClick={() => setOpen(false)}>
-          <span
-            aria-hidden="true"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/50 bg-sand text-xl"
-          >
-            🚩
-          </span>
+          <img
+            src={narmadaLogo}
+            alt="मा नर्मदा आध्यात्मिक शिक्षण संस्था"
+            className="h-14 w-14 shrink-0 rounded-full object-cover border border-primary/50"
+          />
           <span className="min-w-0">
             <span className="block truncate font-display text-base leading-tight font-semibold text-maroon sm:text-lg">
               {t(org.name)}
