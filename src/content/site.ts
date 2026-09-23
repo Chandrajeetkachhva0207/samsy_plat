@@ -16,8 +16,8 @@ export const PLACEHOLDER = {
 
 export const socialLinks = {
   youtube: "https://www.youtube.com/@user-qu8kv4fe3l72",
-  facebook: "https://www.facebook.com/YOUR_OFFICIAL_PAGE",
-  instagram: "https://www.instagram.com/YOUR_OFFICIAL_ACCOUNT",
+  facebook: "https://www.facebook.com/share/v/1LeUBrXMtD/",
+  instagram: "https://www.instagram.com/santosh_maharaj_pawar_73?utm_source=qr&stkn=MWo0bWpzdHR0NGs3NQ%3D%3D",
 };
 
 export const org = {
