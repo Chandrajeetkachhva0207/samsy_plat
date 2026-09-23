@@ -12,8 +12,17 @@ export function Footer() {
       <div className="saffron-rule" aria-hidden="true" />
       <Container className="grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <h3 className="text-lg">{t(org.name)}</h3>
-          <p className="mt-2 text-sm text-muted-foreground">{t(org.gurukul)}</p>
+          <div className="flex items-center gap-3">
+            <img
+              src="/images/logo.jpg"
+              alt={t(org.name)}
+              className="h-12 w-12 shrink-0 rounded-full border border-primary/40 object-cover shadow-sm"
+            />
+            <div>
+              <h3 className="text-base font-semibold leading-tight text-maroon">{t(org.name)}</h3>
+              <p className="text-xs text-muted-foreground">{t(org.gurukul)}</p>
+            </div>
+          </div>
           <p className="mt-3 text-sm text-maroon">{t(org.greeting)}</p>
         </div>
 

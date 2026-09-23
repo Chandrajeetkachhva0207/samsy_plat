@@ -58,6 +58,11 @@ function Home() {
           />
           <div className="absolute inset-0 bg-maroon/55" aria-hidden="true" />
           <Container className="absolute inset-0 flex flex-col items-center justify-center text-center">
+            <img
+              src="/images/logo.jpg"
+              alt={t(org.name)}
+              className="mb-3 h-16 w-16 sm:h-20 sm:w-20 rounded-full border-2 border-amber-300/80 object-cover shadow-lg"
+            />
             <p className="text-sm tracking-wide text-primary-foreground/90">{t(org.greeting)}</p>
             <h1 className="mt-2 max-w-3xl text-2xl text-primary-foreground sm:text-4xl">
               {t(org.name)}
@@ -131,12 +136,11 @@ function Home() {
       {/* Founder */}
       <Section tone="sand">
         <div className="card-soft mx-auto flex max-w-3xl flex-col items-center gap-6 p-6 text-center sm:flex-row sm:text-left">
-          <div
-            className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-sand text-3xl"
-            aria-label={t({ mr: "छायाचित्र स्लॉट", en: "Photo slot" })}
-          >
-            🙏
-          </div>
+          <img
+            src="/images/founder.jpg"
+            alt={t(org.founder)}
+            className="h-28 w-28 shrink-0 rounded-full border-2 border-primary/40 object-cover object-top shadow-md"
+          />
           <div>
             <h3 className="text-xl">{t(org.founder)}</h3>
             <p className="mt-1 text-sm text-muted-foreground">{t(org.founderRole)}</p>

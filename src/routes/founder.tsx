@@ -27,16 +27,15 @@ function Founder() {
       <PageHeader title={{ mr: "संस्थापक अध्यक्ष", en: "Founder President" }} />
       <Section>
         <div className="grid gap-6 sm:grid-cols-[260px_1fr]">
-          <figure className="card-soft overflow-hidden">
-            <div
-              className="flex aspect-[4/5] items-center justify-center bg-sand text-5xl"
-              aria-label={t({ mr: "अधिकृत छायाचित्र स्लॉट", en: "Official photo slot" })}
-            >
-              🙏
-            </div>
-            <figcaption className="border-t border-border px-4 py-3 text-center text-sm">
+          <figure className="card-soft overflow-hidden shadow-md">
+            <img
+              src="/images/founder.jpg"
+              alt={t(org.founder)}
+              className="aspect-[4/5] w-full object-cover object-top"
+            />
+            <figcaption className="border-t border-border px-4 py-3 text-center text-sm bg-sand/30">
               <span className="block font-semibold text-maroon">{t(org.founder)}</span>
-              <span className="mt-1 block text-muted-foreground">{t(org.founderRole)}</span>
+              <span className="mt-1 block text-xs text-muted-foreground">{t(org.founderRole)}</span>
             </figcaption>
           </figure>
           <div className="grid gap-5">

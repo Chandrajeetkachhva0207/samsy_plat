@@ -24,6 +24,12 @@ import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as StudentsRouteImport } from './routes/students'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as VideosRouteImport } from './routes/videos'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminEventsRouteImport } from './routes/admin/events'
+import { Route as AdminGalleryRouteImport } from './routes/admin/gallery'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminMessagesRouteImport } from './routes/admin/messages'
+import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as EventsSlugRouteImport } from './routes/events.$slug'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
 
@@ -102,6 +108,36 @@ const VideosRoute = VideosRouteImport.update({
   path: '/videos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminEventsRoute = AdminEventsRouteImport.update({
+  id: '/admin/events',
+  path: '/admin/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminGalleryRoute = AdminGalleryRouteImport.update({
+  id: '/admin/gallery',
+  path: '/admin/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMessagesRoute = AdminMessagesRouteImport.update({
+  id: '/admin/messages',
+  path: '/admin/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/admin/reports',
+  path: '/admin/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsSlugRoute = EventsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -129,7 +165,13 @@ export interface FileRoutesByFullPath {
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
+  '/admin/events': typeof AdminEventsRoute
+  '/admin/gallery': typeof AdminGalleryRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/messages': typeof AdminMessagesRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/events/$slug': typeof EventsSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
 }
 export interface FileRoutesByTo {
@@ -148,7 +190,13 @@ export interface FileRoutesByTo {
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
+  '/admin/events': typeof AdminEventsRoute
+  '/admin/gallery': typeof AdminGalleryRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/messages': typeof AdminMessagesRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/events/$slug': typeof EventsSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
 }
 export interface FileRoutesById {
@@ -168,7 +216,13 @@ export interface FileRoutesById {
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
+  '/admin/events': typeof AdminEventsRoute
+  '/admin/gallery': typeof AdminGalleryRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/messages': typeof AdminMessagesRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/events/$slug': typeof EventsSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
 }
 export interface FileRouteTypes {
@@ -189,7 +243,13 @@ export interface FileRouteTypes {
     | '/students'
     | '/support'
     | '/videos'
+    | '/admin/events'
+    | '/admin/gallery'
+    | '/admin/login'
+    | '/admin/messages'
+    | '/admin/reports'
     | '/events/$slug'
+    | '/admin/'
     | '/api/public/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -208,7 +268,13 @@ export interface FileRouteTypes {
     | '/students'
     | '/support'
     | '/videos'
+    | '/admin/events'
+    | '/admin/gallery'
+    | '/admin/login'
+    | '/admin/messages'
+    | '/admin/reports'
     | '/events/$slug'
+    | '/admin'
     | '/api/public/sitemap.xml'
   id:
     | '__root__'
@@ -227,7 +293,13 @@ export interface FileRouteTypes {
     | '/students'
     | '/support'
     | '/videos'
+    | '/admin/events'
+    | '/admin/gallery'
+    | '/admin/login'
+    | '/admin/messages'
+    | '/admin/reports'
     | '/events/$slug'
+    | '/admin/'
     | '/api/public/sitemap.xml'
   fileRoutesById: FileRoutesById
 }
@@ -247,6 +319,12 @@ export interface RootRouteChildren {
   StudentsRoute: typeof StudentsRoute
   SupportRoute: typeof SupportRoute
   VideosRoute: typeof VideosRoute
+  AdminEventsRoute: typeof AdminEventsRoute
+  AdminGalleryRoute: typeof AdminGalleryRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminMessagesRoute: typeof AdminMessagesRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
 }
 
@@ -357,6 +435,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VideosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/events': {
+      id: '/admin/events'
+      path: '/admin/events'
+      fullPath: '/admin/events'
+      preLoaderRoute: typeof AdminEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/gallery': {
+      id: '/admin/gallery'
+      path: '/admin/gallery'
+      fullPath: '/admin/gallery'
+      preLoaderRoute: typeof AdminGalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/messages': {
+      id: '/admin/messages'
+      path: '/admin/messages'
+      fullPath: '/admin/messages'
+      preLoaderRoute: typeof AdminMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/admin/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events/$slug': {
       id: '/events/$slug'
       path: '/$slug'
@@ -401,6 +521,12 @@ const rootRouteChildren: RootRouteChildren = {
   StudentsRoute: StudentsRoute,
   SupportRoute: SupportRoute,
   VideosRoute: VideosRoute,
+  AdminEventsRoute: AdminEventsRoute,
+  AdminGalleryRoute: AdminGalleryRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminMessagesRoute: AdminMessagesRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminIndexRoute: AdminIndexRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport

@@ -2,10 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { nav, org } from "@/content/site";
 import { useLang } from "@/lib/lang";
+import { useAuth } from "@/lib/auth";
 import { Container } from "./ui";
 
 export function Header() {
   const { t, lang, setLang } = useLang();
+  const { admin } = useAuth();
   const [open, setOpen] = useState(false);
 
   return (
@@ -13,12 +15,11 @@ export function Header() {
       <div className="saffron-rule" aria-hidden="true" />
       <Container className="flex items-center gap-3 py-3">
         <Link to="/" className="flex min-w-0 items-center gap-3" onClick={() => setOpen(false)}>
-          <span
-            aria-hidden="true"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/50 bg-sand text-xl"
-          >
-            🚩
-          </span>
+          <img
+            src="/images/logo.jpg"
+            alt={t(org.name)}
+            className="h-12 w-12 shrink-0 rounded-full border-2 border-primary/50 object-cover shadow-sm transition-transform hover:scale-105"
+          />
           <span className="min-w-0">
             <span className="block truncate font-display text-base leading-tight font-semibold text-maroon sm:text-lg">
               {t(org.name)}
@@ -48,6 +49,13 @@ export function Header() {
               English
             </button>
           </div>
+
+          <Link
+            to={admin ? "/admin" : "/admin/login"}
+            className="rounded-full border border-primary/50 bg-sand/60 px-3 py-1.5 text-xs font-semibold text-maroon hover:bg-sand transition-colors"
+          >
+            {admin ? "प्रशासन (Admin)" : "लॉगिन"}
+          </Link>
 
           <Link
             to="/support"
