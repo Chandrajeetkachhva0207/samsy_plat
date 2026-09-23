@@ -33,3 +33,5 @@ dist-ssr
 
 # Nested backend repo
 dnyan-narmada-sangam/
+
+.env
