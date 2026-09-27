@@ -1,41 +1,65 @@
+// const multer = require("multer");
+// const path = require("path");
+// const fs = require("fs");
+
+// const uploadDirectory = path.join(
+//     __dirname,
+//     "../uploads/reports"
+// );
+
+// if (!fs.existsSync(uploadDirectory)) {
+//     fs.mkdirSync(uploadDirectory, {
+//         recursive: true,
+//     });
+// }
+
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, uploadDirectory);
+//     },
+
+//     filename: (req, file, cb) => {
+//         const uniqueName =
+//             Date.now() +
+//             "-" +
+//             Math.round(Math.random() * 1e9) +
+//             path.extname(file.originalname);
+
+//         cb(null, uniqueName);
+//     },
+// });
+
+// const fileFilter = (req, file, cb) => {
+//     if (file.mimetype === "application/pdf") {
+//         cb(null, true);
+//     } else {
+//         cb(
+//             new Error("Only PDF files are allowed")
+//         );
+//     }
+// };
+
+// const uploadPDF = multer({
+//     storage,
+//     fileFilter,
+//     limits: {
+//         fileSize: 10 * 1024 * 1024,
+//     },
+// });
+
+// module.exports = uploadPDF;
+
+
+
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 
-const uploadDirectory = path.join(
-    __dirname,
-    "../uploads/reports"
-);
-
-if (!fs.existsSync(uploadDirectory)) {
-    fs.mkdirSync(uploadDirectory, {
-        recursive: true,
-    });
-}
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDirectory);
-    },
-
-    filename: (req, file, cb) => {
-        const uniqueName =
-            Date.now() +
-            "-" +
-            Math.round(Math.random() * 1e9) +
-            path.extname(file.originalname);
-
-        cb(null, uniqueName);
-    },
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
     if (file.mimetype === "application/pdf") {
         cb(null, true);
     } else {
-        cb(
-            new Error("Only PDF files are allowed")
-        );
+        cb(new Error("Only PDF files are allowed"));
     }
 };
 
@@ -43,7 +67,7 @@ const uploadPDF = multer({
     storage,
     fileFilter,
     limits: {
-        fileSize: 10 * 1024 * 1024,
+        fileSize: 10 * 1024 * 1024, // 10 MB
     },
 });
 
