@@ -1,3 +1,4 @@
+
 /**
  * Seeded sample content for मा नर्मदा आध्यात्मिक शिक्षण संस्था.
  * EVERY string here is editable placeholder content and will later be served
@@ -9,15 +10,22 @@ import type { Bi } from "@/lib/lang";
 
 export const PLACEHOLDER = {
   phone: { mr: "7385501205", en: "7385501205" },
-  email: { mr: "santoshgpawar2q07@gmail.com", en: "santoshgpawar2q07@gmail.com" },
-  maps: { mr: "[अधिकृत Google Maps लोकेशन]", en: "[Official Google Maps location]" },
+  email: {
+    mr: "santoshgpawar2q07@gmail.com",
+    en: "santoshgpawar2q07@gmail.com",
+  },
+  maps: {
+    mr: "[अधिकृत Google Maps लोकेशन]",
+    en: "[Official Google Maps location]",
+  },
   whatsapp: "7385501205",
 };
 
 export const socialLinks = {
   youtube: "https://www.youtube.com/@user-qu8kv4fe3l72",
   facebook: "https://www.facebook.com/share/v/1LeUBrXMtD/",
-  instagram: "https://www.instagram.com/santosh_maharaj_pawar_73?utm_source=qr&stkn=MWo0bWpzdHR0NGs3NQ%3D%3D",
+  instagram:
+    "https://www.instagram.com/santosh_maharaj_pawar_73?utm_source=qr&stkn=MWo0bWpzdHR0NGs3NQ%3D%3D",
 };
 
 export const org = {
@@ -25,24 +33,37 @@ export const org = {
     mr: "मा नर्मदा आध्यात्मिक शिक्षण संस्था",
     en: "Maa Narmada Adhyatmik Shikshan Sanstha",
   } as Bi,
+
   gurukul: {
     mr: "मा नर्मदा आध्यात्मिक गुरुकुल, आळंदी देवाची",
     en: "Maa Narmada Adhyatmik Gurukul, Alandi Devachi",
   } as Bi,
+
   tagline: {
     mr: "शिक्षण • संस्कार • अध्यात्म • वारकरी परंपरा",
     en: "Education • Values • Spirituality • Warkari Tradition",
   } as Bi,
-  greeting: { mr: "॥ राम कृष्ण हरी ॥", en: "॥ Ram Krishna Hari ॥" } as Bi,
-  greeting2: { mr: "॥ ज्ञानोबा – तुकाराम ॥", en: "॥ Dnyanoba – Tukaram ॥" } as Bi,
+
+  greeting: {
+    mr: "॥ राम कृष्ण हरी ॥",
+    en: "॥ Ram Krishna Hari ॥",
+  } as Bi,
+
+  greeting2: {
+    mr: "॥ ज्ञानोबा – तुकाराम ॥",
+    en: "॥ Dnyanoba – Tukaram ॥",
+  } as Bi,
+
   founder: {
     mr: "ह.भ.प. संतोष महाराज पवार",
     en: "H.B.P. Santosh Maharaj Pawar",
   } as Bi,
+
   founderRole: {
     mr: "संस्थापक अध्यक्ष, मा नर्मदा आध्यात्मिक शिक्षण संस्था",
     en: "Founder President, Maa Narmada Adhyatmik Shikshan Sanstha",
   } as Bi,
+
   address: {
     mr: "मा नर्मदा आध्यात्मिक गुरुकुल, आळंदी देवाची, ता. खेड, जि. पुणे, महाराष्ट्र",
     en: "Maa Narmada Adhyatmik Gurukul, Alandi Devachi, Tal. Khed, Dist. Pune, Maharashtra",
@@ -52,10 +73,16 @@ export const org = {
 export const nav: { to: string; label: Bi }[] = [
   { to: "/", label: { mr: "मुख्यपृष्ठ", en: "Home" } },
   { to: "/about", label: { mr: "आमच्याविषयी", en: "About" } },
-  { to: "/founder", label: { mr: "संस्थापक अध्यक्ष", en: "Founder President" } },
+  {
+    to: "/founder",
+    label: { mr: "संस्थापक अध्यक्ष", en: "Founder President" },
+  },
   { to: "/gurukul", label: { mr: "गुरुकुल", en: "Gurukul" } },
   { to: "/activities", label: { mr: "उपक्रम", en: "Activities" } },
-  { to: "/students", label: { mr: "विद्यार्थी व सुविधा", en: "Students & Facilities" } },
+  {
+    to: "/students",
+    label: { mr: "विद्यार्थी व सुविधा", en: "Students & Facilities" },
+  },
   { to: "/events", label: { mr: "कार्यक्रम", en: "Events" } },
   { to: "/gallery", label: { mr: "फोटो गॅलरी", en: "Photo Gallery" } },
   { to: "/videos", label: { mr: "व्हिडिओ", en: "Videos" } },
@@ -65,23 +92,44 @@ export const nav: { to: string; label: Bi }[] = [
 ];
 
 export const secondaryNav: { to: string; label: Bi }[] = [
-  { to: "/future-plans", label: { mr: "भविष्यातील योजना", en: "Future Plans" } },
-  { to: "/certificates", label: { mr: "संस्था नोंदणी / प्रमाणपत्रे", en: "Registration & Certificates" } },
-  { to: "/privacy", label: { mr: "गोपनीयता धोरण", en: "Privacy Policy" } },
+  {
+    to: "/future-plans",
+    label: { mr: "भविष्यातील योजना", en: "Future Plans" },
+  },
+  {
+    to: "/certificates",
+    label: {
+      mr: "संस्था नोंदणी / प्रमाणपत्रे",
+      en: "Registration & Certificates",
+    },
+  },
+  {
+    to: "/privacy",
+    label: { mr: "गोपनीयता धोरण", en: "Privacy Policy" },
+  },
 ];
 
 export const saints = [
   {
     src: "/images/vitthal-rakhumai.jpg",
-    name: { mr: "श्री विठ्ठल – रखुमाई, पंढरपूर", en: "Shri Vitthal – Rakhumai, Pandharpur" } as Bi,
+    name: {
+      mr: "श्री विठ्ठल – रखुमाई, पंढरपूर",
+      en: "Shri Vitthal – Rakhumai, Pandharpur",
+    } as Bi,
   },
   {
     src: "/images/sant-dnyaneshwar.jpg",
-    name: { mr: "संत ज्ञानेश्वर महाराज, आळंदी", en: "Sant Dnyaneshwar Maharaj, Alandi" } as Bi,
+    name: {
+      mr: "संत ज्ञानेश्वर महाराज, आळंदी",
+      en: "Sant Dnyaneshwar Maharaj, Alandi",
+    } as Bi,
   },
   {
     src: "/images/sant-tukaram.jpg",
-    name: { mr: "संत तुकाराम महाराज, देहू", en: "Sant Tukaram Maharaj, Dehu" } as Bi,
+    name: {
+      mr: "संत तुकाराम महाराज, देहू",
+      en: "Sant Tukaram Maharaj, Dehu",
+    } as Bi,
   },
 ];
 
@@ -91,13 +139,34 @@ export const homeIntro: Bi = {
 };
 
 export const keyActivities: { icon: string; title: Bi }[] = [
-  { icon: "📖", title: { mr: "शालेय शिक्षण", en: "School Education" } },
-  { icon: "🪔", title: { mr: "आध्यात्मिक शिक्षण", en: "Spiritual Education" } },
-  { icon: "🚩", title: { mr: "वारकरी संस्कार", en: "Warkari Values" } },
-  { icon: "🧒", title: { mr: "बाल संस्कार शिबिर", en: "Children's Sanskar Camps" } },
-  { icon: "🎶", title: { mr: "कीर्तन व प्रवचन", en: "Kirtan & Pravachan" } },
-  { icon: "🎭", title: { mr: "सांस्कृतिक कार्यक्रम", en: "Cultural Programmes" } },
-  { icon: "🤝", title: { mr: "सामाजिक उपक्रम", en: "Social Initiatives" } },
+  {
+    icon: "📖",
+    title: { mr: "शालेय शिक्षण", en: "School Education" },
+  },
+  {
+    icon: "🪔",
+    title: { mr: "आध्यात्मिक शिक्षण", en: "Spiritual Education" },
+  },
+  {
+    icon: "🚩",
+    title: { mr: "वारकरी संस्कार", en: "Warkari Values" },
+  },
+  {
+    icon: "🧒",
+    title: { mr: "बाल संस्कार शिबिर", en: "Children's Sanskar Camps" },
+  },
+  {
+    icon: "🎶",
+    title: { mr: "कीर्तन व प्रवचन", en: "Kirtan & Pravachan" },
+  },
+  {
+    icon: "🎭",
+    title: { mr: "सांस्कृतिक कार्यक्रम", en: "Cultural Programmes" },
+  },
+  {
+    icon: "🤝",
+    title: { mr: "सामाजिक उपक्रम", en: "Social Initiatives" },
+  },
 ];
 
 export const timeline: { year: Bi; text: Bi }[] = [
@@ -195,6 +264,7 @@ export const about = {
     },
   ],
 };
+
 export const founderPage = {
   intro: {
     mr: "ह.भ.प. संतोष महाराज पवार हे मा नर्मदा आध्यात्मिक शिक्षण संस्थेचे संस्थापक अध्यक्ष असून त्यांच्या मार्गदर्शनाखाली मा नर्मदा आध्यात्मिक वारकरी गुरुकुलाचे कार्य सुरू आहे.",
@@ -210,7 +280,6 @@ export const founderPage = {
     mr: "त्यांच्या मार्गदर्शनाखाली गुरुकुलातील शैक्षणिक, आध्यात्मिक, सांस्कृतिक आणि विविध सामाजिक उपक्रम राबविले जातात.",
     en: "Under his guidance, educational, spiritual, cultural and various social activities are conducted through the Gurukul.",
   } as Bi,
-
 };
 
 export const gurukul = {
@@ -237,77 +306,110 @@ export const gurukul = {
       timeEn: "5:00 AM – 6:00 AM",
       period: { mr: "पहाटे", en: "Early Morning" },
       icon: "🥁",
-      item: { mr: "पखवाज व गायन सराव", en: "Pakhawaj & Vocal Music Practice" },
+      item: {
+        mr: "पखवाज व गायन सराव",
+        en: "Pakhawaj & Vocal Music Practice",
+      },
     },
     {
       time: "सकाळी : ६ ते ७.००",
       timeEn: "6:00 AM – 7:00 AM",
       period: { mr: "सकाळी", en: "Morning" },
       icon: "🪔",
-      item: { mr: "स्नानसंध्या", en: "Snansandhya (Morning Bath & Daily Prayers)" },
+      item: {
+        mr: "स्नानसंध्या",
+        en: "Snansandhya (Morning Bath & Daily Prayers)",
+      },
     },
     {
       time: "सकाळी : ७ ते ८",
       timeEn: "7:00 AM – 8:00 AM",
       period: { mr: "सकाळी", en: "Morning" },
       icon: "🥣",
-      item: { mr: "प्रार्थना, नाश्ता", en: "Morning Prayer & Breakfast" },
+      item: {
+        mr: "प्रार्थना, नाश्ता",
+        en: "Morning Prayer & Breakfast",
+      },
     },
     {
       time: "सकाळी : ८ ते १०",
       timeEn: "8:00 AM – 10:00 AM",
       period: { mr: "सकाळी", en: "Morning" },
       icon: "📖",
-      item: { mr: "गुरुकुलाचा आध्यात्मिक पाठ / क्लास", en: "Gurukul Spiritual Lessons / Study Class" },
+      item: {
+        mr: "गुरुकुलाचा आध्यात्मिक पाठ / क्लास",
+        en: "Gurukul Spiritual Lessons / Study Class",
+      },
     },
     {
       time: "सकाळी : १० ते १२",
       timeEn: "10:00 AM – 12:00 PM",
       period: { mr: "सकाळी", en: "Morning" },
       icon: "🍲",
-      item: { mr: "भोजन व शाळेची तयारी", en: "Midday Meal (Bhojan) & School Preparation" },
+      item: {
+        mr: "भोजन व शाळेची तयारी",
+        en: "Midday Meal (Bhojan) & School Preparation",
+      },
     },
     {
       time: "सकाळ : ७ ते १२ व १२ ते ५",
       timeEn: "7:00 AM – 12:00 PM & 12:00 PM – 5:00 PM",
       period: { mr: "सकाळ / दुपार", en: "Morning / Afternoon" },
       icon: "🏫",
-      item: { mr: "शाळा (शाळेच्या वेळेनुसार)", en: "School (as per formal school schedule)" },
+      item: {
+        mr: "शाळा (शाळेच्या वेळेनुसार)",
+        en: "School (as per formal school schedule)",
+      },
     },
     {
       time: "सायं : ४ ते ६.००",
       timeEn: "4:00 PM – 6:00 PM",
       period: { mr: "सायंकाळी", en: "Evening" },
       icon: "🎶",
-      item: { mr: "पखवाज / गायन सराव", en: "Pakhawaj / Vocal Music Practice" },
+      item: {
+        mr: "पखवाज / गायन सराव",
+        en: "Pakhawaj / Vocal Music Practice",
+      },
     },
     {
       time: "सायं : ६ ते ७.३०",
       timeEn: "6:00 PM – 7:30 PM",
       period: { mr: "सायंकाळी", en: "Evening" },
       icon: "🪘",
-      item: { mr: "हरिपाठ", en: "Haripath Chanting" },
+      item: {
+        mr: "हरिपाठ",
+        en: "Haripath Chanting",
+      },
     },
     {
       time: "रात्री : ७.३० ते ८.३०",
       timeEn: "7:30 PM – 8:30 PM",
       period: { mr: "रात्री", en: "Night" },
       icon: "🍽️",
-      item: { mr: "भोजन", en: "Evening Dinner / Meal" },
+      item: {
+        mr: "भोजन",
+        en: "Evening Dinner / Meal",
+      },
     },
     {
       time: "रात्री : ८.३० ते १०.००",
       timeEn: "8:30 PM – 10:00 PM",
       period: { mr: "रात्री", en: "Night" },
       icon: "✍️",
-      item: { mr: "शाळेचा अभ्यास", en: "School Studies & Homework" },
+      item: {
+        mr: "शाळेचा अभ्यास",
+        en: "School Studies & Homework",
+      },
     },
     {
       time: "रात्री : १०.०० ते ५",
       timeEn: "10:00 PM – 5:00 AM",
       period: { mr: "रात्री", en: "Night" },
       icon: "🌙",
-      item: { mr: "विश्रांती", en: "Rest & Sleep" },
+      item: {
+        mr: "विश्रांती",
+        en: "Rest & Sleep",
+      },
     },
   ],
 
@@ -431,76 +533,377 @@ export const activities: {
   },
 ];
 
-export const facilities: { icon: string; title: Bi; text: Bi }[] = [
-  { icon: "🏠", title: { mr: "निवास", en: "Accommodation" }, text: { mr: "विद्यार्थ्यांसाठी निवासाची व्यवस्था. (संपादनयोग्य)", en: "Accommodation for students. (Editable)" } },
-  { icon: "🍲", title: { mr: "भोजन", en: "Meals" }, text: { mr: "सात्त्विक भोजनाची व्यवस्था. (संपादनयोग्य)", en: "Simple satvik meals. (Editable)" } },
-  { icon: "📖", title: { mr: "अभ्यासिका", en: "Study Room" }, text: { mr: "अभ्यासासाठी शांत जागा. (संपादनयोग्य)", en: "A quiet place to study. (Editable)" } },
-  { icon: "🪔", title: { mr: "संस्कार वर्ग", en: "Sanskar Classes" }, text: { mr: "नियमित संस्कार वर्ग. (संपादनयोग्य)", en: "Regular sanskar classes. (Editable)" } },
-  { icon: "🎭", title: { mr: "सांस्कृतिक उपक्रम", en: "Cultural Activities" }, text: { mr: "सण व कार्यक्रमांत सहभाग. (संपादनयोग्य)", en: "Participation in festivals and programmes. (Editable)" } },
-  { icon: "🏏", title: { mr: "क्रीडा", en: "Sports" }, text: { mr: "मैदानी खेळांची संधी. (संपादनयोग्य)", en: "Opportunity for outdoor games. (Editable)" } },
-  { icon: "📚", title: { mr: "ग्रंथालय / अभ्यास साहित्य", en: "Library / Study Material" }, text: { mr: "ग्रंथ व अभ्यास साहित्य. (संपादनयोग्य)", en: "Books and study material. (Editable)" } },
-  { icon: "🧹", title: { mr: "स्वच्छता", en: "Cleanliness" }, text: { mr: "स्वच्छतेची नियमित काळजी. (संपादनयोग्य)", en: "Regular care for cleanliness. (Editable)" } },
-  { icon: "➕", title: { mr: "इतर सुविधा", en: "Other Facilities" }, text: { mr: "[प्रशासनाकडून भरावयाचे]", en: "[To be filled in by the administration]" } },
+export const facilities: {
+  icon: string;
+  title: Bi;
+  text: Bi;
+}[] = [
+  {
+    icon: "🏠",
+    title: { mr: "निवास", en: "Accommodation" },
+    text: {
+      mr: "विद्यार्थ्यांसाठी निवासाची व्यवस्था. (संपादनयोग्य)",
+      en: "Accommodation for students. (Editable)",
+    },
+  },
+  {
+    icon: "🍲",
+    title: { mr: "भोजन", en: "Meals" },
+    text: {
+      mr: "सात्त्विक भोजनाची व्यवस्था. (संपादनयोग्य)",
+      en: "Simple satvik meals. (Editable)",
+    },
+  },
+  {
+    icon: "📖",
+    title: { mr: "अभ्यासिका", en: "Study Room" },
+    text: {
+      mr: "अभ्यासासाठी शांत जागा. (संपादनयोग्य)",
+      en: "A quiet place to study. (Editable)",
+    },
+  },
+  {
+    icon: "🪔",
+    title: { mr: "संस्कार वर्ग", en: "Sanskar Classes" },
+    text: {
+      mr: "नियमित संस्कार वर्ग. (संपादनयोग्य)",
+      en: "Regular sanskar classes. (Editable)",
+    },
+  },
+  {
+    icon: "🎭",
+    title: { mr: "सांस्कृतिक उपक्रम", en: "Cultural Activities" },
+    text: {
+      mr: "सण व कार्यक्रमांत सहभाग. (संपादनयोग्य)",
+      en: "Participation in festivals and programmes. (Editable)",
+    },
+  },
+  {
+    icon: "🏏",
+    title: { mr: "क्रीडा", en: "Sports" },
+    text: {
+      mr: "मैदानी खेळांची संधी. (संपादनयोग्य)",
+      en: "Opportunity for outdoor games. (Editable)",
+    },
+  },
+  {
+    icon: "📚",
+    title: {
+      mr: "ग्रंथालय / अभ्यास साहित्य",
+      en: "Library / Study Material",
+    },
+    text: {
+      mr: "ग्रंथ व अभ्यास साहित्य. (संपादनयोग्य)",
+      en: "Books and study material. (Editable)",
+    },
+  },
+  {
+    icon: "🧹",
+    title: { mr: "स्वच्छता", en: "Cleanliness" },
+    text: {
+      mr: "स्वच्छतेची नियमित काळजी. (संपादनयोग्य)",
+      en: "Regular care for cleanliness. (Editable)",
+    },
+  },
+  {
+    icon: "➕",
+    title: { mr: "इतर सुविधा", en: "Other Facilities" },
+    text: {
+      mr: "[प्रशासनाकडून भरावयाचे]",
+      en: "[To be filled in by the administration]",
+    },
+  },
 ];
 
-export const futurePlans: { title: Bi; status: "प्रस्तावित" | "सुरू" | "पूर्ण" }[] = [
-  { title: { mr: "गुरुकुलासाठी स्वतःची जागा", en: "Own land for the gurukul" }, status: "प्रस्तावित" },
-  { title: { mr: "विद्यार्थी निवास", en: "Student accommodation" }, status: "प्रस्तावित" },
-  { title: { mr: "भोजन कक्ष", en: "Dining hall" }, status: "प्रस्तावित" },
-  { title: { mr: "वर्गखोल्या", en: "Classrooms" }, status: "प्रस्तावित" },
-  { title: { mr: "अभ्यासिका", en: "Study room" }, status: "प्रस्तावित" },
-  { title: { mr: "प्रार्थना / ध्यान मंदिर", en: "Prayer and meditation hall" }, status: "प्रस्तावित" },
-  { title: { mr: "कीर्तन व सांस्कृतिक सभागृह", en: "Kirtan and cultural hall" }, status: "प्रस्तावित" },
-  { title: { mr: "क्रीडांगण", en: "Playground" }, status: "प्रस्तावित" },
-  { title: { mr: "पिण्याचे पाणी", en: "Drinking water" }, status: "प्रस्तावित" },
-  { title: { mr: "स्वच्छतागृहे", en: "Toilets" }, status: "प्रस्तावित" },
-  { title: { mr: "स्वयंपाकगृह", en: "Kitchen" }, status: "प्रस्तावित" },
-  { title: { mr: "ग्रंथालय", en: "Library" }, status: "प्रस्तावित" },
-  { title: { mr: "इतर आवश्यक सुविधा", en: "Other necessary facilities" }, status: "प्रस्तावित" },
+export const futurePlans: {
+  title: Bi;
+  status: "प्रस्तावित" | "सुरू" | "पूर्ण";
+}[] = [
+  {
+    title: {
+      mr: "गुरुकुलासाठी स्वतःची जागा",
+      en: "Own land for the gurukul",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "विद्यार्थी निवास",
+      en: "Student accommodation",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "भोजन कक्ष",
+      en: "Dining hall",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "वर्गखोल्या",
+      en: "Classrooms",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "अभ्यासिका",
+      en: "Study room",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "प्रार्थना / ध्यान मंदिर",
+      en: "Prayer and meditation hall",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "कीर्तन व सांस्कृतिक सभागृह",
+      en: "Kirtan and cultural hall",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "क्रीडांगण",
+      en: "Playground",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "पिण्याचे पाणी",
+      en: "Drinking water",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "स्वच्छतागृहे",
+      en: "Toilets",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "स्वयंपाकगृह",
+      en: "Kitchen",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "ग्रंथालय",
+      en: "Library",
+    },
+    status: "प्रस्तावित",
+  },
+  {
+    title: {
+      mr: "इतर आवश्यक सुविधा",
+      en: "Other necessary facilities",
+    },
+    status: "प्रस्तावित",
+  },
 ];
 
-export const supportTypes: { icon: string; title: Bi; text: Bi }[] = [
-  { icon: "🪙", title: { mr: "आर्थिक सहकार्य", en: "Financial Support" }, text: { mr: "गुरुकुलाच्या दैनंदिन खर्चासाठी सहकार्य. (संपादनयोग्य)", en: "Support for the gurukul's daily expenses. (Editable)" } },
-  { icon: "🍛", title: { mr: "अन्नदान / भोजन", en: "Annadan / Meals" }, text: { mr: "विद्यार्थ्यांच्या भोजनासाठी सहकार्य. (संपादनयोग्य)", en: "Support for students' meals. (Editable)" } },
-  { icon: "📘", title: { mr: "शैक्षणिक साहित्य", en: "Educational Material" }, text: { mr: "वह्या, पुस्तके व साहित्य. (संपादनयोग्य)", en: "Notebooks, books and materials. (Editable)" } },
-  { icon: "🎁", title: { mr: "वस्तुरूप मदत", en: "Support in Kind" }, text: { mr: "आवश्यक वस्तूंच्या स्वरूपात मदत. (संपादनयोग्य)", en: "Help in the form of required goods. (Editable)" } },
-  { icon: "⏳", title: { mr: "वेळ / सेवा", en: "Time / Service" }, text: { mr: "शिकवणी, सेवा व स्वयंसेवा. (संपादनयोग्य)", en: "Teaching, service and volunteering. (Editable)" } },
+export const supportTypes: {
+  icon: string;
+  title: Bi;
+  text: Bi;
+}[] = [
+  {
+    icon: "🪙",
+    title: { mr: "आर्थिक सहकार्य", en: "Financial Support" },
+    text: {
+      mr: "गुरुकुलाच्या दैनंदिन खर्चासाठी सहकार्य. (संपादनयोग्य)",
+      en: "Support for the gurukul's daily expenses. (Editable)",
+    },
+  },
+  {
+    icon: "🍛",
+    title: { mr: "अन्नदान / भोजन", en: "Annadan / Meals" },
+    text: {
+      mr: "विद्यार्थ्यांच्या भोजनासाठी सहकार्य. (संपादनयोग्य)",
+      en: "Support for students' meals. (Editable)",
+    },
+  },
+  {
+    icon: "📘",
+    title: { mr: "शैक्षणिक साहित्य", en: "Educational Material" },
+    text: {
+      mr: "वह्या, पुस्तके व साहित्य. (संपादनयोग्य)",
+      en: "Notebooks, books and materials. (Editable)",
+    },
+  },
+  {
+    icon: "🎁",
+    title: { mr: "वस्तुरूप मदत", en: "Support in Kind" },
+    text: {
+      mr: "आवश्यक वस्तूंच्या स्वरूपात मदत. (संपादनयोग्य)",
+      en: "Help in the form of required goods. (Editable)",
+    },
+  },
+  {
+    icon: "⏳",
+    title: { mr: "वेळ / सेवा", en: "Time / Service" },
+    text: {
+      mr: "शिकवणी, सेवा व स्वयंसेवा. (संपादनयोग्य)",
+      en: "Teaching, service and volunteering. (Editable)",
+    },
+  },
 ];
 
 export const bankDetails = [
-  { key: "bankName", label: { mr: "बँकेचे नाव", en: "Bank Name" } as Bi, value: "BANK OF MAHARASHTRA (बँक ऑफ महाराष्ट्र)", copyable: false },
-  { key: "accountName", label: { mr: "खातेदाराचे नाव", en: "Account Name" } as Bi, value: "Maa Narmada Adhyatmik Shikshan Sanstha", copyable: false },
-  { key: "accountNumber", label: { mr: "खाते क्रमांक", en: "A/C No." } as Bi, value: "60139560106", copyable: true },
-  { key: "ifsc", label: { mr: "IFSC कोड", en: "IFSC Code" } as Bi, value: "MAHB0000104", copyable: true },
-  { key: "branch", label: { mr: "शाखा", en: "Branch" } as Bi, value: "ALANDI (आळंदी)", copyable: false },
-  { key: "upi", label: { mr: "अधिकृत UPI ID", en: "Official UPI ID" } as Bi, value: "917385501205@ybl", copyable: true },
+  {
+    key: "bankName",
+    label: { mr: "बँकेचे नाव", en: "Bank Name" } as Bi,
+    value: "BANK OF MAHARASHTRA (बँक ऑफ महाराष्ट्र)",
+    copyable: false,
+  },
+  {
+    key: "accountName",
+    label: { mr: "खातेदाराचे नाव", en: "Account Name" } as Bi,
+    value: "Maa Narmada Adhyatmik Shikshan Sanstha",
+    copyable: false,
+  },
+  {
+    key: "accountNumber",
+    label: { mr: "खाते क्रमांक", en: "A/C No." } as Bi,
+    value: "60139560106",
+    copyable: true,
+  },
+  {
+    key: "ifsc",
+    label: { mr: "IFSC कोड", en: "IFSC Code" } as Bi,
+    value: "MAHB0000104",
+    copyable: true,
+  },
+  {
+    key: "branch",
+    label: { mr: "शाखा", en: "Branch" } as Bi,
+    value: "ALANDI (आळंदी)",
+    copyable: false,
+  },
+  {
+    key: "upi",
+    label: { mr: "अधिकृत UPI ID", en: "Official UPI ID" } as Bi,
+    value: "917385501205@ybl",
+    copyable: true,
+  },
 ];
 
 export const certificates = [
-  { name: { mr: "संस्था नोंदणी (Trust Registration)", en: "Trust Registration" } as Bi, number: "15 984 (बुलढाणा)", validity: "अधिकृत नोंदणी (Official Registration)" },
-  { name: { mr: "12A", en: "12A" } as Bi, number: "[क्रमांक]", validity: "[वैधता]" },
-  { name: { mr: "80G", en: "80G" } as Bi, number: "[क्रमांक]", validity: "[वैधता]" },
-  { name: { mr: "PAN", en: "PAN" } as Bi, number: "[क्रमांक]", validity: "[वैधता]" },
+  {
+    name: {
+      mr: "संस्था नोंदणी (Trust Registration)",
+      en: "Trust Registration",
+    } as Bi,
+    number: "15 984 (बुलढाणा)",
+    validity: "अधिकृत नोंदणी (Official Registration)",
+  },
+  {
+    name: { mr: "12A", en: "12A" } as Bi,
+    number: "[क्रमांक]",
+    validity: "[वैधता]",
+  },
+  {
+    name: { mr: "80G", en: "80G" } as Bi,
+    number: "[क्रमांक]",
+    validity: "[वैधता]",
+  },
+  {
+    name: { mr: "PAN", en: "PAN" } as Bi,
+    number: "[क्रमांक]",
+    validity: "[वैधता]",
+  },
 ];
 
 export const reports = [
-  { year: "२०२५–२६", yearEn: "2025–26", file: "" },
-  { year: "२०२६–२७", yearEn: "2026–27", file: "" },
+  {
+    year: "२०२५–२६",
+    yearEn: "2025–26",
+    file: "",
+  },
+  {
+    year: "२०२६–२७",
+    yearEn: "2026–27",
+    file: "",
+  },
 ];
 
-export const videos: { title: Bi; date: string; youtubeId: string; description: Bi }[] = [];
+export const videos: {
+  title: Bi;
+  date: string;
+  youtubeId: string;
+  description: Bi;
+}[] = [];
+
+/* =========================================================
+   GALLERY CATEGORIES
+   IMPORTANT:
+   These values must match the category keys used by Admin Gallery.
+   ========================================================= */
 
 export const galleryCategories: Bi[] = [
-  { mr: "सर्व", en: "All" },
-  { mr: "गुरुकुल", en: "Gurukul" },
-  { mr: "विद्यार्थी", en: "Students" },
-  { mr: "कीर्तन", en: "Kirtan" },
-  { mr: "वारकरी कार्यक्रम", en: "Warkari programmes" },
-  { mr: "बाल संस्कार शिबिर", en: "Children's camps" },
-  { mr: "धार्मिक कार्यक्रम", en: "Religious programmes" },
-  { mr: "सांस्कृतिक कार्यक्रम", en: "Cultural programmes" },
-  { mr: "सामाजिक उपक्रम", en: "Social initiatives" },
-  { mr: "विशेष कार्यक्रम", en: "Special programmes" },
+  {
+    mr: "सर्व",
+    en: "All",
+  },
+  {
+    mr: "सामान्य",
+    en: "General",
+  },
+  {
+    mr: "गुरुकुल",
+    en: "Gurukul",
+  },
+  {
+    mr: "विद्यार्थी",
+    en: "Students",
+  },
+  {
+    mr: "कीर्तन",
+    en: "Kirtan",
+  },
+  {
+    mr: "वारकरी कार्यक्रम",
+    en: "Warkari Programmes",
+  },
+  {
+    mr: "बाल संस्कार शिबिर",
+    en: "Children's Camps",
+  },
+  {
+    mr: "धार्मिक कार्यक्रम",
+    en: "Religious Programmes",
+  },
+  {
+    mr: "सांस्कृतिक कार्यक्रम",
+    en: "Cultural Programmes",
+  },
+  {
+    mr: "सामाजिक उपक्रम",
+    en: "Social Initiatives",
+  },
+  {
+    mr: "विशेष कार्यक्रम",
+    en: "Special Programmes",
+  },
 ];
 
-export const galleryPhotos: { src: string; category: string; caption: Bi }[] = [];
+/*
+ * Gallery photos are loaded dynamically from the API.
+ * Do not manually add uploaded photos here.
+ */
+export const galleryPhotos: {
+  src: string;
+  category: string;
+  caption: Bi;
+}[] = [];
+

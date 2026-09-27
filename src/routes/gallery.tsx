@@ -92,28 +92,66 @@ const getText = (
    GET CATEGORY KEY
 ===================================================== */
 
+// const getCategoryKey = (categoryMr: string) => {
+//   switch (categoryMr) {
+//     case "सर्व":
+//       return "all";
+
+//     case "विद्यार्थी":
+//       return "students";
+
+//     case "कार्यक्रम":
+//       return "events";
+
+//     case "सुविधा":
+//       return "facilities";
+
+//     case "सामान्य":
+//       return "general";
+
+//     default:
+//       return categoryMr;
+//   }
+// };
 const getCategoryKey = (categoryMr: string) => {
   switch (categoryMr) {
     case "सर्व":
       return "all";
 
+    case "सामान्य":
+      return "general";
+
+    case "गुरुकुल":
+      return "gurukul";
+
     case "विद्यार्थी":
       return "students";
 
-    case "कार्यक्रम":
-      return "events";
+    case "कीर्तन":
+      return "kirtan";
 
-    case "सुविधा":
-      return "facilities";
+    case "वारकरी कार्यक्रम":
+      return "warkari";
 
-    case "सामान्य":
-      return "general";
+    case "बाल संस्कार शिबिर":
+      return "bal-sanskar";
+
+    case "धार्मिक कार्यक्रम":
+      return "religious";
+
+    case "सांस्कृतिक कार्यक्रम":
+      return "cultural";
+
+    case "सामाजिक उपक्रम":
+      return "social";
+
+    case "विशेष कार्यक्रम":
+      return "special";
 
     default:
       return categoryMr;
   }
 };
-
 /* =====================================================
    IMAGE URL RESOLVER
 ===================================================== */
