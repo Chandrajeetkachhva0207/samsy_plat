@@ -104,14 +104,5 @@ export function OutlineLink({ to, children }: { to: string; children: ReactNode 
 }
 
 export function EditableNote({ text }: { text?: Bi }) {
-  const { t } = useLang();
-  const fallback: Bi = {
-    mr: "हा मजकूर संपादनयोग्य आहे व प्रशासनाकडून अद्ययावत केला जाईल.",
-    en: "This text is editable and will be updated by the administration.",
-  };
-  return (
-    <p className="mt-4 rounded-lg border border-dashed border-primary/40 bg-sand px-4 py-2 text-sm text-muted-foreground">
-      ✎ {t(text ?? fallback)}
-    </p>
-  );
+  return null;
 }

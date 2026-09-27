@@ -333,38 +333,7 @@ function Support() {
         </div>
       </Section>
 
-      {/* RECEIPTS & 80G SECTION */}
-      <Section tone="sand">
-        <div className="mx-auto max-w-2xl text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <ShieldCheck className="h-6 w-6" />
-          </div>
-          <h2 className="mt-3 font-display text-2xl font-bold text-maroon">
-            {t({ mr: "पावती व करसवलत (80G)", en: "Receipts & Tax Exemption (80G)" })}
-          </h2>
-          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-            {t({
-              mr: "प्रत्येक देणगीची अधिकृत पावती संस्थेकडून दिली जाते. पॅन कार्ड क्रमांक नमूद केल्यास आयकर कायद्यानुसार करसवलतीची अधिकृत पावती प्रदान केली जाते.",
-              en: "An official trust receipt is issued for every donation. Providing your PAN card enables 80G tax exemption receipt under Income Tax regulations.",
-            })}
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link
-              to="/certificates"
-              className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-card px-5 py-2.5 text-sm font-semibold text-maroon hover:bg-accent"
-            >
-              {t({ mr: "नोंदणी व प्रमाणपत्रे (12A / 80G)", en: "Registration & Certificates" })}
-            </Link>
-            <Link
-              to="/contact"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-            >
-              {t({ mr: "संपर्क करा", en: "Contact Us" })}
-            </Link>
-          </div>
-          <p className="mt-6 text-xs text-muted-foreground font-medium">{t(org.name)}</p>
-        </div>
-      </Section>
+
 
       {/* RECEIPT INPUT MODAL */}
       {showQrReceiptModal && (
