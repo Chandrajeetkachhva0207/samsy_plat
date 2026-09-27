@@ -133,7 +133,8 @@ function Contact() {
               <div className="mt-3 overflow-hidden rounded-xl border border-border">
                 <iframe
                   title={t({ mr: "आळंदी देवाची नकाशा", en: "Alandi Devachi map" })}
-                  src="https://www.google.com/maps?q=Alandi%20Devachi%2C%20Tal.%20Khed%2C%20Pune%2C%20Maharashtra&output=embed"
+                  // src="https://www.google.com/maps?q=Alandi%20Devachi%2C%20Tal.%20Khed%2C%20Pune%2C%20Maharashtra&output=embed"
+                   src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3779.7749964302707!2d73.89676767519548!3d18.67409018244941!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMTjCsDQwJzI2LjciTiA3M8KwNTMnNTcuNiJF!5e0!3m2!1sen!2sin!4v1790346509091!5m2!1sen!2sin"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   className="aspect-4/3 w-full"

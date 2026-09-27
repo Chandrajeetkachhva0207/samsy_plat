@@ -1,5 +1,30 @@
-# Logs
-logs
+# =====================================================
+# DEPENDENCIES
+# =====================================================
+node_modules/
+**/node_modules/
+
+# =====================================================
+# BUILD / OUTPUT
+# =====================================================
+dist/
+dist-ssr/
+.output/
+.vinxi/
+.tanstack/
+.nitro/
+
+# =====================================================
+# ENVIRONMENT / SECRETS
+# =====================================================
+.env
+.env.*
+!.env.example
+
+# =====================================================
+# LOGS
+# =====================================================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,23 +32,19 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-.output
-.vinxi
-.tanstack/**
-.nitro
-*.local
-
-# Wrangler / Cloudflare
+# =====================================================
+# CLOUDFLARE / WRANGLER
+# =====================================================
 .wrangler/
 .dev.vars
 
-# Editor directories and files
+# =====================================================
+# EDITOR
+# =====================================================
 .vscode/*
 !.vscode/extensions.json
-.idea
+
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
@@ -31,7 +52,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Nested backend repo
+# =====================================================
+# NESTED REPOSITORY
+# =====================================================
 dnyan-narmada-sangam/
-
-.env

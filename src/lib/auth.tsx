@@ -1,33 +1,71 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { api, getAuthToken, setAuthToken } from "./api";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
-export interface AdminUser {
+import {
+  api,
+  getAuthToken,
+  setAuthToken,
+} from "./api";
+
+export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: "user" | "admin";
 }
 
 interface AuthContextType {
-  admin: AdminUser | null;
+  user: AuthUser | null;
+
+  // Kept for compatibility with existing admin pages
+  admin: AuthUser | null;
+
   token: string | null;
   loading: boolean;
-  login: (token: string, admin: AdminUser) => void;
+
+  login: (
+    token: string,
+    user: AuthUser
+  ) => void;
+
   logout: () => void;
+
+  refreshUser: () => Promise<void>;
+
+  // Kept for compatibility with existing code
   refreshAdmin: () => Promise<void>;
+
+  isAdmin: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext =
+  createContext<AuthContextType | undefined>(
+    undefined
+  );
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [admin, setAdmin] = useState<AdminUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+export function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [user, setUser] =
+    useState<AuthUser | null>(null);
 
-  const refreshAdmin = async () => {
+  const [token, setToken] =
+    useState<string | null>(null);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const refreshUser = async () => {
     const currentToken = getAuthToken();
+
     if (!currentToken) {
-      setAdmin(null);
+      setUser(null);
       setToken(null);
       setLoading(false);
       return;
@@ -35,44 +73,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const res = await api.getMe();
-      if (res.success && res.admin) {
-        setAdmin(res.admin);
+
+      if (res.success && res.user) {
+        setUser(res.user);
         setToken(currentToken);
       } else {
-        logout();
+        setAuthToken(null);
+        setUser(null);
+        setToken(null);
       }
-    } catch {
-      logout();
+    } catch (error) {
+      console.error(
+        "Unable to refresh user:",
+        error
+      );
+
+      setAuthToken(null);
+      setUser(null);
+      setToken(null);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    refreshAdmin();
+    refreshUser();
   }, []);
 
-  const login = (newToken: string, newAdmin: AdminUser) => {
+  const login = (
+    newToken: string,
+    newUser: AuthUser
+  ) => {
     setAuthToken(newToken);
     setToken(newToken);
-    setAdmin(newAdmin);
+    setUser(newUser);
   };
 
   const logout = () => {
     setAuthToken(null);
     setToken(null);
-    setAdmin(null);
+    setUser(null);
   };
+
+  const isAdmin =
+    user?.role === "admin";
 
   return (
     <AuthContext.Provider
       value={{
-        admin,
+        user,
+
+        // Admin compatibility
+        admin:
+          user?.role === "admin"
+            ? user
+            : null,
+
         token,
         loading,
+
         login,
         logout,
-        refreshAdmin,
+
+        refreshUser,
+
+        // Compatibility with existing admin code
+        refreshAdmin: refreshUser,
+
+        isAdmin,
       }}
     >
       {children}
@@ -81,9 +149,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context =
+    useContext(AuthContext);
+
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error(
+      "useAuth must be used within an AuthProvider"
+    );
   }
+
   return context;
 }

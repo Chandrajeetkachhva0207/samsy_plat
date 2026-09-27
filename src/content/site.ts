@@ -104,29 +104,29 @@ export const timeline: { year: Bi; text: Bi }[] = [
   {
     year: { mr: "सुरुवात", en: "Beginning" },
     text: {
-      mr: "आळंदी देवाची येथे थोड्या विद्यार्थ्यांसह गुरुकुलाची नम्र सुरुवात. (संपादनयोग्य मजकूर)",
-      en: "A humble beginning of the gurukul at Alandi Devachi with a few students. (Editable text)",
+      mr: "आळंदी देवाची येथे अल्पसंख्य विद्यार्थ्यांपासून मा नर्मदा आध्यात्मिक वारकरी गुरुकुलाची सुरुवात झाली",
+      en: "Ma Narmada Adhyatmik Warkari Gurukul began its journey in Alandi Devachi with a small number of students.",
     },
   },
   {
     year: { mr: "प्रारंभीची वर्षे", en: "Early years" },
     text: {
-      mr: "शालेय अभ्यासासोबत प्रार्थना, नामस्मरण व संस्कार वर्गांची नियमित रचना. (संपादनयोग्य मजकूर)",
-      en: "A regular routine of prayer, namasmaran and sanskar classes alongside school study. (Editable text)",
+      mr: "शालेय अभ्यासासाठी मार्गदर्शनासोबत प्रार्थना, नामस्मरण व संस्कार वर्गांची नियमित सुरुवात झाली.",
+      en: "Along with academic guidance, regular activities such as prayer, Naam Smaran, and value-based संस्कार classes were introduced.",
     },
   },
   {
     year: { mr: "मधली वर्षे", en: "Middle years" },
     text: {
-      mr: "कीर्तन, प्रवचन व बाल संस्कार शिबिरांचे आयोजन. (संपादनयोग्य मजकूर)",
-      en: "Kirtan, pravachan and children's sanskar camps were organised. (Editable text)",
+      mr: "कीर्तन, प्रवचन, वारकरी परंपरेचे शिक्षण, बाल संस्कार शिबिरे आणि सांस्कृतिक कार्यक्रमांचा विस्तार झाला.",
+      en: "The Gurukul expanded its activities to include Kirtan, spiritual discourses, education about the Warkari tradition, children's value-based camps, and cultural programs.",
     },
   },
   {
     year: { mr: "आज", en: "Today" },
     text: {
-      mr: "गुरुकुलाची सेवा सुरू असून भविष्यातील सुविधा उभारण्याचा संकल्प आहे. (संपादनयोग्य मजकूर)",
-      en: "The gurukul's service continues, with a resolve to build future facilities. (Editable text)",
+      mr: "शिक्षण, संस्कार आणि अध्यात्म यांचा समन्वय साधत विद्यार्थ्यांच्या शैक्षणिक, सांस्कृतिक, आध्यात्मिक व व्यक्तिमत्त्व विकासासाठी विविध धार्मिक व सामाजिक उपक्रम राबविले जात आहेत.",
+      en: "The Gurukul continues to integrate education, values, and spirituality through various religious and social initiatives, supporting the educational, cultural, spiritual, and overall personality development of students.",
     },
   },
 ];
@@ -134,199 +134,214 @@ export const timeline: { year: Bi; text: Bi }[] = [
 export const about = {
   sections: [
     {
-      title: { mr: "स्थापना", en: "Establishment" },
+      title: {
+        mr: "स्थापना",
+        en: "Establishment",
+      },
       body: {
-        mr: "संस्थेची स्थापना शिक्षण, संस्कार व अध्यात्म या तीन उद्दिष्टांनी करण्यात आली. (संपादनयोग्य मजकूर — अधिकृत तपशील प्रशासनाकडून भरले जातील.)",
-        en: "The institution was established with three aims: education, values and spirituality. (Editable text — official details to be filled in by the administration.)",
+        mr: "मा नर्मदा आध्यात्मिक शिक्षण संस्थेची स्थापना शिक्षण, संस्कार, अध्यात्म आणि वारकरी परंपरेच्या माध्यमातून विद्यार्थ्यांच्या सर्वांगीण विकासासाठी कार्य करण्याच्या उद्देशाने करण्यात आली. आळंदी देवाची येथे गुरुकुलाच्या माध्यमातून हे कार्य गेल्या १२ वर्षांपासून सुरू आहे.",
+        en: "Maa Narmada Adhyatmik Shikshan Sanstha was established with the aim of supporting the overall development of students through education, values, spirituality and the Warkari tradition. The Gurukul has been carrying out this work at Alandi Devachi for the past 12 years.",
       },
     },
     {
-      title: { mr: "उद्दिष्टे", en: "Objectives" },
+      title: {
+        mr: "उद्दिष्टे",
+        en: "Objectives",
+      },
       body: {
-        mr: "विद्यार्थ्यांना शालेय शिक्षणासोबत आध्यात्मिक संस्कार देणे, वारकरी परंपरेची ओळख करून देणे आणि भारतीय संस्कृतीविषयी आदर निर्माण करणे. (संपादनयोग्य मजकूर)",
-        en: "To give students spiritual values along with school education, introduce them to the Warkari tradition, and nurture respect for Indian culture. (Editable text)",
+        mr: "विद्यार्थ्यांना शालेय शिक्षणासोबत आध्यात्मिक संस्कार देणे, वारकरी परंपरेची ओळख करून देणे, संतविचार आणि भारतीय संस्कृतीचे ज्ञान देणे तसेच विद्यार्थ्यांमध्ये शिस्त, सेवा, नम्रता आणि सामाजिक जाणीव निर्माण करणे हे संस्थेचे प्रमुख उद्दिष्ट आहे.",
+        en: "The main objective of the institution is to provide students with spiritual values along with school education, introduce them to the Warkari tradition, the teachings of the saints and Indian culture, and develop discipline, humility, a spirit of service and social awareness.",
       },
     },
     {
-      title: { mr: "१२ वर्षांचा प्रवास", en: "A journey of 12 years" },
+      title: {
+        mr: "१२ वर्षांचा प्रवास",
+        en: "A Journey of 12 Years",
+      },
       body: {
-        mr: "गेल्या १२ वर्षांपासून आळंदी देवाची येथे गुरुकुलाचे कार्य नम्रपणे सुरू आहे. (संपादनयोग्य मजकूर)",
-        en: "For the past 12 years the gurukul's work has continued humbly at Alandi Devachi. (Editable text)",
+        mr: "आळंदी देवाची या संत ज्ञानेश्वर महाराजांच्या पावन भूमीत मा नर्मदा आध्यात्मिक वारकरी गुरुकुलाचे कार्य गेल्या १२ वर्षांपासून सुरू आहे. या प्रवासात विद्यार्थ्यांना शिक्षणासोबत प्रार्थना, नामस्मरण, संस्कार, कीर्तन, प्रवचन, सांस्कृतिक उपक्रम आणि वारकरी परंपरेचे शिक्षण देण्याचा सातत्याने प्रयत्न केला जात आहे.",
+        en: "Maa Narmada Adhyatmik Warkari Gurukul has been serving students for the past 12 years in Alandi Devachi, the sacred land associated with Sant Dnyaneshwar Maharaj. Throughout this journey, continuous efforts have been made to provide students with education along with prayer, namasmaran, values, kirtan, pravachan, cultural activities and an understanding of the Warkari tradition.",
       },
     },
     {
-      title: { mr: "आळंदीतील कार्य", en: "Work in Alandi" },
+      title: {
+        mr: "आळंदीतील कार्य",
+        en: "Work in Alandi",
+      },
       body: {
-        mr: "संत ज्ञानेश्वर महाराजांच्या पावन भूमीत विद्यार्थ्यांसाठी अभ्यास, प्रार्थना व सेवा यांचे वातावरण जपले जाते. (संपादनयोग्य मजकूर)",
-        en: "In this sacred land, an atmosphere of study, prayer and service is maintained for the students. (Editable text)",
+        mr: "संत ज्ञानेश्वर महाराजांच्या पावन भूमीत विद्यार्थ्यांसाठी शैक्षणिक, आध्यात्मिक आणि संस्कारक्षम वातावरण निर्माण करण्याचे कार्य केले जाते. विद्यार्थ्यांना संतपरंपरा, वारकरी संस्कृती, प्रार्थना, नामस्मरण, कीर्तन आणि सेवाभाव यांची ओळख करून दिली जाते.",
+        en: "In the sacred land associated with Sant Dnyaneshwar Maharaj, the Gurukul works to create an educational, spiritual and value-based environment for students. Students are introduced to the saint tradition, Warkari culture, prayer, namasmaran, kirtan and the spirit of service.",
       },
     },
     {
-      title: { mr: "शिक्षण व अध्यात्माचा संगम", en: "School education with spirituality" },
+      title: {
+        mr: "शिक्षण व अध्यात्माचा संगम",
+        en: "Education & Spirituality Together",
+      },
       body: {
-        mr: "शाळेचा अभ्यास आणि आध्यात्मिक संस्कार एकत्र चालावेत असा प्रयत्न असतो. (संपादनयोग्य मजकूर)",
-        en: "The effort is that school study and spiritual practice go hand in hand. (Editable text)",
+        mr: "शालेय शिक्षण आणि आध्यात्मिक संस्कार यांचा समतोल साधणे हा गुरुकुलाच्या कार्याचा महत्त्वाचा भाग आहे. विद्यार्थ्यांना अभ्यासासोबत प्रार्थना, नामस्मरण, संतविचार, कीर्तन, प्रवचन आणि भारतीय संस्कृतीचे शिक्षण दिले जाते.",
+        en: "A key part of the Gurukul's approach is to maintain a balance between school education and spiritual values. Along with their studies, students are introduced to prayer, namasmaran, the teachings of the saints, kirtan, pravachan and Indian culture.",
       },
     },
     {
-      title: { mr: "भविष्यातील उद्दिष्टे", en: "Future goals" },
+      title: {
+        mr: "भविष्यातील उद्दिष्ट",
+        en: "Future Goal",
+      },
       body: {
-        mr: "गुरुकुलासाठी स्वतःची जागा व आवश्यक सुविधा उभारणे हे प्रस्तावित उद्दिष्ट आहे. (संपादनयोग्य मजकूर)",
-        en: "Acquiring the gurukul's own land and building the necessary facilities is a proposed goal. (Editable text)",
+        mr: "गुरुकुलासाठी स्वतःची जागा उपलब्ध करून घेऊन विद्यार्थ्यांसाठी शैक्षणिक, निवासी, आध्यात्मिक आणि सांस्कृतिक सुविधा उभारणे हे संस्थेचे प्रस्तावित भविष्यातील उद्दिष्ट आहे. विद्यार्थ्यांना अधिक चांगले शिक्षण, संस्कार आणि सुरक्षित वातावरण उपलब्ध करून देण्यासाठी गुरुकुलाचा विस्तार करण्याचा संकल्प आहे.",
+        en: "The institution's proposed future goal is to have its own land for the Gurukul and develop educational, residential, spiritual and cultural facilities for students. The vision is to expand the Gurukul and provide students with better education, values and a supportive environment.",
       },
     },
   ],
-  verified: {
-    mr: "पडताळलेली माहिती: [प्रशासनाकडून भरावयाचे]",
-    en: "Verified information: [to be filled in by the administration]",
-  } as Bi,
 };
-
 export const founderPage = {
   intro: {
-    mr: "ह.भ.प. संतोष महाराज पवार हे संस्थेचे संस्थापक अध्यक्ष असून त्यांच्या मार्गदर्शनाखाली गुरुकुलाचे कार्य चालते. (संपादनयोग्य मजकूर)",
-    en: "H.B.P. Santosh Maharaj Pawar is the Founder President of the institution; the gurukul functions under his guidance. (Editable text)",
+    mr: "ह.भ.प. संतोष महाराज पवार हे मा नर्मदा आध्यात्मिक शिक्षण संस्थेचे संस्थापक अध्यक्ष असून त्यांच्या मार्गदर्शनाखाली मा नर्मदा आध्यात्मिक वारकरी गुरुकुलाचे कार्य सुरू आहे.",
+    en: "H.B.P. Santosh Maharaj Pawar is the Founder President of Maa Narmada Adhyatmik Shikshan Sanstha, under whose guidance the work of Maa Narmada Adhyatmik Warkari Gurukul is carried out.",
   } as Bi,
+
   role: {
-    mr: "संस्थेतील भूमिका: गुरुकुलाचे संचालन, विद्यार्थ्यांचे मार्गदर्शन, कीर्तन-प्रवचन सेवा व संस्थेचे प्रशासकीय कार्य. (संपादनयोग्य मजकूर)",
-    en: "Role in the institution: running the gurukul, guiding students, kirtan-pravachan service and the administration of the trust. (Editable text)",
+    mr: "संस्थापक अध्यक्ष म्हणून ते गुरुकुलाच्या कार्याला मार्गदर्शन करतात. विद्यार्थ्यांना शिक्षण, संस्कार, अध्यात्म आणि वारकरी परंपरेचे शिक्षण मिळावे, या उद्देशाने संस्थेचे कार्य पुढे नेले जाते.",
+    en: "As the Founder President, he provides guidance to the work of the Gurukul. The institution works with the aim of providing students with education, values, spirituality and knowledge of the Warkari tradition.",
   } as Bi,
+
   work: {
-    mr: "कार्याचा थोडक्यात आढावा येथे प्रशासनाकडून भरला जाईल. कोणतेही आकडे किंवा दावे न पडताळता प्रसिद्ध केले जाणार नाहीत.",
-    en: "A brief summary of the work will be filled in by the administration. No figures or claims will be published without verification.",
+    mr: "त्यांच्या मार्गदर्शनाखाली गुरुकुलातील शैक्षणिक, आध्यात्मिक, सांस्कृतिक आणि विविध सामाजिक उपक्रम राबविले जातात.",
+    en: "Under his guidance, educational, spiritual, cultural and various social activities are conducted through the Gurukul.",
   } as Bi,
-  photoNote: {
-    mr: "अधिकृत छायाचित्र येथे लावले जाईल (मूळ छायाचित्र, कोणताही बदल न करता).",
-    en: "The official photograph will be placed here (original, unaltered).",
-  } as Bi,
+
 };
 
 export const gurukul = {
   identity: {
-    mr: "मा नर्मदा आध्यात्मिक गुरुकुल हे आळंदी देवाची येथील निवासी स्वरूपाचे गुरुकुल आहे, जेथे शालेय शिक्षणासोबत आध्यात्मिक संस्कार दिले जातात. (संपादनयोग्य मजकूर)",
-    en: "Maa Narmada Adhyatmik Gurukul at Alandi Devachi is a residential gurukul where spiritual values are imparted along with school education. (Editable text)",
+    mr: "मा नर्मदा आध्यात्मिक वारकरी गुरुकुल हे आळंदी देवाची येथे कार्यरत असून विद्यार्थ्यांना शालेय शिक्षणासोबत आध्यात्मिक संस्कार, वारकरी परंपरा, संतविचार, कीर्तन, प्रवचन आणि भारतीय संस्कृतीची ओळख करून देण्याचा प्रयत्न केला जातो.",
+    en: "Maa Narmada Adhyatmik Warkari Gurukul works at Alandi Devachi with an aim to provide students with school education along with spiritual values, the Warkari tradition, the teachings of the saints, kirtan, pravachan and an introduction to Indian culture.",
   } as Bi,
+
   eduEnv: {
-    mr: "शैक्षणिक वातावरण: नियमित अभ्यास, अभ्यास मार्गदर्शन व शिस्तबद्ध दिनक्रम. (संपादनयोग्य मजकूर)",
-    en: "Educational environment: regular study, study guidance and a disciplined routine. (Editable text)",
+    mr: "विद्यार्थ्यांना शालेय शिक्षणासोबत संस्कार आणि आध्यात्मिक शिक्षण मिळावे, यासाठी शिक्षण व संस्कार यांचा समन्वय साधण्याचा प्रयत्न केला जातो.",
+    en: "The Gurukul strives to bring education and values together so that students receive school education along with spiritual and cultural learning.",
   } as Bi,
+
   spiritualEnv: {
-    mr: "आध्यात्मिक वातावरण: प्रार्थना, नामस्मरण, संतविचार व कीर्तन-सराव. (संपादनयोग्य मजकूर)",
-    en: "Spiritual environment: prayer, namasmaran, the thought of the saints and kirtan practice. (Editable text)",
+    mr: "गुरुकुलाच्या माध्यमातून विद्यार्थ्यांना अध्यात्म, वारकरी परंपरा, संतविचार, कीर्तन आणि प्रवचन यांची ओळख करून दिली जाते.",
+    en: "Through the Gurukul, students are introduced to spirituality, the Warkari tradition, the teachings of the saints, kirtan and pravachan.",
   } as Bi,
+
   routine: [
-    { time: "[वेळ]", item: { mr: "प्रार्थना", en: "Prayer" } },
-    { time: "[वेळ]", item: { mr: "नामस्मरण", en: "Namasmaran" } },
-    { time: "[वेळ]", item: { mr: "शालेय अभ्यास", en: "School study" } },
-    { time: "[वेळ]", item: { mr: "भोजन व विश्रांती", en: "Meal and rest" } },
-    { time: "[वेळ]", item: { mr: "संस्कार वर्ग", en: "Sanskar class" } },
-    { time: "[वेळ]", item: { mr: "कीर्तन-सराव", en: "Kirtan practice" } },
-    { time: "[वेळ]", item: { mr: "स्वाध्याय व शयन", en: "Self-study and rest" } },
+    { time: "[वेळ]", item: { mr: "शालेय शिक्षण", en: "School Education" } },
+    { time: "[वेळ]", item: { mr: "आध्यात्मिक शिक्षण", en: "Spiritual Education" } },
+    { time: "[वेळ]", item: { mr: "संस्कार उपक्रम", en: "Values & Sanskar Activities" } },
+    { time: "[वेळ]", item: { mr: "कीर्तन व प्रवचन", en: "Kirtan & Pravachan" } },
+    { time: "[वेळ]", item: { mr: "सांस्कृतिक उपक्रम", en: "Cultural Activities" } },
   ],
+
   method: {
-    mr: "कार्यपद्धती: विद्यार्थ्यांच्या वयानुसार अभ्यास व संस्कार यांचे नियोजन केले जाते. (संपादनयोग्य मजकूर)",
-    en: "Working method: study and sanskar are planned according to the age of the students. (Editable text)",
+    mr: "कार्यपद्धती: शालेय शिक्षणासोबत संस्कार, अध्यात्म, वारकरी परंपरा, संतविचार आणि सांस्कृतिक उपक्रम यांचा समन्वय साधण्याचा प्रयत्न केला जातो.",
+    en: "Working approach: the Gurukul strives to integrate school education with values, spirituality, the Warkari tradition, the teachings of the saints and cultural activities.",
   } as Bi,
 };
 
-export const activities: { icon: string; title: Bi; short: Bi; detail: Bi }[] = [
-  {
-    icon: "📚",
-    title: { mr: "शालेय शिक्षण", en: "School Education" },
-    short: { mr: "नियमित शालेय अभ्यास व उपस्थिती.", en: "Regular school study and attendance." },
-    detail: {
-      mr: "विद्यार्थ्यांचा शालेय अभ्यास नियमित व्हावा यासाठी दैनंदिन नियोजन केले जाते. (संपादनयोग्य मजकूर)",
-      en: "Daily planning is done so that the students' school study stays regular. (Editable text)",
-    },
-  },
-  {
-    icon: "✍️",
-    title: { mr: "अभ्यास मार्गदर्शन", en: "Study Guidance" },
-    short: { mr: "अभ्यासात मदत व मार्गदर्शन.", en: "Help and guidance in study." },
-    detail: {
-      mr: "अभ्यासात अडचण असलेल्या विद्यार्थ्यांना वैयक्तिक मार्गदर्शन दिले जाते. (संपादनयोग्य मजकूर)",
-      en: "Students who find study difficult receive individual guidance. (Editable text)",
-    },
-  },
-  {
-    icon: "🙏",
-    title: { mr: "प्रार्थना", en: "Prayer" },
-    short: { mr: "दिवसाची सुरुवात प्रार्थनेने.", en: "The day begins with prayer." },
-    detail: {
-      mr: "सकाळ व सायंकाळी सामूहिक प्रार्थना घेतली जाते. (संपादनयोग्य मजकूर)",
-      en: "Collective prayer is held in the morning and evening. (Editable text)",
-    },
-  },
-  {
-    icon: "📿",
-    title: { mr: "नामस्मरण", en: "Namasmaran" },
-    short: { mr: "नित्य नामस्मरणाचा अभ्यास.", en: "Daily practice of namasmaran." },
-    detail: {
-      mr: "वारकरी परंपरेनुसार नित्य नामस्मरणाचा सराव केला जातो. (संपादनयोग्य मजकूर)",
-      en: "Daily namasmaran is practised in keeping with the Warkari tradition. (Editable text)",
-    },
-  },
-  {
-    icon: "🪔",
-    title: { mr: "संतविचार", en: "Thought of the Saints" },
-    short: { mr: "संतांच्या शिकवणुकीचा परिचय.", en: "Introduction to the saints' teachings." },
-    detail: {
-      mr: "ज्ञानेश्वरी, गाथा व अभंगांतील विचार सोप्या भाषेत सांगितले जातात. (संपादनयोग्य मजकूर)",
-      en: "Thoughts from Dnyaneshwari, Gatha and abhangs are explained simply. (Editable text)",
-    },
-  },
-  {
-    icon: "🚩",
-    title: { mr: "वारकरी परंपरा", en: "Warkari Tradition" },
-    short: { mr: "परंपरेची ओळख व आचरण.", en: "Learning and living the tradition." },
-    detail: {
-      mr: "वारी, भजन व परंपरेतील आचरण यांची ओळख करून दिली जाते. (संपादनयोग्य मजकूर)",
-      en: "Wari, bhajan and the conduct of the tradition are introduced. (Editable text)",
-    },
-  },
-  {
-    icon: "🎵",
-    title: { mr: "कीर्तन", en: "Kirtan" },
-    short: { mr: "कीर्तन सेवा व सराव.", en: "Kirtan service and practice." },
-    detail: {
-      mr: "विद्यार्थ्यांना कीर्तनाचा सराव व सेवा करण्याची संधी दिली जाते. (संपादनयोग्य मजकूर)",
-      en: "Students are given the opportunity to practise and offer kirtan. (Editable text)",
-    },
-  },
-  {
-    icon: "🗣️",
-    title: { mr: "प्रवचन", en: "Pravachan" },
-    short: { mr: "संतवाङ्मयावर प्रवचन.", en: "Discourses on the saints' writings." },
-    detail: {
-      mr: "वेळोवेळी प्रवचनाचे आयोजन केले जाते. (संपादनयोग्य मजकूर)",
-      en: "Pravachans are arranged from time to time. (Editable text)",
-    },
-  },
+export const activities: {
+  icon: string;
+  title: Bi;
+  short: Bi;
+  detail: Bi;
+}[] = [
   {
     icon: "🧒",
-    title: { mr: "बाल संस्कार शिबिरे", en: "Children's Sanskar Camps" },
-    short: { mr: "मुलांसाठी संस्कार शिबिरे.", en: "Sanskar camps for children." },
+    title: {
+      mr: "बाल संस्कार शिबिर",
+      en: "Children's Sanskar Camp",
+    },
+    short: {
+      mr: "मुलांच्या व्यक्तिमत्त्व विकासासाठी संस्कार व आध्यात्मिक शिबिर.",
+      en: "A values-based and spiritual camp for the personality development of children.",
+    },
     detail: {
-      mr: "सुट्टीच्या काळात बाल संस्कार शिबिरे घेतली जातात. (संपादनयोग्य मजकूर)",
-      en: "Sanskar camps are held during holidays. (Editable text)",
+      mr: "मुलांच्या व्यक्तिमत्त्व विकासासाठी संस्कार व आध्यात्मिक मूल्यांवर आधारित शिबिर आयोजित केले जाते.",
+      en: "A camp focused on values and spiritual learning is organized for the personality development of children.",
     },
   },
+
+  {
+    icon: "🎵",
+    title: {
+      mr: "कीर्तन महोत्सव",
+      en: "Kirtan Festival",
+    },
+    short: {
+      mr: "भक्ती, संतविचार आणि समाजप्रबोधनाचा संदेश देणारा उपक्रम.",
+      en: "An initiative promoting devotion, the teachings of the saints and social awareness.",
+    },
+    detail: {
+      mr: "प्रसिद्ध कीर्तनकारांच्या माध्यमातून भक्ती, संतविचार आणि समाजप्रबोधनाचा संदेश विद्यार्थ्यांपर्यंत व समाजापर्यंत पोहोचविला जातो.",
+      en: "Through renowned kirtankars, messages of devotion, the teachings of the saints and social awareness are shared with students and the community.",
+    },
+  },
+
+  {
+    icon: "🚩",
+    title: {
+      mr: "वारकरी उपक्रम",
+      en: "Warkari Activities",
+    },
+    short: {
+      mr: "वारी, दिंडी, अभंग, भजन आणि संतपरंपरेशी संबंधित कार्यक्रम.",
+      en: "Activities related to Wari, Dindi, abhang, bhajan and the saint tradition.",
+    },
+    detail: {
+      mr: "वारी, दिंडी, अभंग, भजन आणि संतपरंपरेशी संबंधित विविध कार्यक्रमांच्या माध्यमातून वारकरी संस्कृतीची ओळख करून दिली जाते.",
+      en: "Various activities related to Wari, Dindi, abhang, bhajan and the saint tradition are conducted to introduce students to Warkari culture.",
+    },
+  },
+
+  {
+    icon: "📚",
+    title: {
+      mr: "शैक्षणिक उपक्रम",
+      en: "Educational Activities",
+    },
+    short: {
+      mr: "विद्यार्थ्यांच्या शालेय अभ्यासासाठी मार्गदर्शन व शैक्षणिक वातावरण.",
+      en: "Study guidance and an educational environment for students.",
+    },
+    detail: {
+      mr: "विद्यार्थ्यांच्या शालेय अभ्यासासाठी मार्गदर्शन आणि अभ्यासासाठी योग्य शैक्षणिक वातावरण उपलब्ध करून देण्याचा प्रयत्न केला जातो.",
+      en: "Efforts are made to provide students with study guidance and a suitable educational environment for their school education.",
+    },
+  },
+
   {
     icon: "🎭",
-    title: { mr: "सांस्कृतिक कार्यक्रम", en: "Cultural Programmes" },
-    short: { mr: "सण व सांस्कृतिक उपक्रम.", en: "Festivals and cultural activities." },
+    title: {
+      mr: "सांस्कृतिक कार्यक्रम",
+      en: "Cultural Programmes",
+    },
+    short: {
+      mr: "गायन, भजन, वक्तृत्व, कथाकथन आणि विविध सांस्कृतिक कार्यक्रम.",
+      en: "Singing, bhajan, public speaking, storytelling and various cultural programmes.",
+    },
     detail: {
-      mr: "सण-उत्सव व सांस्कृतिक कार्यक्रम साजरे केले जातात. (संपादनयोग्य मजकूर)",
-      en: "Festivals and cultural programmes are celebrated. (Editable text)",
+      mr: "गायन, भजन, वक्तृत्व, कथाकथन आणि विविध सांस्कृतिक कार्यक्रमांच्या माध्यमातून विद्यार्थ्यांच्या कलागुणांना व सहभागाला प्रोत्साहन दिले जाते.",
+      en: "Students are encouraged to participate and develop their talents through singing, bhajan, public speaking, storytelling and various cultural programmes.",
     },
   },
+
   {
-    icon: "🤝",
-    title: { mr: "सामाजिक उपक्रम", en: "Social Initiatives" },
-    short: { mr: "समाजासाठी सेवा उपक्रम.", en: "Service activities for society." },
+    icon: "🪔",
+    title: {
+      mr: "संत जयंती व धार्मिक उत्सव",
+      en: "Saint Jayanti & Religious Festivals",
+    },
+    short: {
+      mr: "संतांचे जीवन व विचार विद्यार्थ्यांपर्यंत पोहोचविणारे कार्यक्रम.",
+      en: "Programmes introducing students to the lives and teachings of the saints.",
+    },
     detail: {
-      mr: "स्वच्छता, वृक्षारोपण व सेवाभावी उपक्रम राबवले जातात. (संपादनयोग्य मजकूर)",
-      en: "Cleanliness drives, tree planting and service activities are undertaken. (Editable text)",
+      mr: "संतांचे जीवन, विचार आणि आध्यात्मिक मूल्ये विद्यार्थ्यांपर्यंत पोहोचविण्यासाठी संत जयंती व विविध धार्मिक उत्सवांचे आयोजन केले जाते.",
+      en: "Saint Jayanti and various religious festivals are organized to introduce students to the lives, teachings and spiritual values of the saints.",
     },
   },
 ];

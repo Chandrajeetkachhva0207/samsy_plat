@@ -1,12 +1,71 @@
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000/api";
+
+/**
+ * Backend server origin.
+ *
+ * Example:
+ * API_BASE_URL = http://localhost:5000/api
+ *
+ * API_ORIGIN = http://localhost:5000
+ */
+export const API_ORIGIN = API_BASE_URL.replace(
+  /\/api\/?$/,
+  ""
+);
+
+/**
+ * Convert a gallery image path into a browser-accessible URL.
+ *
+ * Example:
+ * /uploads/images/photo.jpg
+ *
+ * becomes:
+ * http://localhost:5000/uploads/images/photo.jpg
+ */
+export function getGalleryImageUrl(
+  image?: string | null
+): string {
+  // IMPORTANT:
+  // Do not show another/default image when the database
+  // does not contain an image.
+  if (!image) {
+    return "";
+  }
+
+  // Already a complete URL
+  if (/^https?:\/\//i.test(image)) {
+    return image;
+  }
+
+  // Uploaded images are served by the backend
+  if (image.startsWith("/uploads/")) {
+    return `${API_ORIGIN}${image}`;
+  }
+
+  // Frontend public/static image
+  if (image.startsWith("/")) {
+    return image;
+  }
+
+  // Relative path
+  return `${API_ORIGIN}/${image}`;
+}
+
+/* =====================================================
+   AUTH TOKEN
+===================================================== */
 
 export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
+
   return localStorage.getItem("admin_token");
 }
 
 export function setAuthToken(token: string | null) {
   if (typeof window === "undefined") return;
+
   if (token) {
     localStorage.setItem("admin_token", token);
   } else {
@@ -14,15 +73,25 @@ export function setAuthToken(token: string | null) {
   }
 }
 
+/* =====================================================
+   REQUEST HELPER
+===================================================== */
+
 async function request<T = any>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
   const token = getAuthToken();
+
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
 
+  /*
+    Do NOT set Content-Type manually for FormData.
+    Browser automatically sets:
+    multipart/form-data; boundary=...
+  */
   if (!(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
@@ -31,89 +100,200 @@ async function request<T = any>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  const res = await fetch(
+    `${API_BASE_URL}${endpoint}`,
+    {
+      ...options,
+      headers,
+    }
+  );
 
-  const data = await res.json().catch(() => ({}));
+  const data = await res
+    .json()
+    .catch(() => ({}));
 
   if (!res.ok) {
     if (res.status === 401) {
       setAuthToken(null);
     }
-    throw new Error(data.message || `Request failed with status ${res.status}`);
+
+    throw new Error(
+      data.message ||
+        `Request failed with status ${res.status}`
+    );
   }
 
   return data;
 }
 
+/* =====================================================
+   API
+===================================================== */
+
 export const api = {
-  // Auth
-  login: (credentials: { email: string; password: string }) =>
+  /* ===================================================
+     AUTH
+  =================================================== */
+
+  /**
+   * Register normal user
+   */
+  register: (credentials: {
+    name: string;
+    email: string;
+    password: string;
+  }) =>
+    request("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    }),
+
+  /**
+   * Login user or admin
+   */
+  login: (credentials: {
+    email: string;
+    password: string;
+  }) =>
     request("/auth/login", {
       method: "POST",
       body: JSON.stringify(credentials),
     }),
 
-  getMe: () => request("/auth/me"),
+  /**
+   * Get currently logged-in user/admin
+   */
+  getMe: () =>
+    request("/auth/me"),
 
-  // Admin Dashboard
-  getAdminStats: () => request("/admin/dashboard-stats"),
+  /* ===================================================
+     ADMIN DASHBOARD
+  =================================================== */
 
-  // Contact Messages
-  sendContactMessage: (payload: { name: string; phone: string; email?: string | undefined; message: string }) =>
+  getAdminStats: () =>
+    request("/admin/dashboard-stats"),
+
+  /* ===================================================
+     CONTACT MESSAGES
+  =================================================== */
+
+  sendContactMessage: (
+    payload: {
+      name: string;
+      phone?: string;
+      mobile?: string;
+      email?: string;
+      subject?: string;
+      message: string;
+    }
+  ) =>
     request("/contact-messages", {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        name: payload.name,
+        mobile:
+          payload.mobile ||
+          payload.phone,
+        email: payload.email,
+        subject:
+          payload.subject ||
+          "General Inquiry",
+        message: payload.message,
+      }),
     }),
 
-  getContactMessages: () => request("/contact-messages"),
+  getContactMessages: () =>
+    request("/contact-messages"),
 
   markMessageAsRead: (id: string) =>
-    request(`/contact-messages/${id}/read`, { method: "PATCH" }),
+    request(
+      `/contact-messages/${id}/read`,
+      {
+        method: "PATCH",
+      }
+    ),
 
   deleteContactMessage: (id: string) =>
-    request(`/contact-messages/${id}`, { method: "DELETE" }),
+    request(
+      `/contact-messages/${id}`,
+      {
+        method: "DELETE",
+      }
+    ),
 
-  // Events
-  getEvents: () => request("/events"),
+  /* ===================================================
+     EVENTS
+  =================================================== */
 
-  createEvent: (payload: FormData | any) => {
-    const isFormData = payload instanceof FormData;
+  getEvents: () =>
+    request("/events"),
+
+  createEvent: (
+    payload: FormData | any
+  ) => {
+    const isFormData =
+      payload instanceof FormData;
+
     return request("/events", {
       method: "POST",
-      body: isFormData ? payload : JSON.stringify(payload),
+      body: isFormData
+        ? payload
+        : JSON.stringify(payload),
     });
   },
 
-  updateEvent: (id: string, payload: FormData | any) => {
-    const isFormData = payload instanceof FormData;
+  updateEvent: (
+    id: string,
+    payload: FormData | any
+  ) => {
+    const isFormData =
+      payload instanceof FormData;
+
     return request(`/events/${id}`, {
       method: "PUT",
-      body: isFormData ? payload : JSON.stringify(payload),
+      body: isFormData
+        ? payload
+        : JSON.stringify(payload),
     });
   },
 
   deleteEvent: (id: string) =>
-    request(`/events/${id}`, { method: "DELETE" }),
+    request(`/events/${id}`, {
+      method: "DELETE",
+    }),
 
-  // Gallery
-  getGallery: () => request("/gallery"),
+  /* ===================================================
+     GALLERY
+  =================================================== */
 
-  createGalleryItem: (payload: FormData | any) => {
-    const isFormData = payload instanceof FormData;
+  getGallery: () =>
+    request("/gallery"),
+
+  createGalleryItem: (
+    payload: FormData | any
+  ) => {
+    const isFormData =
+      payload instanceof FormData;
+
     return request("/gallery", {
       method: "POST",
-      body: isFormData ? payload : JSON.stringify(payload),
+      body: isFormData
+        ? payload
+        : JSON.stringify(payload),
     });
   },
 
   deleteGalleryItem: (id: string) =>
-    request(`/gallery/${id}`, { method: "DELETE" }),
+    request(`/gallery/${id}`, {
+      method: "DELETE",
+    }),
 
-  // Videos
-  getVideos: () => request("/videos"),
+  /* ===================================================
+     VIDEOS
+  =================================================== */
+
+  getVideos: () =>
+    request("/videos"),
 
   createVideo: (payload: any) =>
     request("/videos", {
@@ -122,19 +302,33 @@ export const api = {
     }),
 
   deleteVideo: (id: string) =>
-    request(`/videos/${id}`, { method: "DELETE" }),
+    request(`/videos/${id}`, {
+      method: "DELETE",
+    }),
 
-  // Annual Reports
-  getReports: () => request("/annual-reports"),
+  /* ===================================================
+     ANNUAL REPORTS
+  =================================================== */
 
-  createReport: (payload: FormData | any) => {
-    const isFormData = payload instanceof FormData;
+  getReports: () =>
+    request("/annual-reports"),
+
+  createReport: (
+    payload: FormData | any
+  ) => {
+    const isFormData =
+      payload instanceof FormData;
+
     return request("/annual-reports", {
       method: "POST",
-      body: isFormData ? payload : JSON.stringify(payload),
+      body: isFormData
+        ? payload
+        : JSON.stringify(payload),
     });
   },
 
   deleteReport: (id: string) =>
-    request(`/annual-reports/${id}`, { method: "DELETE" }),
+    request(`/annual-reports/${id}`, {
+      method: "DELETE",
+    }),
 };

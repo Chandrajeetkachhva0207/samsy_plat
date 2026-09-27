@@ -19,6 +19,7 @@ import { Route as FounderRouteImport } from './routes/founder'
 import { Route as FuturePlansRouteImport } from './routes/future-plans'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as GurukulRouteImport } from './routes/gurukul'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as StudentsRouteImport } from './routes/students'
@@ -30,6 +31,7 @@ import { Route as AdminGalleryRouteImport } from './routes/admin/gallery'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminMessagesRouteImport } from './routes/admin/messages'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminVideosRouteImport } from './routes/admin/videos'
 import { Route as EventsSlugRouteImport } from './routes/events.$slug'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
 
@@ -81,6 +83,11 @@ const GalleryRoute = GalleryRouteImport.update({
 const GurukulRoute = GurukulRouteImport.update({
   id: '/gurukul',
   path: '/gurukul',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -138,6 +145,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
   path: '/admin/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVideosRoute = AdminVideosRouteImport.update({
+  id: '/admin/videos',
+  path: '/admin/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsSlugRoute = EventsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -160,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/future-plans': typeof FuturePlansRoute
   '/gallery': typeof GalleryRoute
   '/gurukul': typeof GurukulRoute
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
   '/students': typeof StudentsRoute
@@ -170,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/videos': typeof AdminVideosRoute
   '/events/$slug': typeof EventsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
@@ -185,6 +199,7 @@ export interface FileRoutesByTo {
   '/future-plans': typeof FuturePlansRoute
   '/gallery': typeof GalleryRoute
   '/gurukul': typeof GurukulRoute
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
   '/students': typeof StudentsRoute
@@ -195,6 +210,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/videos': typeof AdminVideosRoute
   '/events/$slug': typeof EventsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
@@ -211,6 +227,7 @@ export interface FileRoutesById {
   '/future-plans': typeof FuturePlansRoute
   '/gallery': typeof GalleryRoute
   '/gurukul': typeof GurukulRoute
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
   '/students': typeof StudentsRoute
@@ -221,6 +238,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/videos': typeof AdminVideosRoute
   '/events/$slug': typeof EventsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
@@ -238,6 +256,7 @@ export interface FileRouteTypes {
     | '/future-plans'
     | '/gallery'
     | '/gurukul'
+    | '/login'
     | '/privacy'
     | '/reports'
     | '/students'
@@ -248,6 +267,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/messages'
     | '/admin/reports'
+    | '/admin/videos'
     | '/events/$slug'
     | '/admin/'
     | '/api/public/sitemap.xml'
@@ -263,6 +283,7 @@ export interface FileRouteTypes {
     | '/future-plans'
     | '/gallery'
     | '/gurukul'
+    | '/login'
     | '/privacy'
     | '/reports'
     | '/students'
@@ -273,6 +294,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/messages'
     | '/admin/reports'
+    | '/admin/videos'
     | '/events/$slug'
     | '/admin'
     | '/api/public/sitemap.xml'
@@ -288,6 +310,7 @@ export interface FileRouteTypes {
     | '/future-plans'
     | '/gallery'
     | '/gurukul'
+    | '/login'
     | '/privacy'
     | '/reports'
     | '/students'
@@ -298,6 +321,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/messages'
     | '/admin/reports'
+    | '/admin/videos'
     | '/events/$slug'
     | '/admin/'
     | '/api/public/sitemap.xml'
@@ -314,6 +338,7 @@ export interface RootRouteChildren {
   FuturePlansRoute: typeof FuturePlansRoute
   GalleryRoute: typeof GalleryRoute
   GurukulRoute: typeof GurukulRoute
+  LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   ReportsRoute: typeof ReportsRoute
   StudentsRoute: typeof StudentsRoute
@@ -324,6 +349,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminReportsRoute: typeof AdminReportsRoute
+  AdminVideosRoute: typeof AdminVideosRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
 }
@@ -398,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: '/gurukul'
       fullPath: '/gurukul'
       preLoaderRoute: typeof GurukulRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -477,6 +510,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/videos': {
+      id: '/admin/videos'
+      path: '/admin/videos'
+      fullPath: '/admin/videos'
+      preLoaderRoute: typeof AdminVideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events/$slug': {
       id: '/events/$slug'
       path: '/$slug'
@@ -516,6 +556,7 @@ const rootRouteChildren: RootRouteChildren = {
   FuturePlansRoute: FuturePlansRoute,
   GalleryRoute: GalleryRoute,
   GurukulRoute: GurukulRoute,
+  LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   ReportsRoute: ReportsRoute,
   StudentsRoute: StudentsRoute,
@@ -526,6 +567,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminReportsRoute: AdminReportsRoute,
+  AdminVideosRoute: AdminVideosRoute,
   AdminIndexRoute: AdminIndexRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
 }
