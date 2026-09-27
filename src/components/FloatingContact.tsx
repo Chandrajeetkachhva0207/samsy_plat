@@ -30,7 +30,7 @@ export function FloatingContact() {
 
       {/* Call */}
       <a
-        href="tel:+910000000000"
+        href="tel:+917385501205"
         aria-label={t({
           mr: "दूरध्वनी करा",
           en: "Call",
