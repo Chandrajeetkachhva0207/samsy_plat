@@ -222,9 +222,70 @@ const getDonations = async (req, res) => {
     }
 };
 
+// POST /api/payment/record-receipt
+// Saves a manual/QR/Bank donation receipt permanently in database
+const recordReceipt = async (req, res) => {
+    try {
+        const {
+            donorName,
+            amount,
+            profession,
+            paymentMode,
+            paymentId,
+            receiptNumber,
+            phone,
+            email,
+            notes,
+        } = req.body;
+
+        if (!amount || Number(amount) < 1) {
+            return res.status(400).json({
+                success: false,
+                message: "A valid donation amount (minimum ₹1) is required",
+            });
+        }
+
+        const permanentTxnId = paymentId && paymentId.trim()
+            ? paymentId.trim()
+            : `TXN-UPI-${Date.now().toString().slice(-8)}`;
+
+        const permanentReceiptNo = receiptNumber && receiptNumber.trim()
+            ? receiptNumber.trim()
+            : `MNG-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
+
+        const donation = await Donation.create({
+            donorName: (donorName && donorName.trim()) || "भाविक देणगीदार",
+            amount: Math.round(Number(amount)),
+            profession: profession || "",
+            donationType: "General Donation",
+            razorpayOrderId: `ORDER-${Date.now()}`,
+            razorpayPaymentId: permanentTxnId,
+            status: "captured",
+            receiptNumber: permanentReceiptNo,
+            notes: notes || paymentMode || "PhonePe / UPI QR",
+            phone: phone || "",
+            email: email || "",
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Donation receipt recorded permanently",
+            data: donation,
+        });
+    } catch (error) {
+        console.error("Record receipt error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Failed to record donation receipt",
+        });
+    }
+};
+
 module.exports = {
     getRazorpayKey,
     createOrder,
     verifyPayment,
     getDonations,
+    recordReceipt,
 };
+

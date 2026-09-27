@@ -388,6 +388,27 @@ export const api = {
   getDonationsList: () =>
     request("/payment/donations"),
 
+  recordDonationReceipt: (payload: {
+    donorName: string;
+    amount: number;
+    profession?: string;
+    paymentMode?: string;
+    paymentId?: string;
+    receiptNumber?: string;
+    phone?: string;
+    email?: string;
+    notes?: string;
+  }) =>
+    request<{
+      success: boolean;
+      message: string;
+      data: any;
+    }>("/payment/record-receipt", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+
   /* ===================================================
      SUPPORT DETAILS
   =================================================== */
