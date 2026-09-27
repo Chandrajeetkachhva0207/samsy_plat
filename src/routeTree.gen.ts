@@ -26,6 +26,7 @@ import { Route as StudentsRouteImport } from './routes/students'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminDonationsRouteImport } from './routes/admin/donations'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminGalleryRouteImport } from './routes/admin/gallery'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
@@ -120,6 +121,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminDonationsRoute = AdminDonationsRouteImport.update({
+  id: '/admin/donations',
+  path: '/admin/donations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminEventsRoute = AdminEventsRouteImport.update({
   id: '/admin/events',
   path: '/admin/events',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
+  '/admin/donations': typeof AdminDonationsRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/gallery': typeof AdminGalleryRoute
   '/admin/login': typeof AdminLoginRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
+  '/admin/donations': typeof AdminDonationsRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/gallery': typeof AdminGalleryRoute
   '/admin/login': typeof AdminLoginRoute
@@ -233,6 +241,7 @@ export interface FileRoutesById {
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
+  '/admin/donations': typeof AdminDonationsRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/gallery': typeof AdminGalleryRoute
   '/admin/login': typeof AdminLoginRoute
@@ -262,6 +271,7 @@ export interface FileRouteTypes {
     | '/students'
     | '/support'
     | '/videos'
+    | '/admin/donations'
     | '/admin/events'
     | '/admin/gallery'
     | '/admin/login'
@@ -289,6 +299,7 @@ export interface FileRouteTypes {
     | '/students'
     | '/support'
     | '/videos'
+    | '/admin/donations'
     | '/admin/events'
     | '/admin/gallery'
     | '/admin/login'
@@ -316,6 +327,7 @@ export interface FileRouteTypes {
     | '/students'
     | '/support'
     | '/videos'
+    | '/admin/donations'
     | '/admin/events'
     | '/admin/gallery'
     | '/admin/login'
@@ -344,6 +356,7 @@ export interface RootRouteChildren {
   StudentsRoute: typeof StudentsRoute
   SupportRoute: typeof SupportRoute
   VideosRoute: typeof VideosRoute
+  AdminDonationsRoute: typeof AdminDonationsRoute
   AdminEventsRoute: typeof AdminEventsRoute
   AdminGalleryRoute: typeof AdminGalleryRoute
   AdminLoginRoute: typeof AdminLoginRoute
@@ -475,6 +488,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/donations': {
+      id: '/admin/donations'
+      path: '/admin/donations'
+      fullPath: '/admin/donations'
+      preLoaderRoute: typeof AdminDonationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/events': {
       id: '/admin/events'
       path: '/admin/events'
@@ -562,6 +582,7 @@ const rootRouteChildren: RootRouteChildren = {
   StudentsRoute: StudentsRoute,
   SupportRoute: SupportRoute,
   VideosRoute: VideosRoute,
+  AdminDonationsRoute: AdminDonationsRoute,
   AdminEventsRoute: AdminEventsRoute,
   AdminGalleryRoute: AdminGalleryRoute,
   AdminLoginRoute: AdminLoginRoute,

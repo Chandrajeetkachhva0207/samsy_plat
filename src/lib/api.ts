@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
+  import.meta.env["VITE_API_URL"] ||
   "http://localhost:5000/api";
 
 /**
@@ -330,5 +330,74 @@ export const api = {
   deleteReport: (id: string) =>
     request(`/annual-reports/${id}`, {
       method: "DELETE",
+    }),
+
+  /* ===================================================
+     PAYMENT & DONATIONS (RAZORPAY)
+  =================================================== */
+
+  getPaymentKey: () =>
+    request<{
+      success: boolean;
+      key: string;
+      isTestMode: boolean;
+      paymentPageUrl?: string;
+    }>("/payment/key"),
+
+  createDonationOrder: (payload: {
+    amount: number;
+    donorName: string;
+    email: string;
+    phone: string;
+    panNumber?: string;
+    profession?: string;
+    donationType?: string;
+    address?: string;
+    notes?: string;
+  }) =>
+    request<{
+      success: boolean;
+      orderId: string;
+      amount: number;
+      currency: string;
+      key: string;
+      donationId: string;
+    }>("/payment/create-order", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  verifyDonationPayment: (payload: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) =>
+    request<{
+      success: boolean;
+      message: string;
+      receiptNumber: string;
+      amount: number;
+      donorName: string;
+      paymentId: string;
+      date: string;
+    }>("/payment/verify-payment", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  getDonationsList: () =>
+    request("/payment/donations"),
+
+  /* ===================================================
+     SUPPORT DETAILS
+  =================================================== */
+
+  getSupportDetails: () =>
+    request("/support"),
+
+  updateSupportDetails: (payload: any) =>
+    request("/support", {
+      method: "PUT",
+      body: JSON.stringify(payload),
     }),
 };

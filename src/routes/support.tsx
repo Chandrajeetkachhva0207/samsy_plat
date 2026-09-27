@@ -1,7 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Card, EditableNote, PageHeader, Section, SectionTitle } from "@/components/ui";
+import { useState } from "react";
+import { Card, PageHeader, Section, SectionTitle } from "@/components/ui";
 import { bankDetails, org, supportTypes } from "@/content/site";
 import { useLang } from "@/lib/lang";
+import { toast } from "sonner";
+import {
+  Copy,
+  Check,
+  ShieldCheck,
+  QrCode,
+  Building,
+  Receipt,
+  Download,
+  Printer,
+  Share2,
+  X,
+} from "lucide-react";
 
 export const Route = createFileRoute("/support")({
   head: () => ({
@@ -10,7 +24,7 @@ export const Route = createFileRoute("/support")({
       {
         name: "description",
         content:
-          "गुरुकुलाच्या शैक्षणिक व आध्यात्मिक कार्यास सहकार्य करा — आर्थिक मदत, अन्नदान, शैक्षणिक साहित्य व सेवा.",
+          "गुरुकुलाच्या शैक्षणिक व आध्यात्मिक कार्यास सहकार्य करा — अधिकृत बँक तपशील, PhonePe QR स्कॅनर, अन्नदान व अधिकृत देणगी पावती (Receipt).",
       },
       { property: "og:title", content: "सहकार्य करा | मा नर्मदा आध्यात्मिक गुरुकुल" },
       { property: "og:description", content: "संस्थेच्या अधिकृत खात्यावरच देणगी स्वीकारली जाते." },
@@ -21,75 +35,317 @@ export const Route = createFileRoute("/support")({
   component: Support,
 });
 
+const PROFESSIONS = [
+  { mr: "नोकरी (Service / Employment)", en: "Service / Employment" },
+  { mr: "व्यवसाय / उद्योग (Business / Self-Employed)", en: "Business / Self-Employed" },
+  { mr: "शेतकरी / कृषी (Farmer / Agriculture)", en: "Farmer / Agriculture" },
+  { mr: "शिक्षक / प्राध्यापक (Teacher / Academic)", en: "Teacher / Academic" },
+  { mr: "व्यावसायिक (डॉक्टर / सीए / वकील / इंजिनिअर)", en: "Professional (Doctor / CA / Lawyer / Engineer)" },
+  { mr: "गृहिणी (Homemaker)", en: "Homemaker" },
+  { mr: "विद्यार्थी (Student)", en: "Student" },
+  { mr: "निवृत्त (Retired)", en: "Retired" },
+  { mr: "इतर (Other)", en: "Other" },
+];
+
+interface ReceiptData {
+  receiptNumber: string;
+  amount: number;
+  donorName: string;
+  profession?: string;
+  paymentId: string;
+  paymentMode: string;
+  date: string;
+}
+
+function getAmountInWords(amount: number): { mr: string; en: string } {
+  const map: Record<number, { mr: string; en: string }> = {
+    101: { mr: "एकशे एक रुपये फक्त", en: "One Hundred and One Rupees Only" },
+    251: { mr: "दोनशे एकावन्न रुपये फक्त", en: "Two Hundred and Fifty One Rupees Only" },
+    501: { mr: "पाचशे एक रुपये फक्त", en: "Five Hundred and One Rupees Only" },
+    1100: { mr: "एक हजार एकशे रुपये फक्त", en: "One Thousand One Hundred Rupees Only" },
+    2100: { mr: "दोन हजार एकशे रुपये फक्त", en: "Two Thousand One Hundred Rupees Only" },
+    5100: { mr: "पाच हजार एकशे रुपये फक्त", en: "Five Thousand One Hundred Rupees Only" },
+  };
+  return map[amount] || {
+    mr: `${amount.toLocaleString("en-IN")} रुपये फक्त`,
+    en: `${amount.toLocaleString("en-IN")} Rupees Only`,
+  };
+}
+
 function Support() {
   const { t } = useLang();
+
+  // Copied state tracker for bank details
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // Success Receipt State (resupat)
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+  const [showReceiptModal, setShowReceiptModal] = useState<boolean>(false);
+  const [isEditingReceiptName, setIsEditingReceiptName] = useState<boolean>(false);
+
+  // PhonePe / Manual Receipt Request Modal State
+  const [showQrReceiptModal, setShowQrReceiptModal] = useState<boolean>(false);
+  const [receiptPaymentMode, setReceiptPaymentMode] = useState<string>("PhonePe / UPI QR");
+  const [qrDonorName, setQrDonorName] = useState<string>("");
+  const [qrAmount, setQrAmount] = useState<string>("501");
+  const [qrTransactionId, setQrTransactionId] = useState<string>("");
+  const [qrProfession, setQrProfession] = useState<string>("नोकरी (Service / Employment)");
+
+  // Handle Copy to clipboard
+  const handleCopy = (text: string, key: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      toast.success(
+        t({
+          mr: `${text} कॉपी केले!`,
+          en: `Copied ${text} to clipboard!`,
+        })
+      );
+      setTimeout(() => setCopiedKey(null), 2500);
+    }
+  };
+
+  // Generate Receipt for QR / PhonePe / Bank payment
+  const handleGenerateReceipt = (e: React.FormEvent) => {
+    e.preventDefault();
+    const numAmt = Number(qrAmount) || 501;
+    const name = qrDonorName.trim() || "भाविक देणगीदार";
+    const txn = qrTransactionId.trim() || `TXN-${Date.now().toString().slice(-8)}`;
+    const rNumber = `MNG-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
+
+    setReceiptData({
+      receiptNumber: rNumber,
+      amount: numAmt,
+      donorName: name,
+      profession: qrProfession,
+      paymentId: txn,
+      paymentMode: receiptPaymentMode,
+      date: new Date().toLocaleDateString("mr-IN", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    });
+    setShowQrReceiptModal(false);
+    setShowReceiptModal(true);
+    toast.success(
+      t({
+        mr: "अधिकृत देणगी पावती तयार झाली आहे!",
+        en: "Official Donation Receipt generated successfully!",
+      })
+    );
+  };
+
+  // Share receipt on WhatsApp
+  const handleShareReceiptWhatsApp = () => {
+    if (!receiptData) return;
+    const text = `*मा नर्मदा आध्यात्मिक गुरुकुल, आळंदी देवाची*\n*अधिकृत देणगी पावती (Donation Receipt)*\nपावती क्र.: ${receiptData.receiptNumber}\nदेणगीदार: ${receiptData.donorName}\nरक्कम: ₹${receiptData.amount.toLocaleString("en-IN")}\nपद्धती: ${receiptData.paymentMode}\nव्यवहार आयडी: ${receiptData.paymentId}\nदिनांक: ${receiptData.date}\n\nज्ञानोबा-तुकाराम! 🙏`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  };
 
   return (
     <>
       <PageHeader
         title={{ mr: "सहकार्य करा", en: "Support Us" }}
         sub={{
-          mr: "आपले सहकार्य विद्यार्थ्यांच्या शिक्षण व संस्कारासाठी वापरले जाते.",
-          en: "Your support goes towards the education and values of the students.",
+          mr: "आपले सहकार्य विद्यार्थ्यांच्या शिक्षण, संस्कार व वारकरी परंपरा संवर्धनासाठी समर्पित आहे.",
+          en: "Your support is dedicated to the education, values, and preservation of sacred traditions.",
         }}
       />
 
+      {/* OFFICIAL BANK DETAILS & PHONEPE QR SCANNER */}
+      <Section tone="sand">
+        <SectionTitle
+          title={{ mr: "अधिकृत बँक तपशील व PhonePe QR", en: "Official Bank Details & PhonePe QR" }}
+          sub={{
+            mr: "देणगी केवळ संस्थेच्या अधिकृत खात्यावरच स्वीकारली जाते. वैयक्तिक खात्यावर पैसे पाठवू नयेत.",
+            en: "Donations are accepted only in the institution's official account. Never send funds to any individual's personal account.",
+          }}
+        />
+
+        <div className="mx-auto mt-8 grid max-w-5xl gap-6 lg:grid-cols-12">
+          {/* Bank Accounts Card */}
+          <div className="lg:col-span-7">
+            <Card className="h-full flex flex-col justify-between border-2 border-primary/20 bg-card p-6 shadow-sm">
+              <div>
+                <div className="flex items-center gap-2 border-b border-border pb-3">
+                  <Building className="h-5 w-5 text-primary" />
+                  <h3 className="font-display text-lg font-bold text-maroon">
+                    {t({ mr: "संस्थेचे अधिकृत बँक खाते", en: "Trust Official Bank Account" })}
+                  </h3>
+                </div>
+
+                <dl className="mt-4 divide-y divide-border text-sm">
+                  {bankDetails.map((b) => (
+                    <div
+                      key={b.key}
+                      className="flex flex-wrap items-center justify-between gap-2 py-3"
+                    >
+                      <dt className="font-medium text-muted-foreground">{t(b.label)}</dt>
+                      <dd className="flex items-center gap-2">
+                        <span className="font-semibold text-foreground">{b.value}</span>
+                        {b.copyable && (
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(b.value, b.key)}
+                            title={t({ mr: "कॉपी करा", en: "Copy to clipboard" })}
+                            className="inline-flex items-center gap-1 rounded-md border border-border bg-sand px-2 py-1 text-xs font-semibold text-maroon transition-colors hover:bg-primary hover:text-primary-foreground"
+                          >
+                            {copiedKey === b.key ? (
+                              <>
+                                <Check className="h-3.5 w-3.5 text-green-600" />
+                                <span>{t({ mr: "कॉपी झाले", en: "Copied" })}</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-3.5 w-3.5" />
+                                <span>{t({ mr: "कॉपी", en: "Copy" })}</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+
+                <div className="mt-5 rounded-xl border border-primary/30 bg-sand/80 p-4 text-xs leading-relaxed text-muted-foreground">
+                  <p className="font-semibold text-maroon">
+                    {t({ mr: "महत्त्वाची सूचना:", en: "Important Notice:" })}
+                  </p>
+                  <p className="mt-1">
+                    {t({
+                      mr: "बँक ट्रान्सफर (NEFT / IMPS / RTGS) द्वारे रक्कम पाठवल्यानंतर खालील बटनावर क्लिक करून आपण थेट आपली अधिकृत देणगी पावती तयार करू शकता.",
+                      en: "After making a direct bank transfer, click the button below to generate your official donation receipt directly.",
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReceiptPaymentMode("बँक ट्रान्सफर (NEFT / IMPS)");
+                    setShowQrReceiptModal(true);
+                  }}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 sm:text-sm"
+                >
+                  <Receipt className="h-4 w-4" />
+                  <span>{t({ mr: "बँक ट्रान्सफर केले? देणगी पावती मिळवा", en: "Transferred to Bank? Get Receipt" })}</span>
+                </button>
+              </div>
+            </Card>
+          </div>
+
+          {/* PhonePe / UPI QR Code Card */}
+          <div className="lg:col-span-5">
+            <Card className="flex h-full flex-col items-center justify-between border-2 border-primary/20 bg-card p-6 text-center shadow-sm">
+              <div className="w-full">
+                <div className="flex items-center justify-center gap-2 border-b border-border pb-3">
+                  <QrCode className="h-5 w-5 text-primary" />
+                  <h3 className="font-display text-lg font-bold text-maroon">
+                    {t({ mr: "PhonePe / UPI QR स्कॅनर", en: "PhonePe / UPI QR Scanner" })}
+                  </h3>
+                </div>
+
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {t({
+                    mr: "PhonePe, Google Pay, Paytm, BHIM द्वारे QR स्कॅन करा व पेमेंट करा",
+                    en: "Scan & pay using PhonePe, GPay, Paytm or BHIM",
+                  })}
+                </p>
+
+                {/* Official PhonePe Scanner Image */}
+                <div className="mt-4 flex justify-center">
+                  <div className="group relative overflow-hidden rounded-2xl border-4 border-amber-400/80 bg-black p-2 shadow-lg max-w-[260px]">
+                    <img
+                      src="/images/phonepe-qr.jpg"
+                      alt="Mr SANTOSH GULABRAO PAWAR - PhonePe QR Code"
+                      width={240}
+                      height={420}
+                      className="h-auto w-full rounded-xl object-contain shadow-xs transition-transform group-hover:scale-102"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <span className="block text-xs font-bold text-maroon">
+                    {t({ mr: "नाव: श्री संतोष गुलाबराव पवार", en: "Account: Mr SANTOSH GULABRAO PAWAR" })}
+                  </span>
+                  <span className="block text-[11px] text-muted-foreground">
+                    {t({ mr: "(संस्थापक अध्यक्ष — मा नर्मदा आध्यात्मिक गुरुकुल)", en: "(Founder President — Maa Narmada Gurukul)" })}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-5 w-full space-y-2.5">
+                {/* Instant QR Receipt Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReceiptPaymentMode("PhonePe / UPI QR");
+                    setShowQrReceiptModal(true);
+                  }}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 sm:text-sm"
+                >
+                  <Receipt className="h-4 w-4" />
+                  <span>{t({ mr: "QR पेमेंट केले? पावती मिळवा", en: "Paid via QR? Get Official Receipt" })}</span>
+                </button>
+
+                <a
+                  href="/images/phonepe-qr.jpg"
+                  download="PhonePe-QR-Maa-Narmada.jpg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary/50 bg-sand px-4 py-2 text-xs font-bold text-maroon transition-colors hover:bg-sand/80 sm:text-xs"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>{t({ mr: "QR स्कॅनर डाउनलोड करा", en: "Download QR Scanner" })}</span>
+                </a>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </Section>
+
+      {/* WAYS TO SUPPORT */}
       <Section>
         <SectionTitle
-          title={{ mr: "सहकार्याचे प्रकार", en: "Ways to support" }}
+          title={{ mr: "सहकार्याचे इतर प्रकार", en: "Other Ways to Support" }}
           sub={{
-            mr: "आपल्या सोयीनुसार कोणत्याही प्रकारे सहकार्य करता येईल.",
-            en: "You may support in whichever way suits you.",
+            mr: "आर्थिक मदतीव्यतिरिक्त खालील प्रकारेही गुरुकुल सेवेत सहभागी होता येते.",
+            en: "Apart from monetary donations, you can contribute through the following services.",
           }}
         />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {supportTypes.map((s) => (
-            <Card key={s.title.en}>
-              <div className="text-2xl" aria-hidden="true">
+            <Card key={s.title.en} className="transition-all hover:border-primary/40 hover:shadow-md">
+              <div className="text-3xl" aria-hidden="true">
                 {s.icon}
               </div>
-              <h3 className="mt-2 text-base">{t(s.title)}</h3>
+              <h3 className="mt-3 text-base font-bold text-maroon">{t(s.title)}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{t(s.text)}</p>
             </Card>
           ))}
         </div>
       </Section>
 
+      {/* RECEIPTS & 80G SECTION */}
       <Section tone="sand">
-        <SectionTitle
-          title={{ mr: "अधिकृत बँक तपशील", en: "Official bank details" }}
-          sub={{
-            mr: "देणगी केवळ संस्थेच्या अधिकृत खात्यावरच स्वीकारली जाते.",
-            en: "Donations are accepted only into the institution's official account.",
-          }}
-        />
-        <div className="mx-auto mt-8 max-w-2xl">
-          <Card>
-            <dl className="divide-y divide-border text-sm">
-              {bankDetails.map((b) => (
-                <div key={b.label.en} className="flex flex-wrap justify-between gap-2 py-3">
-                  <dt className="text-muted-foreground">{t(b.label)}</dt>
-                  <dd className="font-medium">{b.value}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="mt-4 rounded-lg border border-dashed border-primary/40 bg-sand px-4 py-3 text-sm text-muted-foreground">
-              {t({
-                mr: "हे तपशील संस्थेकडून अधिकृत माहिती मिळाल्यावर भरले जातील. कोणत्याही व्यक्तीच्या वैयक्तिक खात्यावर रक्कम पाठवू नये.",
-                en: "These details will be filled in once official information is received from the institution. Never send money to any individual's personal account.",
-              })}
-            </p>
-          </Card>
-        </div>
-      </Section>
-
-      <Section>
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-xl">{t({ mr: "पावती व करसवलत", en: "Receipts & tax exemption" })}</h2>
-          <p className="mt-3 text-sm text-muted-foreground">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <ShieldCheck className="h-6 w-6" />
+          </div>
+          <h2 className="mt-3 font-display text-2xl font-bold text-maroon">
+            {t({ mr: "पावती व करसवलत (80G)", en: "Receipts & Tax Exemption (80G)" })}
+          </h2>
+          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
             {t({
-              mr: "देणगीची पावती संस्थेकडून दिली जाते. करसवलतीविषयी माहिती अधिकृत प्रमाणपत्रे उपलब्ध असल्यासच दर्शवली जाईल.",
-              en: "Donation receipts are issued by the institution. Tax exemption information will be shown only if valid official certificates are available.",
+              mr: "प्रत्येक देणगीची अधिकृत पावती संस्थेकडून दिली जाते. पॅन कार्ड क्रमांक नमूद केल्यास आयकर कायद्यानुसार करसवलतीची अधिकृत पावती प्रदान केली जाते.",
+              en: "An official trust receipt is issued for every donation. Providing your PAN card enables 80G tax exemption receipt under Income Tax regulations.",
             })}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -97,19 +353,297 @@ function Support() {
               to="/certificates"
               className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-card px-5 py-2.5 text-sm font-semibold text-maroon hover:bg-accent"
             >
-              {t({ mr: "नोंदणी व प्रमाणपत्रे", en: "Registration & certificates" })}
+              {t({ mr: "नोंदणी व प्रमाणपत्रे (12A / 80G)", en: "Registration & Certificates" })}
             </Link>
             <Link
               to="/contact"
               className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
             >
-              {t({ mr: "संपर्क करा", en: "Contact us" })}
+              {t({ mr: "संपर्क करा", en: "Contact Us" })}
             </Link>
           </div>
-          <p className="mt-6 text-xs text-muted-foreground">{t(org.name)}</p>
-          <EditableNote />
+          <p className="mt-6 text-xs text-muted-foreground font-medium">{t(org.name)}</p>
         </div>
       </Section>
+
+      {/* RECEIPT INPUT MODAL */}
+      {showQrReceiptModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl border-2 border-primary/50 bg-background p-6 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2">
+                <Receipt className="h-5 w-5 text-primary" />
+                <h3 className="font-display text-lg font-bold text-maroon">
+                  {t({ mr: `${receiptPaymentMode} पावती मिळवा`, en: `Get ${receiptPaymentMode} Receipt` })}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowQrReceiptModal(false)}
+                className="rounded-full p-1 text-muted-foreground hover:bg-sand"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleGenerateReceipt} className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-foreground">
+                  {t({ mr: "देणगीदाराचे नाव (नाव पावतीवर येईल)", en: "Donor Name (for Receipt)" })}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={qrDonorName}
+                  onChange={(e) => setQrDonorName(e.target.value)}
+                  placeholder={t({ mr: "उदा. रमेश ज्ञानोबा पाटील", en: "e.g. Ramesh Dnyanoba Patil" })}
+                  className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground">
+                  {t({ mr: "भरलेली देणगी रक्कम (₹)", en: "Amount Paid (₹)" })}
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  value={qrAmount}
+                  onChange={(e) => setQrAmount(e.target.value)}
+                  placeholder="501"
+                  className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground">
+                  {t({ mr: "व्यवसाय (Profession)", en: "Profession" })}
+                </label>
+                <select
+                  value={qrProfession}
+                  onChange={(e) => setQrProfession(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                >
+                  {PROFESSIONS.map((p, idx) => (
+                    <option key={idx} value={p.mr}>
+                      {t(p)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground">
+                  {t({ mr: "ट्रान्झॅक्शन आयडी किंवा UTR (ऐच्छिक)", en: "Transaction ID / UTR (Optional)" })}
+                </label>
+                <input
+                  type="text"
+                  value={qrTransactionId}
+                  onChange={(e) => setQrTransactionId(e.target.value)}
+                  placeholder="उदा. T2409... किंवा 428192..."
+                  className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 rounded-full bg-primary py-2.5 text-xs font-bold text-primary-foreground hover:bg-primary/90"
+                >
+                  {t({ mr: "अधिकृत पावती तयार करा", en: "Generate Official Receipt" })}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowQrReceiptModal(false)}
+                  className="rounded-full border border-border px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:bg-sand"
+                >
+                  {t({ mr: "रद्द करा", en: "Cancel" })}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* OFFICIAL DONATION RECEIPT (resupat) MODAL */}
+      {showReceiptModal && receiptData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-lg rounded-2xl bg-white text-slate-900 shadow-2xl animate-in fade-in zoom-in-95 my-4">
+            
+            {/* PRINTABLE RECEIPT CARD CONTENT */}
+            <div id="printable-receipt" className="p-6 sm:p-8 border-4 border-amber-800/60 rounded-xl m-2 bg-gradient-to-b from-amber-50/40 via-white to-amber-50/20">
+              
+              {/* Sacred Invocation Header */}
+              <div className="text-center border-b-2 border-amber-900/30 pb-4">
+                <div className="text-[11px] font-bold text-amber-900 tracking-wider">
+                  ।। श्री गणेशाय नमः ।।  ।। श्री विठ्ठल-रखुमाई प्रसन्न ।।  ।। ज्ञानोबा-तुकाराम ।।
+                </div>
+
+                <div className="mt-2 flex items-center justify-center gap-3">
+                  <img
+                    src="/images/logo.jpg"
+                    alt="Logo"
+                    className="h-14 w-14 rounded-full border border-amber-700 object-cover"
+                  />
+                  <div>
+                    <h2 className="font-display text-xl font-bold text-amber-950 sm:text-2xl leading-tight">
+                      मा नर्मदा आध्यात्मिक शिक्षण संस्था
+                    </h2>
+                    <p className="text-xs font-semibold text-amber-900">
+                      मा नर्मदा आध्यात्मिक गुरुकुल, आळंदी देवाची
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-[11px] text-slate-600">
+                  <span className="font-bold text-amber-900">नोंदणी क्र. – 15 984 (बुलढाणा)</span>
+                  <span>•</span>
+                  <span>ता. खेड, जि. पुणे, महाराष्ट्र</span>
+                </div>
+
+                <div className="mx-auto mt-3 inline-block rounded-full bg-amber-800 px-4 py-1 text-xs font-bold text-white shadow-xs">
+                  अधिकृत देणगी पावती (DONATION RECEIPT)
+                </div>
+              </div>
+
+              {/* Receipt Body Details */}
+              <div className="mt-5 space-y-2.5 text-sm">
+                <div className="flex justify-between border-b border-dashed border-amber-300 py-1.5">
+                  <span className="font-medium text-slate-600">पावती क्रमांक (Receipt No.):</span>
+                  <span className="font-mono font-bold text-amber-950">{receiptData.receiptNumber}</span>
+                </div>
+
+                <div className="flex justify-between border-b border-dashed border-amber-300 py-1.5">
+                  <span className="font-medium text-slate-600">दिनांक (Date):</span>
+                  <span className="font-semibold text-slate-800">{receiptData.date}</span>
+                </div>
+
+                <div className="flex items-center justify-between border-b border-dashed border-amber-300 py-1.5">
+                  <span className="font-medium text-slate-600">देणगीदाराचे नाव (Donor):</span>
+                  {isEditingReceiptName ? (
+                    <div className="flex items-center gap-1.5 no-print">
+                      <input
+                        type="text"
+                        value={receiptData.donorName}
+                        onChange={(e) => setReceiptData({ ...receiptData, donorName: e.target.value })}
+                        className="rounded-lg border border-amber-400 bg-white px-2 py-0.5 text-xs font-bold text-amber-950 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingReceiptName(false)}
+                        className="rounded bg-amber-800 px-2 py-0.5 text-[11px] font-bold text-white hover:bg-amber-900"
+                      >
+                        सेव्ह
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-amber-950">{receiptData.donorName}</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingReceiptName(true)}
+                        className="no-print text-[11px] text-amber-800 underline hover:text-amber-950 font-medium"
+                        title="पावतीवरील नाव बदला"
+                      >
+                        (नाव बदला)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {receiptData.profession && (
+                  <div className="flex justify-between border-b border-dashed border-amber-300 py-1.5">
+                    <span className="font-medium text-slate-600">व्यवसाय (Profession):</span>
+                    <span className="font-semibold text-slate-800">{receiptData.profession}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between border-b border-dashed border-amber-300 py-1.5">
+                  <span className="font-medium text-slate-600">पेमेंट पद्धती (Mode):</span>
+                  <span className="font-semibold text-slate-800">{receiptData.paymentMode}</span>
+                </div>
+
+                <div className="flex justify-between border-b border-dashed border-amber-300 py-1.5">
+                  <span className="font-medium text-slate-600">व्यवहार आयडी (Txn / Payment ID):</span>
+                  <span className="font-mono text-xs font-semibold text-slate-700">{receiptData.paymentId}</span>
+                </div>
+
+                <div className="flex justify-between border-b border-dashed border-amber-300 py-1.5">
+                  <span className="font-medium text-slate-600">उद्देश (Purpose):</span>
+                  <span className="font-semibold text-slate-800">गुरुकुल विद्यार्थी शिक्षण, अन्नदान व संस्कार सेवा</span>
+                </div>
+
+                {/* Amount Highlight Box */}
+                <div className="mt-3 rounded-xl border-2 border-amber-700/60 bg-amber-100/60 p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-950">प्राप्त देणगी रक्कम (Amount Paid):</span>
+                    <span className="font-display text-2xl font-black text-amber-900">
+                      ₹{receiptData.amount.toLocaleString("en-IN")}/-
+                    </span>
+                  </div>
+                  <div className="mt-1 text-xs text-amber-950 font-medium italic">
+                    अक्षरी: {getAmountInWords(receiptData.amount).mr}
+                  </div>
+                </div>
+              </div>
+
+              {/* Seal & Signatures */}
+              <div className="mt-6 flex items-center justify-between border-t-2 border-amber-900/30 pt-4 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-green-700 bg-green-50 text-green-700 font-bold text-[9px] text-center uppercase tracking-tight shadow-xs">
+                    ✓ RECEIVED &amp; VERIFIED
+                  </div>
+                  <div className="text-[10px] text-slate-600">
+                    <span className="block font-bold text-slate-800">अधिकृत ई-पावती</span>
+                    <span>संगणकीय प्रणालीद्वारे जारी</span>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="block font-bold text-amber-950">ह.भ.प. संतोष महाराज पवार</span>
+                  <span className="block text-[11px] text-slate-600">संस्थापक अध्यक्ष</span>
+                  <span className="block text-[10px] text-amber-900 font-medium">मा नर्मदा आध्यात्मिक शिक्षण संस्था</span>
+                </div>
+              </div>
+
+              {/* Devotional Blessing Note */}
+              <div className="mt-4 rounded-lg bg-amber-50 p-2.5 text-center text-xs text-amber-950 font-medium border border-amber-200">
+                "आपल्या दातृत्वाबद्दल मनःपूर्वक धन्यवाद! भगवान श्री विठ्ठल व माऊली ज्ञानेश्वर महाराज आपणास उदंड आरोग्य व सुख-समृद्धी लाभो हीच प्रार्थना!"
+              </div>
+            </div>
+
+            {/* Bottom Modal Actions (Hidden in Print) */}
+            <div className="no-print border-t border-slate-200 bg-slate-50 p-4 rounded-b-2xl flex flex-wrap gap-2.5">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-amber-800 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-amber-900 transition-colors"
+              >
+                <Printer className="h-4 w-4" />
+                <span>पावती प्रिंट करा / PDF सेव्ह करा</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleShareReceiptWhatsApp}
+                className="inline-flex items-center justify-center gap-1.5 rounded-full border border-green-600 bg-green-50 px-4 py-2.5 text-xs font-bold text-green-700 hover:bg-green-100 transition-colors"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                <span>व्हॉट्सॲपवर शेअर</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowReceiptModal(false)}
+                className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                <span>बंद करा</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

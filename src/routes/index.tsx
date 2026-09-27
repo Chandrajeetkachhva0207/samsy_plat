@@ -193,6 +193,13 @@ function Home() {
               })}
             </PrimaryLink>
 
+            <OutlineLink to="/gurukul">
+              {t({
+                mr: "दैनिक दिनचर्या",
+                en: "Daily Routine",
+              })}
+            </OutlineLink>
+
             <OutlineLink to="/activities">
               {t({
                 mr: "गुरुकुलाचे उपक्रम",

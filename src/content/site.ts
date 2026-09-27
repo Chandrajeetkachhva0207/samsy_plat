@@ -229,12 +229,97 @@ export const gurukul = {
     en: "Through the Gurukul, students are introduced to spirituality, the Warkari tradition, the teachings of the saints, kirtan and pravachan.",
   } as Bi,
 
+  registrationNo: "15 984 (बुलढाणा)",
+
   routine: [
-    { time: "[वेळ]", item: { mr: "शालेय शिक्षण", en: "School Education" } },
-    { time: "[वेळ]", item: { mr: "आध्यात्मिक शिक्षण", en: "Spiritual Education" } },
-    { time: "[वेळ]", item: { mr: "संस्कार उपक्रम", en: "Values & Sanskar Activities" } },
-    { time: "[वेळ]", item: { mr: "कीर्तन व प्रवचन", en: "Kirtan & Pravachan" } },
-    { time: "[वेळ]", item: { mr: "सांस्कृतिक उपक्रम", en: "Cultural Activities" } },
+    {
+      time: "पहाटे : ५ ते ६",
+      timeEn: "5:00 AM – 6:00 AM",
+      period: { mr: "पहाटे", en: "Early Morning" },
+      icon: "🥁",
+      item: { mr: "पखवाज व गायन सराव", en: "Pakhawaj & Vocal Music Practice" },
+    },
+    {
+      time: "सकाळी : ६ ते ७.००",
+      timeEn: "6:00 AM – 7:00 AM",
+      period: { mr: "सकाळी", en: "Morning" },
+      icon: "🪔",
+      item: { mr: "स्नानसंध्या", en: "Snansandhya (Morning Bath & Daily Prayers)" },
+    },
+    {
+      time: "सकाळी : ७ ते ८",
+      timeEn: "7:00 AM – 8:00 AM",
+      period: { mr: "सकाळी", en: "Morning" },
+      icon: "🥣",
+      item: { mr: "प्रार्थना, नाश्ता", en: "Morning Prayer & Breakfast" },
+    },
+    {
+      time: "सकाळी : ८ ते १०",
+      timeEn: "8:00 AM – 10:00 AM",
+      period: { mr: "सकाळी", en: "Morning" },
+      icon: "📖",
+      item: { mr: "गुरुकुलाचा आध्यात्मिक पाठ / क्लास", en: "Gurukul Spiritual Lessons / Study Class" },
+    },
+    {
+      time: "सकाळी : १० ते १२",
+      timeEn: "10:00 AM – 12:00 PM",
+      period: { mr: "सकाळी", en: "Morning" },
+      icon: "🍲",
+      item: { mr: "भोजन व शाळेची तयारी", en: "Midday Meal (Bhojan) & School Preparation" },
+    },
+    {
+      time: "सकाळ : ७ ते १२ व १२ ते ५",
+      timeEn: "7:00 AM – 12:00 PM & 12:00 PM – 5:00 PM",
+      period: { mr: "सकाळ / दुपार", en: "Morning / Afternoon" },
+      icon: "🏫",
+      item: { mr: "शाळा (शाळेच्या वेळेनुसार)", en: "School (as per formal school schedule)" },
+    },
+    {
+      time: "सायं : ४ ते ६.००",
+      timeEn: "4:00 PM – 6:00 PM",
+      period: { mr: "सायंकाळी", en: "Evening" },
+      icon: "🎶",
+      item: { mr: "पखवाज / गायन सराव", en: "Pakhawaj / Vocal Music Practice" },
+    },
+    {
+      time: "सायं : ६ ते ७.३०",
+      timeEn: "6:00 PM – 7:30 PM",
+      period: { mr: "सायंकाळी", en: "Evening" },
+      icon: "🪘",
+      item: { mr: "हरिपाठ", en: "Haripath Chanting" },
+    },
+    {
+      time: "रात्री : ७.३० ते ८.३०",
+      timeEn: "7:30 PM – 8:30 PM",
+      period: { mr: "रात्री", en: "Night" },
+      icon: "🍽️",
+      item: { mr: "भोजन", en: "Evening Dinner / Meal" },
+    },
+    {
+      time: "रात्री : ८.३० ते १०.००",
+      timeEn: "8:30 PM – 10:00 PM",
+      period: { mr: "रात्री", en: "Night" },
+      icon: "✍️",
+      item: { mr: "शाळेचा अभ्यास", en: "School Studies & Homework" },
+    },
+    {
+      time: "रात्री : १०.०० ते ५",
+      timeEn: "10:00 PM – 5:00 AM",
+      period: { mr: "रात्री", en: "Night" },
+      icon: "🌙",
+      item: { mr: "विश्रांती", en: "Rest & Sleep" },
+    },
+  ],
+
+  specialNotes: [
+    {
+      mr: "दर एकादशी व गुरुपौर्णिमा भजन / कीर्तन होईल.",
+      en: "Special Bhajan / Kirtan programme is held on every Ekadashi and Guru Purnima.",
+    },
+    {
+      mr: "दर शनिवार व रविवार माऊली दर्शन व खेळण्यासाठी सुटी.",
+      en: "Every Saturday & Sunday is a holiday for Mauli Darshan and sports / recreational games.",
+    },
   ],
 
   method: {
@@ -383,15 +468,16 @@ export const supportTypes: { icon: string; title: Bi; text: Bi }[] = [
 ];
 
 export const bankDetails = [
-  { label: { mr: "बँकेचे नाव", en: "Bank Name" } as Bi, value: "[Bank Name]" },
-  { label: { mr: "खातेदाराचे नाव", en: "Account Name" } as Bi, value: "[Account Name]" },
-  { label: { mr: "खाते क्रमांक", en: "A/C No." } as Bi, value: "[A/C No.]" },
-  { label: { mr: "IFSC", en: "IFSC" } as Bi, value: "[IFSC]" },
-  { label: { mr: "UPI ID", en: "UPI ID" } as Bi, value: "[UPI ID]" },
+  { key: "bankName", label: { mr: "बँकेचे नाव", en: "Bank Name" } as Bi, value: "BANK OF MAHARASHTRA (बँक ऑफ महाराष्ट्र)", copyable: false },
+  { key: "accountName", label: { mr: "खातेदाराचे नाव", en: "Account Name" } as Bi, value: "Maa Narmada Adhyatmik Shikshan Sanstha", copyable: false },
+  { key: "accountNumber", label: { mr: "खाते क्रमांक", en: "A/C No." } as Bi, value: "60139560106", copyable: true },
+  { key: "ifsc", label: { mr: "IFSC कोड", en: "IFSC Code" } as Bi, value: "MAHB0000104", copyable: true },
+  { key: "branch", label: { mr: "शाखा", en: "Branch" } as Bi, value: "ALANDI (आळंदी)", copyable: false },
+  { key: "upi", label: { mr: "अधिकृत UPI ID", en: "Official UPI ID" } as Bi, value: "917385501205@ybl", copyable: true },
 ];
 
 export const certificates = [
-  { name: { mr: "संस्था नोंदणी (Trust Registration)", en: "Trust Registration" } as Bi, number: "[नोंदणी क्रमांक]", validity: "[वैधता]" },
+  { name: { mr: "संस्था नोंदणी (Trust Registration)", en: "Trust Registration" } as Bi, number: "15 984 (बुलढाणा)", validity: "अधिकृत नोंदणी (Official Registration)" },
   { name: { mr: "12A", en: "12A" } as Bi, number: "[क्रमांक]", validity: "[वैधता]" },
   { name: { mr: "80G", en: "80G" } as Bi, number: "[क्रमांक]", validity: "[वैधता]" },
   { name: { mr: "PAN", en: "PAN" } as Bi, number: "[क्रमांक]", validity: "[वैधता]" },

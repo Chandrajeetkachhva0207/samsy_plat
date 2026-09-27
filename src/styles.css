@@ -159,3 +159,29 @@
     transition: none;
   }
 }
+
+/* Print Styles for Donation Receipts */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #printable-receipt,
+  #printable-receipt * {
+    visibility: visible !important;
+  }
+  #printable-receipt {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    background: #ffffff !important;
+    color: #1a1a1a !important;
+    box-shadow: none !important;
+    border: 2px solid #8B6B4A !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

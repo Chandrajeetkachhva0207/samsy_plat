@@ -31,6 +31,7 @@ const supportRoutes = require("./routes/supportRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const contactMessageRoutes = require("./routes/contactMessageRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
@@ -169,6 +170,8 @@ app.use(
     "/api/contact-messages",
     contactMessageRoutes
 );
+
+app.use("/api/payment", paymentRoutes);
 
 app.use("/api/admin", adminRoutes);
 

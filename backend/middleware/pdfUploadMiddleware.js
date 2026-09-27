@@ -48,3 +48,4 @@ const uploadPDF = multer({
 });
 
 module.exports = uploadPDF;
+

@@ -53,7 +53,6 @@ function Founder() {
             </Card>
           </div>
         </div>
-        <EditableNote text={founderPage.photoNote} />
       </Section>
     </>
   );

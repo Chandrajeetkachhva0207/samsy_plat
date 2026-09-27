@@ -13,6 +13,7 @@ import {
   Home,
   ShieldCheck,
   Video,
+  HeartHandshake,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -68,6 +69,11 @@ export function AdminLayout({
       to: "/admin/videos",
       label: "व्हिडिओ (Videos)",
       icon: Video,
+    },
+    {
+      to: "/admin/donations",
+      label: "देणगी यादी (Donations)",
+      icon: HeartHandshake,
     },
     {
       to: "/admin/messages",

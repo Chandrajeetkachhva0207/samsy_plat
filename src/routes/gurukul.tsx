@@ -42,23 +42,75 @@ function Gurukul() {
         </div>
       </Section>
 
-      <Section tone="sand">
-        <SectionTitle
-          title={{ mr: "दैनंदिन दिनक्रम", en: "Daily Routine" }}
-          sub={{ mr: "वेळा संपादनयोग्य आहेत.", en: "Timings are editable." }}
-        />
-        <div className="card-soft mx-auto mt-8 max-w-xl overflow-hidden">
-          <ul>
-            {gurukul.routine.map((r, i) => (
-              <li
-                key={r.item.en}
-                className={`flex items-center justify-between gap-4 px-5 py-3 ${i % 2 ? "bg-sand" : ""}`}
-              >
-                <span className="font-semibold text-maroon">{t(r.item)}</span>
-                <span className="text-sm text-muted-foreground">{r.time}</span>
-              </li>
-            ))}
-          </ul>
+      <Section tone="sand" className="relative">
+        <div className="mx-auto max-w-4xl">
+          {/* Header Title with Registration Badge */}
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-sand px-4 py-1.5 text-xs font-bold text-maroon shadow-xs">
+              <span>नोंदणी क्र. – {gurukul.registrationNo}</span>
+            </div>
+            <h2 className="mt-3 font-display text-2xl font-bold text-maroon sm:text-3xl">
+              {t({ mr: "दैनिक दिनचर्या", en: "Daily Routine" })}
+            </h2>
+            <div className="mx-auto mt-2 h-[2px] w-20 rounded-full bg-primary/70" />
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t({
+                mr: "मा नर्मदा आध्यात्मिक गुरुकुल, आळंदी देवाची ता. खेड जि. पुणे",
+                en: "Maa Narmada Adhyatmik Gurukul, Alandi Devachi, Tal. Khed, Dist. Pune",
+              })}
+            </p>
+          </div>
+
+          {/* Routine Table / List */}
+          <div className="mt-8 overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md">
+            {/* Header Banner */}
+            <div className="bg-gradient-to-r from-maroon via-primary to-maroon px-6 py-3.5 text-center text-primary-foreground">
+              <span className="font-display text-base font-bold tracking-wide sm:text-lg">
+                {t({ mr: "✤ गुरुकुलाचा दैनंदिन दिनक्रम ✤", en: "✤ Gurukul Daily Schedule ✤" })}
+              </span>
+            </div>
+
+            <div className="divide-y divide-border">
+              {gurukul.routine.map((r, i) => (
+                <div
+                  key={i}
+                  className={`flex flex-col gap-2 px-5 py-3.5 transition-colors hover:bg-sand/60 sm:flex-row sm:items-center sm:justify-between ${
+                    i % 2 === 1 ? "bg-sand/30" : "bg-card"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg">
+                      {r.icon}
+                    </span>
+                    <div>
+                      <span className="font-display text-base font-bold text-maroon sm:text-lg">
+                        {t(r.item)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start pl-12 sm:self-auto sm:pl-0">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-sand px-3 py-1 font-mono text-xs font-bold text-maroon sm:text-sm">
+                      <span className="text-primary font-bold">🕒</span>
+                      <span>{t({ mr: r.time, en: r.timeEn })}</span>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Special Notes Card Footer */}
+            <div className="border-t-2 border-primary/20 bg-amber-50/80 p-5 text-sm sm:p-6">
+              <div className="space-y-2 font-medium text-amber-950">
+                {gurukul.specialNotes.map((note, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <span className="text-primary font-bold">✤</span>
+                    <span className="leading-relaxed">{t(note)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </Section>
 
