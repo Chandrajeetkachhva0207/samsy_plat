@@ -28,6 +28,10 @@ const gallerySchema = new mongoose.Schema(
             default: "",
         },
 
+        cloudinaryPublicId: {
+            type: String,
+            default: "",
+        },
 
         caption: {
             type: mongoose.Schema.Types.Mixed,

@@ -1,57 +1,61 @@
 const Gallery = require("../models/Gallery");
-const fs = require("fs");
-const path = require("path");
+const cloudinary = require("../config/cloudinary");
 
-/* =====================================================
-   GET LOCAL IMAGE FILE PATH
-===================================================== */
+// =====================================================
+// UPLOAD IMAGE TO CLOUDINARY
+// =====================================================
 
-const getImageFilePath = (imagePath) => {
-    if (!imagePath || typeof imagePath !== "string") {
-        return null;
-    }
+const uploadImageToCloudinary = (buffer) => {
+    return new Promise((resolve, reject) => {
+        const uploadStream =
+            cloudinary.uploader.upload_stream(
+                {
+                    folder: "maa-narmada/gallery",
+                    resource_type: "image",
+                },
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result);
+                    }
+                }
+            );
 
-    // Only delete locally uploaded files
-    if (!imagePath.startsWith("/uploads/")) {
-        return null;
-    }
-
-    // Remove leading slash
-    const cleanPath = imagePath.replace(/^\/+/, "");
-
-    return path.join(
-        __dirname,
-        "..",
-        cleanPath
-    );
+        uploadStream.end(buffer);
+    });
 };
 
+// =====================================================
+// DELETE IMAGE FROM CLOUDINARY
+// =====================================================
 
-/* =====================================================
-   DELETE IMAGE FILE
-===================================================== */
+const deleteCloudinaryImage = async (publicId) => {
+    if (!publicId) return;
 
-const deleteImageFile = (imagePath) => {
     try {
-        const filePath = getImageFilePath(imagePath);
+        await cloudinary.uploader.destroy(
+            publicId,
+            {
+                resource_type: "image",
+            }
+        );
 
-        if (filePath && fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-
-            console.log("Deleted image:", filePath);
-        }
+        console.log(
+            "Deleted Cloudinary image:",
+            publicId
+        );
     } catch (error) {
         console.error(
-            "Error deleting image:",
+            "Cloudinary delete error:",
             error.message
         );
     }
 };
 
-
-/* =====================================================
-   GET ALL GALLERY ITEMS
-===================================================== */
+// =====================================================
+// GET ALL GALLERY ITEMS
+// =====================================================
 
 const getGallery = async (req, res) => {
     try {
@@ -77,10 +81,9 @@ const getGallery = async (req, res) => {
     }
 };
 
-
-/* =====================================================
-   GET SINGLE GALLERY ITEM
-===================================================== */
+// =====================================================
+// GET SINGLE GALLERY ITEM
+// =====================================================
 
 const getGalleryItem = async (req, res) => {
     try {
@@ -113,10 +116,9 @@ const getGalleryItem = async (req, res) => {
     }
 };
 
-
-/* =====================================================
-   CREATE GALLERY ITEM
-===================================================== */
+// =====================================================
+// CREATE GALLERY ITEM
+// =====================================================
 
 const createGalleryItem = async (req, res) => {
     try {
@@ -131,28 +133,53 @@ const createGalleryItem = async (req, res) => {
             imageUrl,
         } = req.body;
 
-        console.log("========== CREATE GALLERY ==========");
-        console.log("Uploaded file:", req.file);
-        console.log("Body:", req.body);
+        console.log(
+            "========== CREATE GALLERY =========="
+        );
+
+        console.log(
+            "Uploaded file:",
+            req.file
+        );
+
+        console.log(
+            "Body:",
+            req.body
+        );
 
         let storedImage = "";
+        let cloudinaryPublicId = "";
 
-        /* ---------------------------------------------
-           IMAGE UPLOAD
-        --------------------------------------------- */
+        // =====================================================
+        // UPLOAD IMAGE TO CLOUDINARY
+        // =====================================================
 
         if (req.file) {
-            storedImage = `/uploads/images/${req.file.filename}`;
+            const result =
+                await uploadImageToCloudinary(
+                    req.file.buffer
+                );
+
+            storedImage =
+                result.secure_url;
+
+            cloudinaryPublicId =
+                result.public_id;
 
             console.log(
-                "Saved gallery image:",
+                "Cloudinary image URL:",
                 storedImage
+            );
+
+            console.log(
+                "Cloudinary public ID:",
+                cloudinaryPublicId
             );
         }
 
-        /* ---------------------------------------------
-           IMAGE URL
-        --------------------------------------------- */
+        // =====================================================
+        // IMAGE URL
+        // =====================================================
 
         else if (imageUrl) {
             storedImage = imageUrl;
@@ -163,9 +190,9 @@ const createGalleryItem = async (req, res) => {
             );
         }
 
-        /* ---------------------------------------------
-           IMAGE REQUIRED
-        --------------------------------------------- */
+        // =====================================================
+        // IMAGE REQUIRED
+        // =====================================================
 
         else {
             return res.status(400).json({
@@ -174,45 +201,61 @@ const createGalleryItem = async (req, res) => {
             });
         }
 
-        /* ---------------------------------------------
-           CAPTION
-        --------------------------------------------- */
+        // =====================================================
+        // CAPTION
+        // =====================================================
 
-        let finalCaption = caption || "";
+        let finalCaption =
+            caption || "";
 
-        if (captionMr || captionEn) {
+        if (
+            captionMr ||
+            captionEn
+        ) {
             finalCaption = {
                 mr: captionMr || "",
-                en: captionEn || captionMr || "",
+                en:
+                    captionEn ||
+                    captionMr ||
+                    "",
             };
         }
 
-        /* ---------------------------------------------
-           CREATE DATABASE RECORD
-        --------------------------------------------- */
+        // =====================================================
+        // CREATE DATABASE RECORD
+        // =====================================================
 
-        const galleryItem = await Gallery.create({
-            title: title || "",
+        const galleryItem =
+            await Gallery.create({
+                title: title || "",
 
-            category: category || "general",
+                category:
+                    category ||
+                    "general",
 
-            // Actual uploaded image path
-            image: storedImage,
+                image:
+                    storedImage,
 
-            // Keep same value for compatibility
-            imageUrl: storedImage,
+                imageUrl:
+                    storedImage,
 
-            caption: finalCaption,
+                caption:
+                    finalCaption,
 
-            description: description || "",
+                description:
+                    description || "",
 
-            isActive:
-                isActive === undefined
-                    ? true
-                    : isActive === "false"
-                        ? false
-                        : true,
-        });
+                isActive:
+                    isActive === undefined
+                        ? true
+                        : isActive === "false"
+                            ? false
+                            : true,
+
+                cloudinaryPublicId:
+                    cloudinaryPublicId ||
+                    "",
+            });
 
         console.log(
             "Gallery item created:",
@@ -220,11 +263,14 @@ const createGalleryItem = async (req, res) => {
             galleryItem.image
         );
 
-        console.log("====================================");
+        console.log(
+            "===================================="
+        );
 
         res.status(201).json({
             success: true,
-            message: "Gallery item created successfully",
+            message:
+                "Gallery item created successfully",
             data: galleryItem,
         });
     } catch (error) {
@@ -235,26 +281,29 @@ const createGalleryItem = async (req, res) => {
 
         res.status(500).json({
             success: false,
-            message: "Failed to create gallery item",
+            message:
+                "Failed to create gallery item",
             error: error.message,
         });
     }
 };
 
-
-/* =====================================================
-   UPDATE GALLERY ITEM
-===================================================== */
+// =====================================================
+// UPDATE GALLERY ITEM
+// =====================================================
 
 const updateGalleryItem = async (req, res) => {
     try {
         const galleryItem =
-            await Gallery.findById(req.params.id);
+            await Gallery.findById(
+                req.params.id
+            );
 
         if (!galleryItem) {
             return res.status(404).json({
                 success: false,
-                message: "Gallery item not found",
+                message:
+                    "Gallery item not found",
             });
         }
 
@@ -269,32 +318,38 @@ const updateGalleryItem = async (req, res) => {
             imageUrl,
         } = req.body;
 
-        /* ---------------------------------------------
-           BASIC FIELDS
-        --------------------------------------------- */
+        // =====================================================
+        // BASIC FIELDS
+        // =====================================================
 
         if (title !== undefined) {
             galleryItem.title = title;
         }
 
         if (category !== undefined) {
-            galleryItem.category = category;
+            galleryItem.category =
+                category;
         }
 
-        if (description !== undefined) {
-            galleryItem.description = description;
+        if (
+            description !== undefined
+        ) {
+            galleryItem.description =
+                description;
         }
 
-        if (isActive !== undefined) {
+        if (
+            isActive !== undefined
+        ) {
             galleryItem.isActive =
                 isActive === "false"
                     ? false
                     : true;
         }
 
-        /* ---------------------------------------------
-           CAPTION
-        --------------------------------------------- */
+        // =====================================================
+        // CAPTION
+        // =====================================================
 
         if (
             captionMr !== undefined ||
@@ -310,25 +365,41 @@ const updateGalleryItem = async (req, res) => {
         } else if (
             caption !== undefined
         ) {
-            galleryItem.caption = caption;
+            galleryItem.caption =
+                caption;
         }
 
-        /* ---------------------------------------------
-           NEW IMAGE UPLOAD
-        --------------------------------------------- */
+        // =====================================================
+        // NEW IMAGE UPLOAD
+        // =====================================================
 
         if (req.file) {
-            const oldImage =
-                galleryItem.image ||
-                galleryItem.imageUrl;
+            // Delete old Cloudinary image
+            if (
+                galleryItem.cloudinaryPublicId
+            ) {
+                await deleteCloudinaryImage(
+                    galleryItem.cloudinaryPublicId
+                );
+            }
 
-            deleteImageFile(oldImage);
+            // Upload new image
+            const result =
+                await uploadImageToCloudinary(
+                    req.file.buffer
+                );
 
             const newImage =
-                `/uploads/images/${req.file.filename}`;
+                result.secure_url;
 
-            galleryItem.image = newImage;
-            galleryItem.imageUrl = newImage;
+            galleryItem.image =
+                newImage;
+
+            galleryItem.imageUrl =
+                newImage;
+
+            galleryItem.cloudinaryPublicId =
+                result.public_id;
 
             console.log(
                 "Updated gallery image:",
@@ -336,32 +407,41 @@ const updateGalleryItem = async (req, res) => {
             );
         }
 
-        /* ---------------------------------------------
-           IMAGE URL
-        --------------------------------------------- */
+        // =====================================================
+        // IMAGE URL
+        // =====================================================
 
         else if (imageUrl) {
-            const oldImage =
-                galleryItem.image ||
-                galleryItem.imageUrl;
+            galleryItem.image =
+                imageUrl;
 
-            if (oldImage !== imageUrl) {
-                deleteImageFile(oldImage);
+            galleryItem.imageUrl =
+                imageUrl;
+
+            // If replacing Cloudinary image
+            // with an external URL, delete old one
+            if (
+                galleryItem.cloudinaryPublicId
+            ) {
+                await deleteCloudinaryImage(
+                    galleryItem.cloudinaryPublicId
+                );
+
+                galleryItem.cloudinaryPublicId =
+                    "";
             }
-
-            galleryItem.image = imageUrl;
-            galleryItem.imageUrl = imageUrl;
         }
 
-        /* ---------------------------------------------
-           SAVE
-        --------------------------------------------- */
+        // =====================================================
+        // SAVE
+        // =====================================================
 
         await galleryItem.save();
 
         res.json({
             success: true,
-            message: "Gallery item updated successfully",
+            message:
+                "Gallery item updated successfully",
             data: galleryItem,
         });
     } catch (error) {
@@ -372,34 +452,50 @@ const updateGalleryItem = async (req, res) => {
 
         res.status(500).json({
             success: false,
-            message: "Failed to update gallery item",
+            message:
+                "Failed to update gallery item",
             error: error.message,
         });
     }
 };
 
+// =====================================================
+// DELETE GALLERY ITEM
+// =====================================================
 
-/* =====================================================
-   DELETE GALLERY ITEM
-===================================================== */
-
-const deleteGalleryItem = async (req, res) => {
+const deleteGalleryItem = async (
+    req,
+    res
+) => {
     try {
         const galleryItem =
-            await Gallery.findById(req.params.id);
+            await Gallery.findById(
+                req.params.id
+            );
 
         if (!galleryItem) {
             return res.status(404).json({
                 success: false,
-                message: "Gallery item not found",
+                message:
+                    "Gallery item not found",
             });
         }
 
-        const imagePath =
-            galleryItem.image ||
-            galleryItem.imageUrl;
+        // =====================================================
+        // DELETE CLOUDINARY IMAGE
+        // =====================================================
 
-        deleteImageFile(imagePath);
+        if (
+            galleryItem.cloudinaryPublicId
+        ) {
+            await deleteCloudinaryImage(
+                galleryItem.cloudinaryPublicId
+            );
+        }
+
+        // =====================================================
+        // DELETE DATABASE RECORD
+        // =====================================================
 
         await Gallery.findByIdAndDelete(
             req.params.id
@@ -407,7 +503,8 @@ const deleteGalleryItem = async (req, res) => {
 
         res.json({
             success: true,
-            message: "Gallery item deleted successfully",
+            message:
+                "Gallery item deleted successfully",
         });
     } catch (error) {
         console.error(
@@ -417,16 +514,16 @@ const deleteGalleryItem = async (req, res) => {
 
         res.status(500).json({
             success: false,
-            message: "Failed to delete gallery item",
+            message:
+                "Failed to delete gallery item",
             error: error.message,
         });
     }
 };
 
-
-/* =====================================================
-   EXPORTS
-===================================================== */
+// =====================================================
+// EXPORTS
+// =====================================================
 
 module.exports = {
     getGallery,
