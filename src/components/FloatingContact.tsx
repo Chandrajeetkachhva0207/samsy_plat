@@ -31,11 +31,13 @@ export function FloatingContact() {
       {/* Call */}
       <a
         href="tel:+917385501205"
+        title="+91 73855 01205 / +91 79729 61607"
         aria-label={t({
-          mr: "दूरध्वनी करा",
-          en: "Call",
+          mr: "दूरध्वनी करा (+91 73855 01205 / +91 79729 61607)",
+          en: "Call (+91 73855 01205 / +91 79729 61607)",
         })}
-        className="flex h-13 w-13 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-xl active:scale-95"      >
+        className="flex h-13 w-13 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-xl active:scale-95"
+      >
         <Phone
           className="h-6 w-6"
           strokeWidth={2.5}

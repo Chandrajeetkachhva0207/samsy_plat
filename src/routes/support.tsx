@@ -282,17 +282,17 @@ function Support() {
                   {bankDetails.map((b) => (
                     <div
                       key={b.key}
-                      className="flex flex-wrap items-center justify-between gap-2 py-3"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 py-3"
                     >
-                      <dt className="font-medium text-amber-900/80">{t(b.label)}</dt>
-                      <dd className="flex items-center gap-2">
-                        <span className="font-bold text-amber-950">{b.value}</span>
+                      <dt className="shrink-0 font-medium text-amber-900/80">{t(b.label)}</dt>
+                      <dd className="flex items-center justify-between sm:justify-end gap-2">
+                        <span className="font-bold text-amber-950 break-words text-left sm:text-right">{b.value}</span>
                         {b.copyable && (
                           <button
                             type="button"
                             onClick={() => handleCopy(b.value, b.key)}
                             title={t({ mr: "कॉपी करा", en: "Copy to clipboard" })}
-                            className="inline-flex items-center gap-1 rounded-md border border-amber-300/80 bg-white/90 px-2.5 py-1 text-xs font-semibold text-amber-950 transition-colors hover:bg-amber-600 hover:text-white"
+                            className="shrink-0 inline-flex items-center gap-1 rounded-md border border-amber-300/80 bg-white/90 px-2.5 py-1 text-xs font-semibold text-amber-950 transition-colors hover:bg-amber-600 hover:text-white"
                           >
                             {copiedKey === b.key ? (
                               <>
@@ -318,8 +318,8 @@ function Support() {
                   </p>
                   <p className="mt-1">
                     {t({
-                      mr: "बँक ट्रान्सफर (NEFT / IMPS / RTGS) द्वारे रक्कम पाठवल्यानंतर खालील बटनावर क्लिक करून आपण थेट आपली अधिकृत देणगी पावती तयार करू शकता.",
-                      en: "After making a direct bank transfer, click the button below to generate your official donation receipt directly.",
+                      mr: "बँक ट्रान्सफर (NEFT / IMPS / RTGS) द्वारे रक्कम पाठवल्यानंतर खालील बटनावर क्लिक करून आपण थेट आपली अधिकृत देणगी पावती तयार करू शकता. (टीप: बँकेच्या विलीनीकरणानुसार NEFT/IMPS साठी ALLA0213158 किंवा नवीन IDIB000B884 दोन्ही स्वीकारले जातात.)",
+                      en: "After making a direct bank transfer, click the button below to generate your official donation receipt directly. (Note: Per bank merger, both ALLA0213158 and IDIB000B884 are valid for NEFT/IMPS.)",
                     })}
                   </p>
                 </div>

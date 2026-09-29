@@ -113,19 +113,34 @@ function Contact() {
                   <dt className="text-muted-foreground">
                     ☎ {t({ mr: "दूरध्वनी", en: "Phone" })}
                   </dt>
-                  <dd className="font-medium">{t(PLACEHOLDER.phone)}</dd>
+                  <dd className="font-medium flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <a
+                      href="tel:+917385501205"
+                      className="hover:text-primary transition-colors underline-offset-2 hover:underline"
+                    >
+                      +91 73855 01205
+                    </a>
+                    <span className="text-muted-foreground">/</span>
+                    <a
+                      href="tel:+917972961607"
+                      className="hover:text-primary transition-colors underline-offset-2 hover:underline"
+                    >
+                      +91 79729 61607
+                    </a>
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">✉ {t({ mr: "ई-मेल", en: "E-mail" })}</dt>
-                  <dd className="font-medium">{t(PLACEHOLDER.email)}</dd>
+                  <dd className="font-medium">
+                    <a
+                      href={`mailto:${PLACEHOLDER.email.en.trim()}`}
+                      className="hover:text-primary transition-colors underline-offset-2 hover:underline"
+                    >
+                      {t(PLACEHOLDER.email)}
+                    </a>
+                  </dd>
                 </div>
               </dl>
-              <EditableNote
-                text={{
-                  mr: "अधिकृत दूरध्वनी क्रमांक व ई-मेल संस्थेकडून मिळाल्यावर भरले जातील.",
-                  en: "The official phone number and e-mail will be filled in once received from the institution.",
-                }}
-              />
             </Card>
 
             <Card>

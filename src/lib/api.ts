@@ -180,10 +180,10 @@ export const api = {
   sendContactMessage: (
     payload: {
       name: string;
-      phone?: string;
-      mobile?: string;
-      email?: string;
-      subject?: string;
+      phone?: string | undefined;
+      mobile?: string | undefined;
+      email?: string | undefined;
+      subject?: string | undefined;
       message: string;
     }
   ) =>

@@ -5,7 +5,7 @@ import { FadeIn } from "./FadeIn";
 export function SaintStrip({ eager = false }: { eager?: boolean }) {
   const { t } = useLang();
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {saints.map((s, i) => (
         <FadeIn key={s.src} delay={i * 120} className="h-full">
           <figure className="card-soft flex h-full flex-col overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-primary/40">

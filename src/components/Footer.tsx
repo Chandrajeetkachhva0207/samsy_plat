@@ -66,10 +66,17 @@ export function Footer() {
 
             {t({ mr: "दूरध्वनी", en: "Phone" })}:{" "}
             <a
-              href={`tel:${PLACEHOLDER.phone.en}`}
-              className="hover:text-maroon"
+              href="tel:+917385501205"
+              className="hover:text-maroon underline-offset-2 hover:underline"
             >
-              {t(PLACEHOLDER.phone)}
+              +91 73855 01205
+            </a>
+            {", "}
+            <a
+              href="tel:+917972961607"
+              className="hover:text-maroon underline-offset-2 hover:underline"
+            >
+              +91 79729 61607
             </a>
 
             <br />

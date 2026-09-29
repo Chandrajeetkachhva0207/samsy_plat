@@ -9,10 +9,17 @@
 import type { Bi } from "@/lib/lang";
 
 export const PLACEHOLDER = {
-  phone: { mr: "7385501205", en: "7385501205" },
+  phone: {
+    mr: "+91 73855 01205, +91 79729 61607",
+    en: "+91 73855 01205, +91 79729 61607",
+  },
+  phones: [
+    { raw: "7385501205", display: "+91 73855 01205" },
+    { raw: "7972961607", display: "+91 79729 61607" },
+  ],
   email: {
-    mr: "santoshgpawar2q07@gmail.com",
-    en: "santoshgpawar2q07@gmail.com",
+    mr: "maanarmadasansthan@gmail.com",
+    en: "maanarmadasansthan@gmail.com",
   },
   maps: {
     mr: "[अधिकृत Google Maps लोकेशन]",
@@ -110,6 +117,13 @@ export const secondaryNav: { to: string; label: Bi }[] = [
 ];
 
 export const saints = [
+  {
+    src: "/images/maa-narmada.jpg",
+    name: {
+      mr: "माँ नर्मदा देवी",
+      en: "Maa Narmada Devi",
+    } as Bi,
+  },
   {
     src: "/images/vitthal-rakhumai.jpg",
     name: {
@@ -761,33 +775,39 @@ export const supportTypes: {
 
 export const bankDetails = [
   {
-    key: "bankName",
-    label: { mr: "बँकेचे नाव", en: "Bank Name" } as Bi,
-    value: "BANK OF MAHARASHTRA (बँक ऑफ महाराष्ट्र)",
-    copyable: false,
-  },
-  {
     key: "accountName",
-    label: { mr: "खातेदाराचे नाव", en: "Account Name" } as Bi,
-    value: "Maa Narmada Adhyatmik Shikshan Sanstha",
-    copyable: false,
+    label: { mr: "खातेदाराचे नाव", en: "Account Holder Name" } as Bi,
+    value: "Maa Narmada Adyatmik Shikshan Sansta",
+    copyable: true,
   },
   {
     key: "accountNumber",
-    label: { mr: "खाते क्रमांक", en: "A/C No." } as Bi,
-    value: "60139560106",
+    label: { mr: "बँक खाते क्रमांक", en: "Bank Account Number" } as Bi,
+    value: "50337323879",
     copyable: true,
+  },
+  {
+    key: "bankName",
+    label: { mr: "बँकेचे नाव", en: "Bank Name" } as Bi,
+    value: "Indian Bank / Allahabad Bank (इंडियन बँक / अलाहाबाद बँक)",
+    copyable: false,
   },
   {
     key: "ifsc",
     label: { mr: "IFSC कोड", en: "IFSC Code" } as Bi,
-    value: "MAHB0000104",
+    value: "ALLA0213158",
     copyable: true,
   },
   {
     key: "branch",
     label: { mr: "शाखा", en: "Branch" } as Bi,
-    value: "ALANDI (आळंदी)",
+    value: "BULDHANA (बुलढाणा)",
+    copyable: false,
+  },
+  {
+    key: "branchAddress",
+    label: { mr: "शाखेचा पत्ता", en: "Branch Address" } as Bi,
+    value: "DSD City Mall, Chetanyawadi, Near Bank of India & Tehsil Office, Buldhana, Maharashtra - 443001",
     copyable: false,
   },
   {
