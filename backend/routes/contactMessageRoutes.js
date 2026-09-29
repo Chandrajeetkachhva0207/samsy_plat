@@ -5,6 +5,7 @@ const {
     createContactMessage,
     getContactMessages,
     updateContactMessage,
+    markContactMessageAsRead,
     deleteContactMessage,
 } = require("../controllers/contactMessageController");
 
@@ -79,6 +80,18 @@ router.get(
     getContactMessages
 );
 
+/*
+=====================================================
+ADMIN - MARK MESSAGE AS READ
+=====================================================
+*/
+
+router.patch(
+    "/:id/read",
+    protect,
+    adminOnly,
+    markContactMessageAsRead
+);
 
 /*
 =====================================================

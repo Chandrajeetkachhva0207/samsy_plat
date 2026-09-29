@@ -1,49 +1,119 @@
+
+
 const dotenv = require("dotenv");
 const path = require("path");
-const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 
 const User = require("../models/User");
 
-dotenv.config({ path: path.join(__dirname, "../.env") });
+// Load environment variables
+dotenv.config({
+    path: path.join(__dirname, "../.env"),
+});
 
-const createAdmin = async () => {
+// =====================================================
+// PROMOTE EXISTING USER TO ADMIN
+// =====================================================
+
+const promoteToAdmin = async () => {
     try {
-        const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/maa_narmada";
+        // Get email from command line
+        const email = process.argv[2];
+
+        if (!email) {
+            console.log("");
+            console.log("Please provide the user's email.");
+            console.log("");
+            console.log("Usage:");
+            console.log(
+                "node scripts/createAdmin.js user@example.com"
+            );
+            console.log("");
+
+            process.exit(1);
+        }
+
+        // MongoDB connection
+        const uri =
+            process.env.MONGODB_URI ||
+            "mongodb://127.0.0.1:27017/maa_narmada";
+
         await mongoose.connect(uri);
 
         console.log("MongoDB connected");
 
-        const existingAdmin = await User.findOne({
-            email: "admin@maanarmada.com",
+        // Find existing user
+        const user = await User.findOne({
+            email: email.toLowerCase().trim(),
         });
 
-        if (existingAdmin) {
-            console.log("Admin already exists");
+        // User doesn't exist
+        if (!user) {
+            console.log("");
+            console.log(
+                `No user found with email: ${email}`
+            );
+            console.log("");
+            console.log(
+                "The user must register first."
+            );
+
+            await mongoose.disconnect();
+            process.exit(1);
+        }
+
+        // Already admin
+        if (user.role === "admin") {
+            console.log("");
+            console.log("This user is already an admin.");
+            console.log("");
+            console.log("Name:", user.name);
+            console.log("Email:", user.email);
+            console.log("Role:", user.role);
+
+            await mongoose.disconnect();
             process.exit(0);
         }
-          
-        const hashedPassword = await bcrypt.hash(
-            "Admin@12345",
-            10
+
+        // Promote user to admin
+        user.role = "admin";
+
+        await user.save();
+
+        console.log("");
+        console.log("-----------------------------------");
+        console.log("User promoted to admin successfully");
+        console.log("-----------------------------------");
+        console.log("Name:", user.name);
+        console.log("Email:", user.email);
+        console.log("Role:", user.role);
+        console.log("-----------------------------------");
+        console.log("");
+        console.log(
+            "Existing password was not changed."
         );
+        console.log("");
 
-        const admin = await User.create({
-            name: "Maa Narmada Admin",
-            email: "admin@maanarmada.com",
-            password: hashedPassword,
-            role: "admin",
-        });
-
-        console.log("Admin created successfully");
-        console.log("Email:", admin.email);
+        await mongoose.disconnect();
 
         process.exit(0);
 
     } catch (error) {
-        console.error("Error:", error.message);
+        console.error("");
+        console.error(
+            "Error:",
+            error.message
+        );
+        console.error("");
+
+        try {
+            await mongoose.disconnect();
+        } catch (disconnectError) {
+            // Ignore disconnect errors
+        }
+
         process.exit(1);
     }
 };
 
-createAdmin();
+promoteToAdmin();

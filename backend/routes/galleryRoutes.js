@@ -9,7 +9,7 @@ const {
 
 const protect = require("../middleware/authMiddleware");
 const adminOnly = require("../middleware/adminMiddleware");
-const upload = require("../middleware/uploadMiddleware");
+const upload = require("../middleware/galleryUploadMiddleware");
 
 const router = express.Router();
 

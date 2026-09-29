@@ -42,19 +42,33 @@ function AdminDashboard() {
         if (res.success) {
           const statsData = res.stats || {
             messages: {
-              total: res.data?.contactMessages?.total || 0,
-              unread: res.data?.contactMessages?.new || 0,
+              total:
+                res.data?.contactMessages?.total || 0,
+
+              unread:
+                res.data?.contactMessages?.new || 0,
             },
-            events: res.data?.content?.events || 0,
-            gallery: res.data?.content?.gallery || 0,
-            videos: res.data?.content?.videos || 0,
-            annualReports: res.data?.content?.annualReports || 0,
+
+            events:
+              res.data?.content?.events || 0,
+
+            gallery:
+              res.data?.content?.gallery || 0,
+
+            videos:
+              res.data?.content?.videos || 0,
+
+            annualReports:
+              res.data?.content?.annualReports || 0,
           };
 
           setStats(statsData);
         }
       } catch (err) {
-        console.error("Failed to load dashboard stats", err);
+        console.error(
+          "Failed to load dashboard stats",
+          err
+        );
       } finally {
         setLoading(false);
       }
@@ -72,7 +86,9 @@ function AdminDashboard() {
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
 
-          {/* Messages */}
+          {/* =====================================================
+              CONTACT MESSAGES
+          ===================================================== */}
           <Card className="flex flex-col justify-between p-5 transition-colors hover:border-primary/50">
             <div>
               <div className="flex items-center justify-between">
@@ -107,7 +123,9 @@ function AdminDashboard() {
             </Link>
           </Card>
 
-          {/* Events */}
+          {/* =====================================================
+              EVENTS
+          ===================================================== */}
           <Card className="flex flex-col justify-between p-5 transition-colors hover:border-primary/50">
             <div>
               <div className="flex items-center justify-between">
@@ -136,7 +154,9 @@ function AdminDashboard() {
             </Link>
           </Card>
 
-          {/* Gallery */}
+          {/* =====================================================
+              GALLERY
+          ===================================================== */}
           <Card className="flex flex-col justify-between p-5 transition-colors hover:border-primary/50">
             <div>
               <div className="flex items-center justify-between">
@@ -165,7 +185,9 @@ function AdminDashboard() {
             </Link>
           </Card>
 
-          {/* Videos */}
+          {/* =====================================================
+              VIDEOS
+          ===================================================== */}
           <Card className="flex flex-col justify-between p-5 transition-colors hover:border-primary/50">
             <div>
               <div className="flex items-center justify-between">
@@ -194,7 +216,9 @@ function AdminDashboard() {
             </Link>
           </Card>
 
-          {/* Reports */}
+          {/* =====================================================
+              ANNUAL REPORTS
+          ===================================================== */}
           <Card className="flex flex-col justify-between p-5 transition-colors hover:border-primary/50">
             <div>
               <div className="flex items-center justify-between">

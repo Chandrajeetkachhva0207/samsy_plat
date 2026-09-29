@@ -316,9 +316,10 @@ function EventDetail() {
           </Card>
         </div>
 
-        {/* Photos */}
+
+        {/* Photos
         <div className="mt-10">
-          <h2 className="text-lg font-semibold text-maroon">
+          <h2 className="text-lg text-maroon">
             {t({
               mr: "छायाचित्रे",
               en: "Photos",
@@ -337,15 +338,8 @@ function EventDetail() {
                 />
               ))}
             </div>
-          ) : (
-            <p className="mt-3 text-sm text-muted-foreground">
-              {t({
-                mr: "या कार्यक्रमाची छायाचित्रे प्रशासनाकडून जोडली जातील.",
-                en: "Photos for this event will be added by the administration.",
-              })}
-            </p>
-          )}
-        </div>
+          ) : null}
+        </div> */}
 
         {/* Back */}
         <div className="mt-8">
