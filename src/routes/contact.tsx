@@ -149,7 +149,7 @@ function Contact() {
                 <iframe
                   title={t({ mr: "आळंदी देवाची नकाशा", en: "Alandi Devachi map" })}
                   // src="https://www.google.com/maps?q=Alandi%20Devachi%2C%20Tal.%20Khed%2C%20Pune%2C%20Maharashtra&output=embed"
-                   src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3779.7749964302707!2d73.89676767519548!3d18.67409018244941!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMTjCsDQwJzI2LjciTiA3M8KwNTMnNTcuNiJF!5e0!3m2!1sen!2sin!4v1790346509091!5m2!1sen!2sin"
+                  src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3779.7749964302707!2d73.89676767519548!3d18.67409018244941!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMTjCsDQwJzI2LjciTiA3M8KwNTMnNTcuNiJF!5e0!3m2!1sen!2sin!4v1790346509091!5m2!1sen!2sin"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   className="aspect-4/3 w-full"
@@ -157,8 +157,8 @@ function Contact() {
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
                 {t({
-                  mr: "सध्या आळंदी देवाची येथील सर्वसाधारण ठिकाण दर्शवले आहे. संस्थेची नेमकी Google Maps लिंक मिळाल्यावर बदलली जाईल.",
-                  en: "A general location for Alandi Devachi is shown for now. It will be replaced once the institution's exact Google Maps link is available.",
+                  mr: "आळंदी देवाची येथील संस्थेचे अधिकृत स्थान नकाशावर दर्शविले आहे.",
+                  en: "The institution's official location at Alandi Devachi is shown on the map.",
                 })}
               </p>
             </Card>
