@@ -22,6 +22,7 @@ import { Route as GurukulRouteImport } from './routes/gurukul'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StudentsRouteImport } from './routes/students'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as VideosRouteImport } from './routes/videos'
@@ -34,7 +35,6 @@ import { Route as AdminMessagesRouteImport } from './routes/admin/messages'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminVideosRouteImport } from './routes/admin/videos'
 import { Route as EventsSlugRouteImport } from './routes/events.$slug'
-import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -101,6 +101,11 @@ const ReportsRoute = ReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StudentsRoute = StudentsRouteImport.update({
   id: '/students',
   path: '/students',
@@ -161,11 +166,6 @@ const EventsSlugRoute = EventsSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => EventsRoute,
 } as any)
-const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
-  id: '/api/public/sitemap.xml',
-  path: '/api/public/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -181,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
@@ -193,7 +194,6 @@ export interface FileRoutesByFullPath {
   '/admin/videos': typeof AdminVideosRoute
   '/events/$slug': typeof EventsSlugRoute
   '/admin/': typeof AdminIndexRoute
-  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -209,6 +209,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
@@ -221,7 +222,6 @@ export interface FileRoutesByTo {
   '/admin/videos': typeof AdminVideosRoute
   '/events/$slug': typeof EventsSlugRoute
   '/admin': typeof AdminIndexRoute
-  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -238,6 +238,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
@@ -250,7 +251,6 @@ export interface FileRoutesById {
   '/admin/videos': typeof AdminVideosRoute
   '/events/$slug': typeof EventsSlugRoute
   '/admin/': typeof AdminIndexRoute
-  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -268,6 +268,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reports'
+    | '/sitemap.xml'
     | '/students'
     | '/support'
     | '/videos'
@@ -280,7 +281,6 @@ export interface FileRouteTypes {
     | '/admin/videos'
     | '/events/$slug'
     | '/admin/'
-    | '/api/public/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -296,6 +296,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reports'
+    | '/sitemap.xml'
     | '/students'
     | '/support'
     | '/videos'
@@ -308,7 +309,6 @@ export interface FileRouteTypes {
     | '/admin/videos'
     | '/events/$slug'
     | '/admin'
-    | '/api/public/sitemap.xml'
   id:
     | '__root__'
     | '/'
@@ -324,6 +324,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reports'
+    | '/sitemap.xml'
     | '/students'
     | '/support'
     | '/videos'
@@ -336,7 +337,6 @@ export interface FileRouteTypes {
     | '/admin/videos'
     | '/events/$slug'
     | '/admin/'
-    | '/api/public/sitemap.xml'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -353,6 +353,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   ReportsRoute: typeof ReportsRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StudentsRoute: typeof StudentsRoute
   SupportRoute: typeof SupportRoute
   VideosRoute: typeof VideosRoute
@@ -364,7 +365,6 @@ export interface RootRouteChildren {
   AdminReportsRoute: typeof AdminReportsRoute
   AdminVideosRoute: typeof AdminVideosRoute
   AdminIndexRoute: typeof AdminIndexRoute
-  ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -460,6 +460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/students': {
       id: '/students'
       path: '/students'
@@ -544,13 +551,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsSlugRouteImport
       parentRoute: typeof EventsRoute
     }
-    '/api/public/sitemap.xml': {
-      id: '/api/public/sitemap.xml'
-      path: '/api/public/sitemap.xml'
-      fullPath: '/api/public/sitemap.xml'
-      preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -579,6 +579,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   ReportsRoute: ReportsRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   StudentsRoute: StudentsRoute,
   SupportRoute: SupportRoute,
   VideosRoute: VideosRoute,
@@ -590,7 +591,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminReportsRoute: AdminReportsRoute,
   AdminVideosRoute: AdminVideosRoute,
   AdminIndexRoute: AdminIndexRoute,
-  ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
