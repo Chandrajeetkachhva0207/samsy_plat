@@ -52,12 +52,23 @@ export const Route = createFileRoute("/")({
       },
     ],
 
+    // links: [
+    //   {
+    //     rel: "canonical",
+    //     href: "/",
+    //   },
+    // ],
     links: [
-      {
-        rel: "canonical",
-        href: "/",
-      },
-    ],
+  {
+    rel: "icon",
+    type: "image/jpeg",
+    href: "/favicon.jpg",
+  },
+  {
+    rel: "canonical",
+    href: "/",
+  },
+],
   }),
 
   component: Home,
