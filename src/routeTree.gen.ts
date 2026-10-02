@@ -22,6 +22,7 @@ import { Route as GurukulRouteImport } from './routes/gurukul'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StudentsRouteImport } from './routes/students'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as VideosRouteImport } from './routes/videos'
@@ -99,6 +100,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StudentsRoute = StudentsRouteImport.update({
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
@@ -238,6 +246,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/students': typeof StudentsRoute
   '/support': typeof SupportRoute
   '/videos': typeof VideosRoute
@@ -268,6 +277,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reports'
+    | '/sitemap.xml'
     | '/students'
     | '/support'
     | '/videos'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reports'
+    | '/sitemap.xml'
     | '/students'
     | '/support'
     | '/videos'
@@ -324,6 +335,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reports'
+    | '/sitemap.xml'
     | '/students'
     | '/support'
     | '/videos'
@@ -353,6 +365,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   ReportsRoute: typeof ReportsRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StudentsRoute: typeof StudentsRoute
   SupportRoute: typeof SupportRoute
   VideosRoute: typeof VideosRoute
@@ -458,6 +471,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/students': {
@@ -579,6 +599,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   ReportsRoute: ReportsRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   StudentsRoute: StudentsRoute,
   SupportRoute: SupportRoute,
   VideosRoute: VideosRoute,
