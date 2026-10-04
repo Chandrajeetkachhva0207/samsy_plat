@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { EditableNote, PageHeader, Section } from "@/components/ui";
-import { galleryCategories } from "@/content/site";
+import { galleryCategories, galleryPhotos } from "@/content/site";
 import { useLang } from "@/lib/lang";
 import { api, API_ORIGIN } from "@/lib/api";
 
@@ -248,11 +248,19 @@ function getGalleryItemImage(
 function Gallery() {
   const { t, lang } = useLang();
 
+  const defaultPhotos: GalleryItem[] = galleryPhotos.map((gp, idx) => ({
+    _id: `static-${idx}`,
+    imageUrl: gp.src,
+    category: getCategoryKey(gp.category),
+    caption: gp.caption,
+    isActive: true,
+  }));
+
   const [gallery, setGallery] =
-    useState<GalleryItem[]>([]);
+    useState<GalleryItem[]>(defaultPhotos);
 
   const [loading, setLoading] =
-    useState(true);
+    useState(false);
 
   const [active, setActive] =
     useState("सर्व");
@@ -266,8 +274,6 @@ function Gallery() {
 
   const loadGallery = async () => {
     try {
-      setLoading(true);
-
       const response = await api.getGallery();
 
       console.log(
@@ -285,14 +291,18 @@ function Gallery() {
               item.isActive !== false
           );
 
-        console.log(
-          "Gallery photos:",
-          activePhotos
+        const existingUrls = new Set(
+          activePhotos.map((p: GalleryItem) => p.imageUrl || p.image || p.url)
         );
 
-        setGallery(activePhotos);
+        const merged = [
+          ...activePhotos,
+          ...defaultPhotos.filter((d) => !existingUrls.has(d.imageUrl)),
+        ];
+
+        setGallery(merged);
       } else {
-        setGallery([]);
+        setGallery(defaultPhotos);
       }
     } catch (error) {
       console.error(
@@ -300,7 +310,7 @@ function Gallery() {
         error
       );
 
-      setGallery([]);
+      setGallery(defaultPhotos);
     } finally {
       setLoading(false);
     }

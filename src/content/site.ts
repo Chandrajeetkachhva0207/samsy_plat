@@ -79,7 +79,7 @@ export const org = {
 
 export const nav: { to: string; label: Bi }[] = [
   { to: "/", label: { mr: "मुख्यपृष्ठ", en: "Home" } },
-  { to: "/about", label: { mr: "आमच्याविषयी", en: "About" } },
+  { to: "/about", label: { mr: "संस्थाविषयी", en: "About" } },
   {
     to: "/founder",
     label: { mr: "संस्थापक अध्यक्ष", en: "Founder President" },
@@ -185,31 +185,31 @@ export const keyActivities: { icon: string; title: Bi }[] = [
 
 export const timeline: { year: Bi; text: Bi }[] = [
   {
-    year: { mr: "सुरुवात", en: "Beginning" },
+    year: { mr: "१. सुरुवात", en: "1. Beginning" },
     text: {
-      mr: "आळंदी देवाची येथे अल्पसंख्य विद्यार्थ्यांपासून मा नर्मदा आध्यात्मिक वारकरी गुरुकुलाची सुरुवात झाली",
-      en: "Ma Narmada Adhyatmik Warkari Gurukul began its journey in Alandi Devachi with a small number of students.",
+      mr: "आळंदी देवाची येथे काही मोजक्या विद्यार्थ्यांसह मा. नर्मदा आध्यात्मिक वारकरी गुरुकुलाची सुरुवात झाली. शिक्षणासोबत अध्यात्म आणि संस्कार रुजविण्याचा उद्देश ठेवण्यात आला. विद्यार्थ्यांना योग्य मार्गदर्शन आणि आध्यात्मिक वातावरण मिळावे, यासाठी प्रयत्न सुरू झाले. छोट्याशा उपक्रमातून एका प्रेरणादायी प्रवासाचा पाया रचला गेला.",
+      en: "Maa Narmada Adhyatmik Warkari Gurukul began its journey in Alandi Devachi with a modest group of students. The core objective was to instill spiritual values alongside regular education. Sincere efforts commenced to provide students with proper academic guidance in a devotional atmosphere, laying the foundation of an inspiring journey from this small beginning.",
     },
   },
   {
-    year: { mr: "प्रारंभीची वर्षे", en: "Early years" },
+    year: { mr: "२. प्रारंभीची वर्षे", en: "2. Early years" },
     text: {
-      mr: "शालेय अभ्यासासाठी मार्गदर्शनासोबत प्रार्थना, नामस्मरण व संस्कार वर्गांची नियमित सुरुवात झाली.",
-      en: "Along with academic guidance, regular activities such as prayer, Naam Smaran, and value-based संस्कार classes were introduced.",
+      mr: "गुरुकुलात विद्यार्थ्यांसाठी शालेय अभ्यासाचे मार्गदर्शन सुरू झाले. त्यासोबत नियमित प्रार्थना, नामस्मरण आणि संस्कार वर्गांचे आयोजन करण्यात आले. विद्यार्थ्यांमध्ये शिस्त, भक्ती आणि नैतिक मूल्ये रुजविण्यावर भर दिला गेला. शिक्षण आणि संस्कार यांचा सुंदर समन्वय साधण्यास सुरुवात झाली.",
+      en: "Academic guidance for school studies commenced at the Gurukul, accompanied by regular daily prayers, Naam Smaran, and value-based संस्कार sessions. Emphasis was placed on cultivating discipline, devotion, and moral values among students, marking the beginning of a harmonious blend between education and culture.",
     },
   },
   {
-    year: { mr: "मधली वर्षे", en: "Middle years" },
+    year: { mr: "३. मधली वर्षे", en: "3. Middle years" },
     text: {
-      mr: "कीर्तन, प्रवचन, वारकरी परंपरेचे शिक्षण, बाल संस्कार शिबिरे आणि सांस्कृतिक कार्यक्रमांचा विस्तार झाला.",
-      en: "The Gurukul expanded its activities to include Kirtan, spiritual discourses, education about the Warkari tradition, children's value-based camps, and cultural programs.",
+      mr: "गुरुकुलाच्या कार्याचा विस्तार होत कीर्तन, प्रवचन आणि वारकरी परंपरेच्या शिक्षणाला चालना मिळाली. बालसंस्कार शिबिरे आणि विविध सांस्कृतिक कार्यक्रमांचे आयोजन करण्यात आले. विद्यार्थ्यांना धार्मिक परंपरा आणि संतांच्या विचारांची ओळख करून देण्यात आली. आध्यात्मिक आणि सांस्कृतिक उपक्रमांमुळे गुरुकुलाची वाटचाल अधिक समृद्ध झाली.",
+      en: "As the Gurukul's activities expanded, education in Kirtan, Pravachan, and the sacred Warkari tradition gained momentum. Children's value-based camps and diverse cultural programs were organized, introducing students to devotional traditions and the teachings of the saints, enriching the Gurukul's purposeful path.",
     },
   },
   {
-    year: { mr: "आज", en: "Today" },
+    year: { mr: "४. आज", en: "4. Today" },
     text: {
-      mr: "शिक्षण, संस्कार आणि अध्यात्म यांचा समन्वय साधत विद्यार्थ्यांच्या शैक्षणिक, सांस्कृतिक, आध्यात्मिक व व्यक्तिमत्त्व विकासासाठी विविध धार्मिक व सामाजिक उपक्रम राबविले जात आहेत.",
-      en: "The Gurukul continues to integrate education, values, and spirituality through various religious and social initiatives, supporting the educational, cultural, spiritual, and overall personality development of students.",
+      mr: "आज गुरुकुल शिक्षण, संस्कार आणि अध्यात्म यांचा समन्वय साधून कार्यरत आहे. विद्यार्थ्यांच्या शैक्षणिक, सांस्कृतिक आणि आध्यात्मिक विकासासाठी विविध उपक्रम राबविले जातात. व्यक्तिमत्त्व विकासासोबत नैतिक मूल्ये आणि वारकरी परंपरेचे जतन करण्यावर भर दिला जातो. धार्मिक आणि सामाजिक कार्यातून समाजात सकारात्मक बदल घडविण्याचा प्रयत्न सुरू आहे.",
+      en: "Today, the Gurukul actively functions with a seamless synthesis of education, values, and spirituality. Diverse initiatives are conducted for students' academic, cultural, and spiritual growth. Alongside holistic personality development, deep emphasis is placed on preserving moral values and the Warkari heritage, fostering positive societal transformation through religious and social service.",
     },
   },
 ];
@@ -449,6 +449,7 @@ export const activities: {
   title: Bi;
   short: Bi;
   detail: Bi;
+  image?: string;
 }[] = [
   {
     icon: "🧒",
@@ -456,6 +457,7 @@ export const activities: {
       mr: "बाल संस्कार शिबिर",
       en: "Children's Sanskar Camp",
     },
+    image: "/images/children-sanskar-camp.png",
     short: {
       mr: "मुलांच्या व्यक्तिमत्त्व विकासासाठी संस्कार व आध्यात्मिक शिबिर.",
       en: "A values-based and spiritual camp for the personality development of children.",
@@ -472,6 +474,7 @@ export const activities: {
       mr: "कीर्तन महोत्सव",
       en: "Kirtan Festival",
     },
+    image: "/images/kirtan-festival.jpg",
     short: {
       mr: "भक्ती, संतविचार आणि समाजप्रबोधनाचा संदेश देणारा उपक्रम.",
       en: "An initiative promoting devotion, the teachings of the saints and social awareness.",
@@ -488,6 +491,7 @@ export const activities: {
       mr: "वारकरी उपक्रम",
       en: "Warkari Activities",
     },
+    image: "/images/warkari-activities.png",
     short: {
       mr: "वारी, दिंडी, अभंग, भजन आणि संतपरंपरेशी संबंधित कार्यक्रम.",
       en: "Activities related to Wari, Dindi, abhang, bhajan and the saint tradition.",
@@ -504,6 +508,7 @@ export const activities: {
       mr: "शैक्षणिक उपक्रम",
       en: "Educational Activities",
     },
+    image: "/images/educational-activities.jpg",
     short: {
       mr: "विद्यार्थ्यांच्या शालेय अभ्यासासाठी मार्गदर्शन व शैक्षणिक वातावरण.",
       en: "Study guidance and an educational environment for students.",
@@ -520,6 +525,7 @@ export const activities: {
       mr: "सांस्कृतिक कार्यक्रम",
       en: "Cultural Programmes",
     },
+    image: "/images/cultural-programmes.png",
     short: {
       mr: "गायन, भजन, वक्तृत्व, कथाकथन आणि विविध सांस्कृतिक कार्यक्रम.",
       en: "Singing, bhajan, public speaking, storytelling and various cultural programmes.",
@@ -536,6 +542,7 @@ export const activities: {
       mr: "संत जयंती व धार्मिक उत्सव",
       en: "Saint Jayanti & Religious Festivals",
     },
+    image: "/images/saint-jayanti-festivals.jpg",
     short: {
       mr: "संतांचे जीवन व विचार विद्यार्थ्यांपर्यंत पोहोचविणारे कार्यक्रम.",
       en: "Programmes introducing students to the lives and teachings of the saints.",
@@ -818,29 +825,191 @@ export const bankDetails = [
   },
 ];
 
-export const certificates = [
+export interface CertificateItem {
+  name: Bi;
+  number?: string;
+  numberLabel?: Bi;
+  validity: string;
+  subTitle?: Bi;
+  pdf?: string;
+  pdfName?: string;
+  image?: string;
+  badge?: Bi;
+  isVerified?: boolean;
+}
+
+export const trustRegistrationDetails = {
+  title: {
+    mr: "संस्था व विश्वस्त नोंदणी प्रमाणपत्र (Trust Registration)",
+    en: "Trust & Society Registration Certificate",
+  } as Bi,
+  subTitle: {
+    mr: "मुंबई सार्वजनिक विश्वस्तव्यवस्था अधिनियम, १९५० — धर्मादाय आयुक्त कार्यालय, बुलडाणा",
+    en: "Bombay Public Trusts Act, 1950 — Office of Charity Commissioner, Buldhana",
+  } as Bi,
+  trustNumber: "एफ-१५९८४ (बुलढाणा)",
+  trustNumberEn: "F-15984 (Buldhana)",
+  societyNumber: "महा-६७/२०१४ (बुलढाणा)",
+  trustRegDate: "05/05/2014",
+  societyRegDate: "01/02/2014",
+  name: "माँ नर्मदा अध्यात्मिक शिक्षण संस्था, आजिसपूर ता. जि. बुलडाणा",
+  president: "श्री संतोषराव गुलाबराव पवार",
+  authority: {
+    mr: "सहाय्यक धर्मादाय आयुक्त, बुलडाणा विभाग, बुलडाणा",
+    en: "Assistant Charity Commissioner, Buldhana Division",
+  } as Bi,
+  pdfUrl: "/certificates/Trust_Registration_Certificate.pdf",
+  pdfFileName: "Trust_Registration_Certificate_15984.pdf",
+  page1Image: "/certificates/trust_registration_page_1.jpg",
+  page2Image: "/certificates/trust_registration_page_2.jpg",
+  validity: {
+    mr: "कायमस्वरूपी अधिकृत नोंदणी (Official Registration)",
+    en: "Official Registration (Permanent)",
+  } as Bi,
+};
+
+export const form10AC = {
+  title: {
+    mr: "फॉर्म क्र. १०AC — कलम 80G तात्पुरती मंजुरी आदेश",
+    en: "FORM NO. 10AC — Order for Provisional Approval under Section 80G",
+  } as Bi,
+  subRule: {
+    mr: "(नियम 17A / 11AA अंतर्गत — आयकर विभाग, भारत सरकार)",
+    en: "(See rule 17A/11AA — Income Tax Department, Govt. of India)",
+  } as Bi,
+  pdfUrl: "/certificates/FORM_NO_10AC.pdf",
+  pdfFileName: "FORM_NO_10AC_80G_MAA_NARMADA.pdf",
+  pan: "AAWAM9501F",
+  name: "MAA NARMADA ADHYATMIK SANSTHA AJISPUR",
+  activities: {
+    mr: "धर्मादाय / सेवाभावी (Charitable)",
+    en: "Charitable",
+  } as Bi,
+  address: "AT-Ajispur Po - Nandra Koli, Buldana H.O, Buldana, Maharashtra - 443001, INDIA",
+  din: "AAWAM9501FF2025101",
+  applicationNumber: "896593150250825",
+  urn: "AAWAM9501FF20251",
+  section: "12-Sub-clause (A) of clause (iv) of first proviso to sub-section (5) of section 80G",
+  approvalDate: "01-09-2025",
+  assessmentYears: {
+    mr: "AY 2026-27 ते AY 2028-2029",
+    en: "From AY 2026-27 to AY 2028-2029",
+  } as Bi,
+  authority: {
+    mr: "प्रधान आयकर आयुक्त / आयकर आयुक्त (Principal Commissioner of Income Tax)",
+    en: "Principal Commissioner of Income Tax / Commissioner of Income Tax",
+  } as Bi,
+};
+
+export const panCardDetails = {
+  title: {
+    mr: "स्थायी लेखा संख्या कार्ड (PAN Card)",
+    en: "Permanent Account Number Card (PAN)",
+  } as Bi,
+  panNumber: "AAWAM9501F",
+  name: "MAA NARMADA ADHYATMIK SANSTHA AJISPUR",
+  incorporationDate: "01/02/2014",
+  authority: {
+    mr: "आयकर विभाग — भारत सरकार",
+    en: "Income Tax Department — Government of India",
+  } as Bi,
+  pdfUrl: "/certificates/PAN_CARD_AAWAM9501F.pdf",
+  pdfFileName: "PAN_CARD_AAWAM9501F.pdf",
+  imageUrl: "/certificates/pan_card.png",
+  validity: {
+    mr: "कायमस्वरूपी (Permanent)",
+    en: "Permanent",
+  } as Bi,
+};
+
+export const csrDetails = {
+  title: {
+    mr: "सीएसआर नोंदणी (CSR-1 Registration)",
+    en: "CSR Registration (Form CSR-1)",
+  } as Bi,
+  subTitle: {
+    mr: "कॉर्पोरेट व्यवहार मंत्रालय, भारत सरकार (Ministry of Corporate Affairs, Govt. of India)",
+    en: "Ministry of Corporate Affairs, Office of the Registrar of Companies (ROC Delhi)",
+  } as Bi,
+  registrationNumber: "CSR00101084",
+  srn: "AB9581986",
+  approvalDate: "06/12/2025",
+  applicationDate: "05/12/2025",
+  pan: "AAWAM9501F",
+  name: "MAA NARMADA ADHYATMIK SANSTHA AJISPUR",
+  authority: {
+    mr: "कंपनी निबंधक (Registrar of Companies), ROC Delhi",
+    en: "Registrar of Companies, ROC Delhi",
+  } as Bi,
+  pdfUrl: "/certificates/CSR_Registration.pdf",
+  pdfFileName: "CSR_Registration_CSR00101084.pdf",
+  validity: {
+    mr: "मान्यताप्राप्त / अधिकृत (Approved for CSR Activities)",
+    en: "Approved for CSR Activities",
+  } as Bi,
+};
+
+export const certificates: CertificateItem[] = [
   {
     name: {
       mr: "संस्था नोंदणी (Trust Registration)",
       en: "Trust Registration",
     } as Bi,
     number: "15 984 (बुलढाणा)",
+    numberLabel: { mr: "नोंदणी क्रमांक", en: "Registration Number" } as Bi,
     validity: "अधिकृत नोंदणी (Official Registration)",
+    subTitle: {
+      mr: "मुंबई सार्वजनिक विश्वस्तव्यवस्था अधिनियम, १९५० — नोंदणी क्र. एफ-१५९८४",
+      en: "Bombay Public Trusts Act, 1950 — Reg No. F-15984",
+    } as Bi,
+    pdf: "/certificates/Trust_Registration_Certificate.pdf",
+    pdfName: "Trust_Registration_Certificate_15984.pdf",
+    image: "/certificates/trust_registration_page_1.jpg",
+    badge: { mr: "प्रमाणित प्रत उपलब्ध", en: "Verified Certificate Available" } as Bi,
+    isVerified: true,
   },
   {
-    name: { mr: "12A", en: "12A" } as Bi,
-    number: "[क्रमांक]",
-    validity: "[वैधता]",
+    name: { mr: "80G (फॉर्म क्र. १०AC)", en: "80G Provisional Approval (Form 10AC)" } as Bi,
+    number: "AAWAM9501FF20251",
+    numberLabel: { mr: "युनिक नोंदणी क्रमांक (URN)", en: "Unique Registration No. (URN)" } as Bi,
+    validity: "AY 2026-27 ते AY 2028-2029 (01-09-2025)",
+    subTitle: {
+      mr: "आयकर विभाग मंजुरी आदेश (कलम 80G)",
+      en: "Income Tax Approval Order (Section 80G)",
+    } as Bi,
+    pdf: "/certificates/FORM_NO_10AC.pdf",
+    pdfName: "FORM_NO_10AC_80G.pdf",
+    badge: { mr: "अधिकृत PDF उपलब्ध", en: "Official PDF Available" } as Bi,
+    isVerified: true,
   },
   {
-    name: { mr: "80G", en: "80G" } as Bi,
-    number: "[क्रमांक]",
-    validity: "[वैधता]",
+    name: { mr: "PAN (स्थायी खाते क्रमांक)", en: "PAN (Permanent Account Number)" } as Bi,
+    number: "AAWAM9501F",
+    numberLabel: { mr: "पॅन क्रमांक", en: "PAN Number" } as Bi,
+    validity: "कायमस्वरूपी (Permanent)",
+    subTitle: {
+      mr: "गठन तारीख: 01/02/2014 | MAA NARMADA ADHYATMIK SANSTHA AJISPUR",
+      en: "Formation Date: 01/02/2014 | MAA NARMADA ADHYATMIK SANSTHA AJISPUR",
+    } as Bi,
+    pdf: "/certificates/PAN_CARD_AAWAM9501F.pdf",
+    pdfName: "PAN_CARD_AAWAM9501F.pdf",
+    badge: { mr: "अधिकृत PAN PDF उपलब्ध", en: "Official PAN PDF Available" } as Bi,
+    isVerified: true,
   },
   {
-    name: { mr: "PAN", en: "PAN" } as Bi,
-    number: "[क्रमांक]",
-    validity: "[वैधता]",
+    name: {
+      mr: "CSR नोंदणी (CSR_Registration)",
+      en: "CSR Registration (Form CSR-1)",
+    } as Bi,
+    validity: "अधिकृत नोंदणी (Approved — 06/12/2025)",
+    subTitle: {
+      mr: "कॉर्पोरेट व्यवहार मंत्रालय (MCA) — CSR उपक्रमांसाठी मान्यता",
+      en: "Ministry of Corporate Affairs (MCA) — Approved for CSR Activities",
+    } as Bi,
+    pdf: "/certificates/CSR_Registration.pdf",
+    pdfName: "CSR_Registration_CSR00101084.pdf",
+    badge: { mr: "अधिकृत CSR PDF उपलब्ध", en: "Official CSR PDF Available" } as Bi,
+    isVerified: true,
   },
 ];
 
@@ -925,5 +1094,54 @@ export const galleryPhotos: {
   src: string;
   category: string;
   caption: Bi;
-}[] = [];
+}[] = [
+  {
+    src: "/images/children-sanskar-camp.png",
+    category: "बाल संस्कार शिबिर",
+    caption: {
+      mr: "बाल संस्कार शिबिर — ह.भ.प. संतोष महाराज पवार व गुरुकुलातील विद्यार्थी",
+      en: "Children's Sanskar Camp — H.B.P. Santosh Maharaj Pawar with Gurukul students",
+    },
+  },
+  {
+    src: "/images/warkari-activities.png",
+    category: "वारकरी कार्यक्रम",
+    caption: {
+      mr: "वारकरी उपक्रम — गुरुकुलातील विद्यार्थी मृदंग / पखवाज वादन व वारकरी संस्कार शिकताना",
+      en: "Warkari Activities — Gurukul students learning Mridangam / Pakhawaj and Warkari traditions",
+    },
+  },
+  {
+    src: "/images/kirtan-festival.jpg",
+    category: "कीर्तन",
+    caption: {
+      mr: "कीर्तन महोत्सव — ह.भ.प. संतोष महाराज पवार वीणा घेऊन कीर्तन सेवा सादर करताना",
+      en: "Kirtan Festival — H.B.P. Santosh Maharaj Pawar performing Kirtan seva with Veena",
+    },
+  },
+  {
+    src: "/images/educational-activities.jpg",
+    category: "विद्यार्थी",
+    caption: {
+      mr: "शैक्षणिक उपक्रम — गुरुकुलातील विद्यार्थी एकत्र प्रार्थना, नामस्मरण व संस्कार वर्गात सहभागी होताना",
+      en: "Educational Activities — Gurukul students participating in prayer, namasmaran, and learning sessions",
+    },
+  },
+  {
+    src: "/images/cultural-programmes.png",
+    category: "सांस्कृतिक कार्यक्रम",
+    caption: {
+      mr: "सांस्कृतिक कार्यक्रम — निवासी बालसंस्कार शिबीर व सांस्कृतिक उपक्रमात संत-महंतांचे मार्गदर्शन",
+      en: "Cultural Programmes — Spiritual guidance and felicitation during Cultural & Sanskar Camp",
+    },
+  },
+  {
+    src: "/images/saint-jayanti-festivals.jpg",
+    category: "धार्मिक कार्यक्रम",
+    caption: {
+      mr: "संत जयंती व धार्मिक उत्सव — ज्ञानेश्वरी पारायण व अखंड हरिनाम सप्ताहात मान्यवर व भाविक",
+      en: "Saint Jayanti & Religious Festivals — Dnyaneshwari Parayan and Harinam Saptah celebration",
+    },
+  },
+];
 

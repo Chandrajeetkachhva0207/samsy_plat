@@ -188,7 +188,7 @@ function Home() {
           <div className="card-soft grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
             <PrimaryLink to="/about">
               {t({
-                mr: "आमच्याविषयी",
+                mr: "संस्थाविषयी",
                 en: "About us",
               })}
             </PrimaryLink>
@@ -331,25 +331,29 @@ function Home() {
           }}
         />
 
-        <ol className="mx-auto mt-8 max-w-2xl border-l-2 border-primary/30 pl-6">
+        <ol className="mx-auto mt-8 max-w-3xl border-l-2 border-primary/30 pl-6 sm:pl-8 space-y-6">
           {timeline.map((m, i) => (
             <FadeIn
               key={i}
               delay={i * 80}
             >
-              <li className="relative pb-8">
+              <li className="relative pb-2 group">
                 <span
-                  className="absolute top-2 -left-[31px] h-3 w-3 rounded-full bg-primary"
+                  className="absolute -left-[37px] sm:-left-[45px] top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-md ring-4 ring-background transition-transform group-hover:scale-110"
                   aria-hidden="true"
-                />
+                >
+                  {i + 1}
+                </span>
 
-                <h3 className="text-base">
-                  {t(m.year)}
-                </h3>
+                <div className="rounded-2xl border border-primary/15 bg-card/90 p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md backdrop-blur-sm">
+                  <h3 className="text-lg font-bold text-primary font-marathi">
+                    {t(m.year)}
+                  </h3>
 
-                <p className="mt-1 text-muted-foreground">
-                  {t(m.text)}
-                </p>
+                  <p className="mt-2 text-foreground/85 leading-relaxed text-sm sm:text-base">
+                    {t(m.text)}
+                  </p>
+                </div>
               </li>
             </FadeIn>
           ))}

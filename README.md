@@ -56,7 +56,7 @@ Use respectful images of these three in the Hero, About section and a "संत
 
 Sticky header with logo + name. Menu:
 
-मुख्यपृष्ठ | आमच्याविषयी | संस्थापक अध्यक्ष | गुरुकुल | उपक्रम | विद्यार्थी व सुविधा | कार्यक्रम | फोटो गॅलरी | व्हिडिओ | कार्य अहवाल | सहकार्य करा | संपर्क
+मुख्यपृष्ठ | संस्थाविषयी | संस्थापक अध्यक्ष | गुरुकुल | उपक्रम | विद्यार्थी व सुविधा | कार्यक्रम | फोटो गॅलरी | व्हिडिओ | कार्य अहवाल | सहकार्य करा | संपर्क
 
 - Mobile: clean hamburger drawer.
 
@@ -70,7 +70,7 @@ Sticky header with logo + name. Menu:
 
 - Hero: high-quality gurukul/activity photo (slider or single), institution name, tagline, short intro. Include the Vitthal-Rakhumai, Dnyaneshwar and Tukaram images in a dignified way.
 
-- 4 CTA buttons: "आमच्याविषयी", "गुरुकुलाचे उपक्रम", "सहकार्य करा", "संपर्क करा".
+- 4 CTA buttons: "संस्थाविषयी", "गुरुकुलाचे उपक्रम", "सहकार्य करा", "संपर्क करा".
 
 - Short introduction: "आळंदी देवाची या संत ज्ञानेश्वर महाराजांच्या पावन भूमीत गेल्या १२ वर्षांपासून गुरुकुलाच्या माध्यमातून विद्यार्थ्यांना शालेय शिक्षणासोबत आध्यात्मिक संस्कार, वारकरी परंपरा, संतविचार, कीर्तन, प्रवचन आणि भारतीय संस्कृतीची ओळख करून देण्याचा प्रयत्न केला जात आहे."
 
@@ -86,7 +86,7 @@ Sticky header with logo + name. Menu:
 
 - Support appeal: "विद्यार्थ्यांच्या शिक्षण, संस्कार आणि गुरुकुलाच्या विकासासाठी समाजातील हितचिंतकांचे सहकार्य आवश्यक आहे." + button.
 
-### 2. आमच्याविषयी
+### 2. संस्थाविषयी
 
 Establishment, objectives, 12-year journey, work in Alandi, efforts for students, combination of spiritual and school education, future goals. Use ONLY editable placeholder text where facts are not provided. Do NOT invent statistics, numbers, awards or claims. Add an admin-editable "Verified information" field.
 

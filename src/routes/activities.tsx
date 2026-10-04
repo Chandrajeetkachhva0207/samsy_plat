@@ -40,28 +40,42 @@ function Activities() {
           {activities.map((a) => {
             const isOpen = open === a.title.en;
             return (
-              <Card key={a.title.en}>
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl" aria-hidden="true">
-                    {a.icon}
-                  </span>
-                  <div>
-                    <h2 className="text-base">{t(a.title)}</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">{t(a.short)}</p>
+              <Card key={a.title.en} className="overflow-hidden flex flex-col justify-between">
+                <div>
+                  {a.image ? (
+                    <div className="relative -mx-5 -mt-5 mb-4 overflow-hidden rounded-t-xl bg-muted">
+                      <img
+                        src={a.image}
+                        alt={t(a.title)}
+                        className="h-52 w-full object-cover object-top transition-transform duration-300 hover:scale-105"
+                        loading="lazy"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl" aria-hidden="true">
+                      {a.icon}
+                    </span>
+                    <div>
+                      <h2 className="text-base font-bold text-primary">{t(a.title)}</h2>
+                      <p className="mt-1 text-sm text-muted-foreground">{t(a.short)}</p>
+                    </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => setOpen(isOpen ? null : a.title.en)}
-                  aria-expanded={isOpen}
-                  className="mt-3 text-sm font-semibold text-maroon underline underline-offset-4"
-                >
-                  {isOpen
-                    ? t({ mr: "बंद करा", en: "Close" })
-                    : t({ mr: "अधिक वाचा", en: "Read more" })}
-                </button>
-                {isOpen ? (
-                  <p className="mt-3 rounded-lg bg-sand px-4 py-3 text-sm">{t(a.detail)}</p>
-                ) : null}
+                <div>
+                  <button
+                    onClick={() => setOpen(isOpen ? null : a.title.en)}
+                    aria-expanded={isOpen}
+                    className="mt-3 text-sm font-semibold text-maroon underline underline-offset-4"
+                  >
+                    {isOpen
+                      ? t({ mr: "बंद करा", en: "Close" })
+                      : t({ mr: "अधिक वाचा", en: "Read more" })}
+                  </button>
+                  {isOpen ? (
+                    <p className="mt-3 rounded-lg bg-sand px-4 py-3 text-sm">{t(a.detail)}</p>
+                  ) : null}
+                </div>
               </Card>
             );
           })}
