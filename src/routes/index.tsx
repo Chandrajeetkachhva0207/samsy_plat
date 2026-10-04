@@ -26,39 +26,45 @@ import { api } from "@/lib/api";
 import { useLang } from "@/lib/lang";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      {
-        title:
-          "मा नर्मदा आध्यात्मिक गुरुकुल, आळंदी देवाची | शिक्षण • संस्कार • अध्यात्म",
-      },
-      {
-        name: "description",
-        content:
-          "आळंदी देवाची येथे गेल्या १२ वर्षांपासून विद्यार्थ्यांना शालेय शिक्षणासोबत आध्यात्मिक संस्कार व वारकरी परंपरेची ओळख.",
-      },
-      {
-        property: "og:title",
-        content: "मा नर्मदा आध्यात्मिक गुरुकुल, आळंदी देवाची",
-      },
-      {
-        property: "og:description",
-        content:
-          "शिक्षण • संस्कार • अध्यात्म • वारकरी परंपरा — आळंदी देवाची, ता. खेड, जि. पुणे.",
-      },
-      {
-        property: "og:url",
-        content: "/",
-      },
-    ],
+head: () => ({
+  meta: [
+    {
+      title:
+        "Maa Narmada Sanstha Alandi | Maa Narmada Gurukul, Alandi Devachi",
+    },
+    {
+      name: "description",
+      content:
+        "Maa Narmada Sanstha and Maa Narmada Gurukul, Alandi Devachi, Pune. Education, संस्कार, spirituality and Warkari tradition for students.",
+    },
+    {
+      property: "og:title",
+      content:
+        "Maa Narmada Sanstha Alandi | Maa Narmada Gurukul",
+    },
+    {
+      property: "og:description",
+      content:
+        "Official website of Maa Narmada Sanstha and Maa Narmada Gurukul, Alandi Devachi, Pune.",
+    },
+    {
+      property: "og:url",
+      content: "/",
+    },
+  ],
 
-    links: [
-      {
-        rel: "canonical",
-        href: "/",
-      },
-    ],
-  }),
+  links: [
+    {
+      rel: "icon",
+      type: "image/jpeg",
+      href: "/favicon.jpg",
+    },
+    {
+      rel: "canonical",
+      href: "/",
+    },
+  ],
+}),
 
   component: Home,
 });
@@ -393,19 +399,19 @@ function Home() {
                     typeof event.title === "string"
                       ? event.title
                       : event.title?.[lang] ||
-                        event.title?.mr ||
-                        event.title?.en ||
-                        event.eventName ||
-                        "कार्यक्रम";
+                      event.title?.mr ||
+                      event.title?.en ||
+                      event.eventName ||
+                      "कार्यक्रम";
 
                   const venue =
                     typeof event.venue === "string"
                       ? event.venue
                       : event.venue?.[lang] ||
-                        event.venue?.mr ||
-                        event.venue?.en ||
-                        event.location ||
-                        "";
+                      event.venue?.mr ||
+                      event.venue?.en ||
+                      event.location ||
+                      "";
 
                   const eventDate = new Date(
                     event.date
@@ -415,9 +421,9 @@ function Home() {
                     typeof event.description === "string"
                       ? event.description
                       : event.description?.[lang] ||
-                        event.description?.mr ||
-                        event.description?.en ||
-                        "";
+                      event.description?.mr ||
+                      event.description?.en ||
+                      "";
 
                   return (
                     <FadeIn
