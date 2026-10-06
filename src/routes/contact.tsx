@@ -156,10 +156,13 @@ function Contact() {
                 />
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
+<<<<<<< Updated upstream
                 {t({
                   mr: "आळंदी देवाची येथील संस्थेचे अधिकृत स्थान नकाशावर दर्शविले आहे.",
                   en: "The institution's official location at Alandi Devachi is shown on the map.",
                 })}
+               
+>>>>>>> Stashed changes
               </p>
             </Card>
           </div>
