@@ -1,567 +1,533 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+
+import { createFileRoute } from "@tanstack/react-router";
+
 import {
-  Card,
-  EditableNote,
-  PageHeader,
-  Section,
-} from "@/components/ui";
+  ExternalLink,
+  Play,
+  Upload,
+  Youtube,
+} from "lucide-react";
+
 import { api } from "@/lib/api";
+import { PageHeader } from "@/components/ui";
 import { useLang } from "@/lib/lang";
 
-export const Route = createFileRoute("/videos")({
-  head: () => ({
-    meta: [
-      {
-        title: "व्हिडिओ | मा नर्मदा आध्यात्मिक गुरुकुल",
-      },
-      {
-        name: "description",
-        content:
-          "गुरुकुलातील कीर्तन, प्रवचन व कार्यक्रमांचे अधिकृत व्हिडिओ.",
-      },
-      {
-        property: "og:title",
-        content:
-          "व्हिडिओ | मा नर्मदा आध्यात्मिक गुरुकुल",
-      },
-      {
-        property: "og:description",
-        content:
-          "अधिकृत YouTube व्हिडिओ संग्रह.",
-      },
-      {
-        property: "og:url",
-        content: "/videos",
-      },
-    ],
-    links: [
-      {
-        rel: "canonical",
-        href: "/videos",
-      },
-    ],
-  }),
+type BilingualText = {
+  mr: string;
+  en: string;
+};
 
-  component: Videos,
-});
-
-
-/* =====================================================
-   VIDEO TYPES
-===================================================== */
-
-interface BilingualText {
-  mr?: string;
-  en?: string;
-}
-
-interface VideoItem {
+type VideoItem = {
   _id: string;
-
-  title:
-    | BilingualText
-    | string;
-
+  title: BilingualText | string;
   url: string;
-
-  date?: string;
-
-  description?:
-    | BilingualText
-    | string;
-
+  videoType?: "youtube" | "upload";
+  cloudinaryPublicId?: string;
+  description?: BilingualText | string;
   isActive?: boolean;
+  createdAt?: string;
+};
+
+/* =========================================================
+   BILINGUAL HELPER
+========================================================= */
+
+function getBilingualText(value: unknown): BilingualText {
+  if (typeof value === "string") {
+    return {
+      mr: value,
+      en: value,
+    };
+  }
+
+  if (value && typeof value === "object") {
+    const item = value as Record<string, unknown>;
+
+    return {
+      mr: typeof item.mr === "string" ? item.mr : "",
+      en: typeof item.en === "string" ? item.en : "",
+    };
+  }
+
+  return {
+    mr: "",
+    en: "",
+  };
 }
 
+/* =========================================================
+   YOUTUBE HELPERS
+========================================================= */
 
-/* =====================================================
-   VIDEOS PAGE
-===================================================== */
+function isYoutubeUrl(url: string) {
+  return /youtube\.com|youtu\.be/i.test(url);
+}
 
-function Videos() {
-  const { t, lang } = useLang();
+function getYoutubeEmbedUrl(url: string) {
+  try {
+    const parsed = new URL(url);
 
-  const [videos, setVideos] =
-    useState<VideoItem[]>([]);
+    /* youtu.be/VIDEO_ID */
+    if (parsed.hostname.includes("youtu.be")) {
+      const videoId = parsed.pathname.replace("/", "").trim();
 
-  const [loading, setLoading] =
-    useState(true);
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
 
-  const [error, setError] =
-    useState(false);
+    /* youtube.com/watch?v=VIDEO_ID */
+    if (parsed.hostname.includes("youtube.com")) {
+      const videoId = parsed.searchParams.get("v");
 
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
 
-  /* ===================================================
+      const parts = parsed.pathname.split("/").filter(Boolean);
+
+      /* youtube.com/shorts/VIDEO_ID */
+      if (parts[0] === "shorts" && parts[1]) {
+        return `https://www.youtube.com/embed/${parts[1]}`;
+      }
+
+      /* youtube.com/embed/VIDEO_ID */
+      if (parts[0] === "embed" && parts[1]) {
+        return `https://www.youtube.com/embed/${parts[1]}`;
+      }
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+function VideosPage() {
+  /* =========================================================
+     USE SAME LANGUAGE SYSTEM AS HEADER
+  ========================================================= */
+
+  const { lang: language } = useLang();
+
+  const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  /* =========================================================
      LOAD VIDEOS
-  =================================================== */
+  ========================================================= */
 
   useEffect(() => {
     const loadVideos = async () => {
       try {
         setLoading(true);
-        setError(false);
+        setError("");
 
-        const res = await api.getVideos();
+        const response = await api.getVideos();
 
-        if (res.success && Array.isArray(res.data)) {
-          const activeVideos = res.data.filter(
-            (video: VideoItem) =>
-              video.isActive !== false
-          );
+        const data = Array.isArray(response)
+          ? response
+          : response?.data || [];
 
-          setVideos(activeVideos);
-        } else {
-          setVideos([]);
-        }
-      } catch (error) {
-        console.error(
-          "Failed to load videos:",
-          error
+        const activeVideos = data.filter(
+          (video: VideoItem) =>
+            video.isActive !== false
         );
 
-        setError(true);
-        setVideos([]);
+        setVideos(activeVideos);
+      } catch (err) {
+        console.error(err);
+
+        setError(
+          language === "mr"
+            ? "व्हिडिओ लोड करताना समस्या आली. कृपया पुन्हा प्रयत्न करा."
+            : "There was a problem loading the videos. Please try again."
+        );
       } finally {
         setLoading(false);
       }
     };
 
     loadVideos();
-  }, []);
+  }, [language]);
 
+  /* =========================================================
+     TRANSLATIONS
+  ========================================================= */
 
-  /* ===================================================
-     PAGE
-  =================================================== */
+  const text = {
+    mr: {
+      heroTitle: "व्हिडिओ",
+
+      heroDescription:
+        "संस्थेच्या अधिकृत व्हिडिओ येथे प्रदर्शित केले जातात.",
+
+      galleryLabel: "व्हिडिओ गॅलरी",
+
+      galleryTitle: "आमचे व्हिडिओ",
+
+      total: "एकूण",
+
+      videos: "व्हिडिओ",
+
+      youtube: "YouTube",
+
+      officialVideo: "संस्थेचा व्हिडिओ",
+
+      youtubeWatch: "YouTube वर पहा",
+
+      openVideo: "व्हिडिओ उघडा",
+
+      loading: "व्हिडिओ लोड होत आहेत...",
+
+      emptyTitle:
+        "सध्या कोणतेही व्हिडिओ उपलब्ध नाहीत",
+
+      emptyDescription:
+        "संस्थेकडून व्हिडिओ उपलब्ध झाल्यानंतर ते येथे प्रदर्शित केले जातील.",
+
+      browserError:
+        "आपल्या ब्राउझरमध्ये व्हिडिओ प्ले करता येत नाही.",
+    },
+
+    en: {
+      heroTitle: "Videos",
+
+      heroDescription:
+        "Official videos of the institution are displayed here.",
+
+      galleryLabel: "VIDEO GALLERY",
+
+      galleryTitle: "Our Videos",
+
+      total: "Total",
+
+      videos: "Videos",
+
+      youtube: "YouTube",
+
+      officialVideo: "Institution Video",
+
+      youtubeWatch: "Watch on YouTube",
+
+      openVideo: "Open Video",
+
+      loading: "Loading videos...",
+
+      emptyTitle: "No videos available",
+
+      emptyDescription:
+        "Videos will be displayed here once they are uploaded by the institution.",
+
+      browserError:
+        "Your browser does not support video playback.",
+    },
+  };
+
+  const currentText = text[language];
+
+  /* =========================================================
+     UI
+  ========================================================= */
 
   return (
-    <>
+    <main className="min-h-screen bg-[#fffdf9]">
+
+      {/* =====================================================
+          HERO
+      ===================================================== */}
+
+      {/* =====================================================
+    HERO
+===================================================== */}
+
       <PageHeader
         title={{
           mr: "व्हिडिओ",
           en: "Videos",
         }}
         sub={{
-          mr: "संस्थेच्या अधिकृत व्हिडिओ लिंक येथे दर्शवल्या जातात.",
-          en: "The institution's official video links are shown here.",
+          mr: "संस्थेच्या अधिकृत व्हिडिओ येथे प्रदर्शित केले जातात.",
+          en: "Official videos of the institution are displayed here.",
         }}
       />
 
-      <Section>
+      {/* =====================================================
+          VIDEO SECTION
+      ===================================================== */}
 
-        {/* =================================================
-            LOADING
-        ================================================= */}
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+
+        {/* Loading */}
 
         {loading && (
-          <p className="py-10 text-center text-muted-foreground">
-            {t({
-              mr: "व्हिडिओ लोड होत आहेत...",
-              en: "Loading videos...",
-            })}
-          </p>
-        )}
 
+          <div className="flex min-h-[300px] items-center justify-center">
 
-        {/* =================================================
-            ERROR
-        ================================================= */}
+            <div className="flex flex-col items-center">
 
-        {!loading && error && (
-          <div className="py-10 text-center">
-            <p className="text-base font-medium text-maroon">
-              {t({
-                mr: "व्हिडिओ लोड करता आले नाहीत.",
-                en: "Unable to load videos.",
-              })}
-            </p>
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-orange-100 border-t-orange-600" />
 
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t({
-                mr: "कृपया पुन्हा प्रयत्न करा.",
-                en: "Please try again.",
-              })}
-            </p>
+              <p className="mt-4 text-sm text-[#765d50]">
+                {currentText.loading}
+              </p>
+
+            </div>
+
           </div>
         )}
 
+        {/* Error */}
 
-        {/* =================================================
-            VIDEOS
-        ================================================= */}
+        {!loading && error && (
 
-        {!loading &&
-          !error &&
-          videos.length > 0 && (
+          <div className="mx-auto max-w-xl rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
 
-            <div className="grid gap-5 sm:grid-cols-2">
+            <p className="font-medium text-red-700">
+              {error}
+            </p>
 
-              {videos.map((video) => {
+          </div>
+        )}
 
-                const embedUrl =
-                  getYoutubeEmbedUrl(
-                    video.url
-                  );
-
-                const title =
-                  getBilingualText(
-                    video.title,
-                    lang
-                  );
-
-                const description =
-                  getBilingualText(
-                    video.description,
-                    lang
-                  );
-
-                return (
-                  <Card
-                    key={video._id}
-                    className="flex flex-col"
-                  >
-
-                    {/* =====================================
-                        YOUTUBE VIDEO
-                    ===================================== */}
-
-                    <div className="overflow-hidden rounded-xl border border-border bg-sand">
-
-                      {embedUrl ? (
-
-                        <iframe
-                          src={embedUrl}
-                          title={title || "YouTube Video"}
-                          loading="lazy"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          allowFullScreen
-                          className="aspect-video w-full"
-                        />
-
-                      ) : (
-
-                        <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 text-center">
-
-                          <span
-                            className="text-3xl"
-                            aria-hidden="true"
-                          >
-                            ▶
-                          </span>
-
-                          <p className="px-4 text-sm text-muted-foreground">
-                            {t({
-                              mr: "YouTube व्हिडिओ लिंक उपलब्ध नाही.",
-                              en: "YouTube video link is not available.",
-                            })}
-                          </p>
-
-                        </div>
-
-                      )}
-
-                    </div>
-
-
-                    {/* =====================================
-                        TITLE
-                    ===================================== */}
-
-                    {title && (
-                      <h2 className="mt-4 text-base font-semibold text-foreground">
-                        {title}
-                      </h2>
-                    )}
-
-
-                    {/* =====================================
-                        DATE
-                    ===================================== */}
-
-                    {video.date && (
-                      <p className="mt-1 text-sm font-semibold text-maroon">
-                        {formatVideoDate(
-                          video.date,
-                          lang
-                        )}
-                      </p>
-                    )}
-
-
-                    {/* =====================================
-                        DESCRIPTION
-                    ===================================== */}
-
-                    {description && (
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        {description}
-                      </p>
-                    )}
-
-
-                    {/* =====================================
-                        YOUTUBE LINK
-                    ===================================== */}
-
-                    {video.url && (
-                      <a
-                        href={video.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 text-sm font-semibold text-maroon underline underline-offset-4"
-                      >
-                        {t({
-                          mr: "YouTube वर पहा",
-                          en: "Watch on YouTube",
-                        })}
-                      </a>
-                    )}
-
-                  </Card>
-                );
-              })}
-
-            </div>
-          )}
-
-
-        {/* =================================================
-            NO VIDEOS
-        ================================================= */}
+        {/* Empty */}
 
         {!loading &&
           !error &&
           videos.length === 0 && (
 
-            <p className="py-10 text-center text-muted-foreground">
-              {t({
-                mr: "अधिकृत व्हिडिओ प्रशासनाकडून जोडले जातील.",
-                en: "Official videos will be added by the administration.",
-              })}
-            </p>
+            <div className="mx-auto max-w-2xl rounded-3xl border border-dashed border-[#dfcdb8] bg-[#fffaf3] px-6 py-16 text-center">
+
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-50">
+
+                <Play className="h-7 w-7 text-orange-500" />
+
+              </div>
+
+              <h2 className="mt-5 text-xl font-semibold text-[#603528]">
+                {currentText.emptyTitle}
+              </h2>
+
+              <p className="mt-3 text-sm leading-7 text-[#765d50]">
+                {currentText.emptyDescription}
+              </p>
+
+            </div>
           )}
 
+        {/* ===================================================
+            VIDEOS
+        =================================================== */}
 
-        <EditableNote />
+        {!loading &&
+          !error &&
+          videos.length > 0 && (
 
-      </Section>
-    </>
+            <>
+
+              {/* =================================================
+                  VIDEO GRID
+              ================================================= */}
+
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
+                {videos.map((video) => {
+
+                  const title =
+                    getBilingualText(video.title);
+
+                  const description =
+                    getBilingualText(video.description);
+
+                  const youtube =
+                    video.videoType === "youtube" ||
+                    (!video.videoType &&
+                      isYoutubeUrl(video.url));
+
+                  const embedUrl = youtube
+                    ? getYoutubeEmbedUrl(video.url)
+                    : "";
+
+                  /* =================================================
+                     SELECT TITLE BASED ON CURRENT WEBSITE LANGUAGE
+                  ================================================= */
+
+                  const displayTitle =
+                    language === "mr"
+                      ? title.mr || title.en
+                      : title.en || title.mr;
+
+                  /* =================================================
+                     SELECT DESCRIPTION BASED ON CURRENT WEBSITE LANGUAGE
+                  ================================================= */
+
+                  const displayDescription =
+                    language === "mr"
+                      ? description.mr ||
+                      description.en
+                      : description.en ||
+                      description.mr;
+
+                  return (
+
+                    <article
+                      key={video._id}
+                      className="group overflow-hidden rounded-2xl border border-[#eadfce] bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                    >
+
+                      {/* Video frame */}
+
+                      <div className="relative aspect-video overflow-hidden rounded-xl bg-[#f5ede1]">
+
+                        {youtube &&
+                          embedUrl ? (
+
+                          <iframe
+                            src={embedUrl}
+                            title={
+                              displayTitle ||
+                              "Maa Narmada Sanstha Video"
+                            }
+                            className="h-full w-full"
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                          />
+
+                        ) : (
+
+                          <video
+                            src={video.url}
+                            controls
+                            playsInline
+                            preload="metadata"
+                            className="h-full w-full object-contain"
+                          >
+                            {
+                              currentText.browserError
+                            }
+                          </video>
+
+                        )}
+
+                      </div>
+
+                      {/* Card content */}
+
+                      <div className="px-2 pb-2 pt-5">
+
+                        {/* Type */}
+
+                        <div className="mb-3">
+
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${youtube
+                                ? "bg-red-50 text-red-700"
+                                : "bg-orange-50 text-orange-700"
+                              }`}
+                          >
+
+                            {youtube ? (
+
+                              <>
+
+                                <Youtube className="h-3.5 w-3.5" />
+
+                                {
+                                  currentText.youtube
+                                }
+
+                              </>
+
+                            ) : (
+
+                              <>
+
+                                <Upload className="h-3.5 w-3.5" />
+
+                                {
+                                  currentText.officialVideo
+                                }
+
+                              </>
+
+                            )}
+
+                          </span>
+
+                        </div>
+
+                        {/* Title */}
+
+                        <h3 className="text-xl font-semibold leading-7 text-[#4d2d21]">
+
+                          {displayTitle ||
+                            currentText.heroTitle}
+
+                        </h3>
+
+                        {/* Description */}
+
+                        {displayDescription && (
+
+                          <p className="mt-3 line-clamp-3 text-sm leading-7 text-[#765d50]">
+
+                            {displayDescription}
+
+                          </p>
+
+                        )}
+
+                        {/* Open button */}
+
+                        <div className="mt-5">
+
+                          <a
+                            href={video.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#e5cdb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#704a38] transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"
+                          >
+
+                            <ExternalLink className="h-4 w-4" />
+
+                            {youtube
+                              ? currentText.youtubeWatch
+                              : currentText.openVideo}
+
+                          </a>
+
+                        </div>
+
+                      </div>
+
+                    </article>
+
+                  );
+                })}
+
+              </div>
+
+            </>
+
+          )}
+
+      </section>
+
+    </main>
   );
 }
 
+/* =========================================================
+   ROUTE
+========================================================= */
 
-/* =====================================================
-   BILINGUAL TEXT HELPER
-===================================================== */
-
-function getBilingualText(
-  value: BilingualText | string | undefined,
-  lang: "mr" | "en"
-): string {
-
-  if (!value) {
-    return "";
-  }
-
-  // Old data support
-  if (typeof value === "string") {
-    return value;
-  }
-
-  // Current bilingual data
-  if (lang === "mr") {
-    return (
-      value.mr ||
-      value.en ||
-      ""
-    );
-  }
-
-  return (
-    value.en ||
-    value.mr ||
-    ""
-  );
-}
-
-
-/* =====================================================
-   YOUTUBE URL → EMBED URL
-===================================================== */
-
-function getYoutubeEmbedUrl(
-  url: string
-): string {
-
-  try {
-
-    const parsed =
-      new URL(url);
-
-    let videoId = "";
-
-
-    /* ===============================================
-       youtu.be/VIDEO_ID
-    =============================================== */
-
-    if (
-      parsed.hostname.includes(
-        "youtu.be"
-      )
-    ) {
-
-      videoId =
-        parsed.pathname
-          .replace("/", "")
-          .split("/")[0] ?? "";
-
-    }
-
-
-    /* ===============================================
-       youtube.com/watch?v=VIDEO_ID
-    =============================================== */
-
-    else if (
-      parsed.hostname.includes(
-        "youtube.com"
-      )
-    ) {
-
-      videoId =
-        parsed.searchParams.get(
-          "v"
-        ) || "";
-
-
-      /* =============================================
-         /shorts/VIDEO_ID
-      ============================================= */
-
-      if (
-        !videoId &&
-        parsed.pathname.startsWith(
-          "/shorts/"
-        )
-      ) {
-
-        videoId =
-          parsed.pathname
-            .split("/shorts/")[1]
-            ?.split("/")[0] || "";
-
-      }
-
-
-      /* =============================================
-         /embed/VIDEO_ID
-      ============================================= */
-
-      if (
-        !videoId &&
-        parsed.pathname.startsWith(
-          "/embed/"
-        )
-      ) {
-
-        videoId =
-          parsed.pathname
-            .split("/embed/")[1]
-            ?.split("/")[0] || "";
-
-      }
-
-    }
-
-
-    if (videoId) {
-
-      return `https://www.youtube-nocookie.com/embed/${videoId}`;
-
-    }
-
-  } catch {
-    // Invalid URL
-  }
-
-  return "";
-}
-
-
-/* =====================================================
-   DATE FORMAT
-===================================================== */
-
-function formatVideoDate(
-  date: string,
-  lang: "mr" | "en"
-) {
-
-  /*
-   * Supports:
-   * 2026-07-05
-   * 05-07-2026
-   * other normal date strings
-   */
-
-  let parsedDate: Date;
-
-  /* ===============================================
-     DD-MM-YYYY
-  =============================================== */
-
-  const ddmmyyyy =
-    /^(\d{2})-(\d{2})-(\d{4})$/.exec(
-      date
-    );
-
-  if (ddmmyyyy) {
-
-    const day =
-      Number(ddmmyyyy[1]);
-
-    const month =
-      Number(ddmmyyyy[2]) - 1;
-
-    const year =
-      Number(ddmmyyyy[3]);
-
-    parsedDate =
-      new Date(
-        year,
-        month,
-        day
-      );
-
-  } else {
-
-    parsedDate =
-      new Date(date);
-
-  }
-
-
-  if (
-    Number.isNaN(
-      parsedDate.getTime()
-    )
-  ) {
-
-    return date;
-
-  }
-
-
-  return parsedDate.toLocaleDateString(
-    lang === "mr"
-      ? "mr-IN"
-      : "en-IN",
-    {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }
-  );
-}
+export const Route = createFileRoute("/videos")({
+  component: VideosPage,
+});

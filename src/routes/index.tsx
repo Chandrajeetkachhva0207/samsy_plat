@@ -57,7 +57,8 @@ head: () => ({
     {
       rel: "icon",
       type: "image/jpeg",
-      href: "/favicon.jpg",
+      href: "/favicon-v2.jpg",
+      //href: "/favicon.jpg",
     },
     {
       rel: "canonical",
