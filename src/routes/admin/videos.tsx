@@ -622,7 +622,7 @@ function getYoutubeEmbedUrl(
         videoId =
           parsed.pathname.split(
             "/shorts/"
-          )[1];
+          )[1] ?? "";
       }
 
       if (
@@ -634,7 +634,7 @@ function getYoutubeEmbedUrl(
         videoId =
           parsed.pathname.split(
             "/embed/"
-          )[1];
+          )[1] ?? "";
       }
     }
 

@@ -41,7 +41,6 @@ function About() {
             </Card>
           ))}
         </div>
-        <EditableNote text={about.verified} />
       </Section>
 
       <Section tone="cream">

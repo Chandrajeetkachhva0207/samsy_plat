@@ -67,12 +67,13 @@ export function Section({
   className = "",
 }: {
   children: ReactNode;
-  tone?: "plain" | "sand";
+  tone?: "plain" | "sand" | "cream";
   className?: string;
 }) {
+  const toneBg = tone === "sand" || tone === "cream" ? "bg-sand" : "bg-background";
   return (
     <section
-      className={`${tone === "sand" ? "bg-sand" : "bg-background"} py-12 sm:py-16 ${className}`}
+      className={`${toneBg} py-12 sm:py-16 ${className}`}
     >
       <Container>
         <FadeIn>{children}</FadeIn>

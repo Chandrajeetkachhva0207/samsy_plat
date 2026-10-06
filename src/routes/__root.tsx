@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -39,7 +40,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -89,11 +90,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "मा नर्मदा आध्यात्मिक शिक्षण संस्था" },
       { property: "og:locale", content: "mr_IN" },
+      { property: "og:url", content: "https://www.maanarmadasanstha.org" },
+      { property: "og:image", content: "https://www.maanarmadasanstha.org/images/logo.jpg" },
+      { property: "og:image:width", content: "1024" },
+      { property: "og:image:height", content: "1024" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://www.maanarmadasanstha.org/images/logo.jpg" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/images/logo.jpg", type: "image/jpeg" },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "icon", href: "/images/logo-192.png", type: "image/png", sizes: "192x192" },
+      { rel: "icon", href: "/images/logo-48.png", type: "image/png", sizes: "48x48" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -109,6 +118,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@type": "EducationalOrganization",
           name: "मा नर्मदा आध्यात्मिक शिक्षण संस्था",
           alternateName: "Maa Narmada Adhyatmik Shikshan Sanstha",
+          url: "https://www.maanarmadasanstha.org",
+          logo: "https://www.maanarmadasanstha.org/images/logo.jpg",
+          image: "https://www.maanarmadasanstha.org/images/logo.jpg",
           address: {
             "@type": "PostalAddress",
             streetAddress: "मा नर्मदा आध्यात्मिक गुरुकुल, आळंदी देवाची",

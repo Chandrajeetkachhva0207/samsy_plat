@@ -415,7 +415,7 @@ function getYoutubeEmbedUrl(
       videoId =
         parsed.pathname
           .replace("/", "")
-          .split("/")[0];
+          .split("/")[0] ?? "";
 
     }
 

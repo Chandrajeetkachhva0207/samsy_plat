@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { nav, org } from "@/content/site";
+import { nav, org, secondaryNav } from "@/content/site";
 import { useLang } from "@/lib/lang";
 import { useAuth } from "@/lib/auth";
 import { Container } from "./ui";
@@ -193,7 +193,7 @@ export function Header() {
                     onClick={() => setOpen(false)}
                     activeOptions={{ exact: n.to === "/" }}
                     activeProps={{
-                      className: "bg-accent text-maroon",
+                      className: "bg-accent text-maroon font-semibold",
                     }}
                     className="block rounded-lg px-3 py-2.5 hover:bg-accent"
                   >
@@ -202,6 +202,39 @@ export function Header() {
                 </li>
               ))}
             </ul>
+
+            {secondaryNav && secondaryNav.length > 0 && (
+              <div className="mt-2.5 border-t border-border/70 pt-2.5">
+                <p className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {t({ mr: "अधिकृत माहिती व योजना", en: "Official Info & Plans" })}
+                </p>
+                <ul className="grid gap-1">
+                  {secondaryNav.map((n) => (
+                    <li key={n.to}>
+                      <Link
+                        to={n.to}
+                        onClick={() => setOpen(false)}
+                        activeProps={{
+                          className: "bg-accent text-maroon font-semibold",
+                        }}
+                        className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-accent ${
+                          n.to === "/certificates"
+                            ? "font-semibold text-maroon bg-sand/50"
+                            : "text-foreground/90"
+                        }`}
+                      >
+                        <span>{t(n.label)}</span>
+                        {n.to === "/certificates" && (
+                          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                            {t({ mr: "अधिकृत ४ कागदपत्रे", en: "4 Documents" })}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="mt-3 flex gap-2 sm:hidden">
               <button

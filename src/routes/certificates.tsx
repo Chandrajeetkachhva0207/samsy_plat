@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FileText,
   Download,
@@ -9,7 +9,6 @@ import {
   Clock,
   Building2,
   Calendar,
-  Hash,
   Copy,
   Check,
   ChevronDown,
@@ -19,6 +18,14 @@ import {
   Briefcase,
   Award,
   Image as ImageIcon,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  X,
+  Maximize2,
+  ChevronLeft,
+  ChevronRight,
+  Smartphone,
 } from "lucide-react";
 import { Card, PageHeader, Section } from "@/components/ui";
 import {
@@ -27,6 +34,7 @@ import {
   panCardDetails,
   csrDetails,
   trustRegistrationDetails,
+  type CertificateItem,
 } from "@/content/site";
 import { useLang } from "@/lib/lang";
 
@@ -58,14 +66,39 @@ export const Route = createFileRoute("/certificates")({
   component: Certificates,
 });
 
+interface LightboxData {
+  title: string;
+  subtitle?: string | undefined;
+  pages: { label: string; url: string }[];
+  currentPage: number;
+  pdfUrl?: string | undefined;
+  pdfFileName?: string | undefined;
+}
+
 function Certificates() {
   const { t } = useLang();
+
+  // Accordion preview states
   const [showTrustPreview, setShowTrustPreview] = useState(false);
   const [selectedTrustPage, setSelectedTrustPage] = useState<1 | 2>(1);
-  const [showPanPreview, setShowPanPreview] = useState(false);
-  const [showForm10ACPreview, setShowForm10ACPreview] = useState(false);
+  const [trustPreviewMode, setTrustPreviewMode] = useState<"image" | "pdf">("image");
+
   const [showCsrPreview, setShowCsrPreview] = useState(false);
+  const [csrPreviewMode, setCsrPreviewMode] = useState<"image" | "pdf">("image");
+
+  const [showPanPreview, setShowPanPreview] = useState(false);
+  const [panPreviewMode, setPanPreviewMode] = useState<"image" | "pdf">("image");
+
+  const [showForm10ACPreview, setShowForm10ACPreview] = useState(false);
+  const [selectedForm10ACPage, setSelectedForm10ACPage] = useState<1 | 2>(1);
+  const [form10ACPreviewMode, setForm10ACPreviewMode] = useState<"image" | "pdf">("image");
+
+  // Copy feedback state
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // Fullscreen Lightbox Modal state
+  const [lightbox, setLightbox] = useState<LightboxData | null>(null);
+  const [lightboxZoom, setLightboxZoom] = useState(1);
 
   const handleCopy = (text: string, key: string) => {
     if (navigator?.clipboard?.writeText) {
@@ -73,6 +106,158 @@ function Certificates() {
       setCopiedKey(key);
       setTimeout(() => setCopiedKey(null), 2000);
     }
+  };
+
+  // Lightbox handlers
+  const openLightbox = (data: LightboxData) => {
+    setLightbox(data);
+    setLightboxZoom(1);
+  };
+
+  const closeLightbox = useCallback(() => {
+    setLightbox(null);
+    setLightboxZoom(1);
+  }, []);
+
+  const handleLightboxNext = useCallback(() => {
+    if (!lightbox || lightbox.pages.length <= 1) return;
+    setLightbox((prev) =>
+      prev
+        ? {
+            ...prev,
+            currentPage: (prev.currentPage + 1) % prev.pages.length,
+          }
+        : null
+    );
+    setLightboxZoom(1);
+  }, [lightbox]);
+
+  const handleLightboxPrev = useCallback(() => {
+    if (!lightbox || lightbox.pages.length <= 1) return;
+    setLightbox((prev) =>
+      prev
+        ? {
+            ...prev,
+            currentPage:
+              (prev.currentPage - 1 + prev.pages.length) % prev.pages.length,
+          }
+        : null
+    );
+    setLightboxZoom(1);
+  }, [lightbox]);
+
+  // Lock body scroll and keyboard listener for Lightbox
+  useEffect(() => {
+    if (!lightbox) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeLightbox();
+      } else if (e.key === "ArrowRight") {
+        handleLightboxNext();
+      } else if (e.key === "ArrowLeft") {
+        handleLightboxPrev();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [lightbox, closeLightbox, handleLightboxNext, handleLightboxPrev]);
+
+  // Specific lightbox openers
+  const openTrustLightbox = (initialPage: 1 | 2 = 1) => {
+    openLightbox({
+      title: t(trustRegistrationDetails.title),
+      subtitle: `${trustRegistrationDetails.trustNumber} | ${trustRegistrationDetails.societyNumber}`,
+      pages: [
+        {
+          label: t({ mr: "पान १ (विश्वस्त नोंदणी क्र. १५९८४)", en: "Page 1 (Trust Reg F-15984)" }),
+          url: trustRegistrationDetails.page1Image,
+        },
+        {
+          label: t({ mr: "पान २ (संस्था नोंदणी क्र. महा-६७/२०१४)", en: "Page 2 (Society Reg Maha-67/2014)" }),
+          url: trustRegistrationDetails.page2Image,
+        },
+      ],
+      currentPage: initialPage - 1,
+      pdfUrl: trustRegistrationDetails.pdfUrl,
+      pdfFileName: trustRegistrationDetails.pdfFileName,
+    });
+  };
+
+  const openCsrLightbox = () => {
+    openLightbox({
+      title: t(csrDetails.title),
+      subtitle: `${csrDetails.registrationNumber} | SRN: ${csrDetails.srn}`,
+      pages: [
+        {
+          label: t({ mr: "CSR नोंदणी पत्र (ROC Delhi)", en: "CSR Approval Letter (ROC Delhi)" }),
+          url: csrDetails.imageUrl,
+        },
+      ],
+      currentPage: 0,
+      pdfUrl: csrDetails.pdfUrl,
+      pdfFileName: csrDetails.pdfFileName,
+    });
+  };
+
+  const openPanLightbox = () => {
+    openLightbox({
+      title: t(panCardDetails.title),
+      subtitle: `PAN: ${panCardDetails.panNumber}`,
+      pages: [
+        {
+          label: t({ mr: "आयकर पॅन कार्ड (PAN Card)", en: "Income Tax PAN Card" }),
+          url: panCardDetails.imageUrl,
+        },
+      ],
+      currentPage: 0,
+      pdfUrl: panCardDetails.pdfUrl,
+      pdfFileName: panCardDetails.pdfFileName,
+    });
+  };
+
+  const openForm10ACLightbox = (initialPage: 1 | 2 = 1) => {
+    openLightbox({
+      title: t(form10AC.title),
+      subtitle: `URN: ${form10AC.urn} | ${form10AC.approvalDate}`,
+      pages: [
+        {
+          label: t({ mr: "पान १ (80G तात्पुरती मंजुरी आदेश)", en: "Page 1 (80G Approval Order)" }),
+          url: form10AC.page1Image,
+        },
+        {
+          label: t({ mr: "पान २ (अटी व शर्ती)", en: "Page 2 (Conditions & Sanction)" }),
+          url: form10AC.page2Image,
+        },
+      ],
+      currentPage: initialPage - 1,
+      pdfUrl: form10AC.pdfUrl,
+      pdfFileName: form10AC.pdfFileName,
+    });
+  };
+
+  const openCertificateItemLightbox = (item: CertificateItem) => {
+    if (!item.image) return;
+    openLightbox({
+      title: t(item.name),
+      subtitle: item.number,
+      pages: [
+        {
+          label: t(item.name),
+          url: item.image,
+        },
+      ],
+      currentPage: 0,
+      pdfUrl: item.pdf,
+      pdfFileName: item.pdfName,
+    });
   };
 
   const trustDetailsList = [
@@ -273,6 +458,21 @@ function Certificates() {
     },
   ];
 
+  const quickNavItems = [
+    { id: "trust-cert", label: { mr: "१. विश्वस्त नोंदणी (15 984)", en: "1. Trust Reg (15 984)" } },
+    { id: "csr-cert", label: { mr: "२. CSR नोंदणी (CSR-1)", en: "2. CSR Reg (CSR-1)" } },
+    { id: "pan-cert", label: { mr: "३. पॅन कार्ड (PAN)", en: "3. PAN Card" } },
+    { id: "form10ac-cert", label: { mr: "४. 80G मंजुरी (Form 10AC)", en: "4. 80G Form 10AC" } },
+    { id: "all-certs", label: { mr: "५. सर्व प्रमाणपत्रे सूची", en: "5. All Certificates" } },
+  ];
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
     <>
       <PageHeader
@@ -284,44 +484,81 @@ function Certificates() {
       />
 
       <Section>
+        {/* Mobile Quick Navigation Chips */}
+        <div className="mb-6 -mt-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground mr-1 shrink-0">
+              <Smartphone className="h-3.5 w-3.5 text-primary" />
+              {t({ mr: "त्वरित विभाग:", en: "Jump to:" })}
+            </span>
+            {quickNavItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollToSection(item.id)}
+                className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground shadow-xs hover:border-primary/50 hover:bg-sand/60 transition-all active:scale-95 cursor-pointer shrink-0"
+              >
+                {t(item.label)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile View Notice Banner */}
+        <div className="mb-8 rounded-xl border border-emerald-500/30 bg-emerald-50/60 dark:bg-emerald-950/20 p-3.5 sm:p-4 text-xs text-emerald-900 dark:text-emerald-200 flex items-start gap-3">
+          <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <div className="leading-relaxed">
+            <strong className="font-semibold">
+              {t({ mr: "मोबाईल व्ह्यू अनुकूलता:", en: "Mobile Optimized View:" })}
+            </strong>{" "}
+            {t({
+              mr: "सर्व प्रमाणपत्रे मोबाईलवर स्पष्ट वाचता येण्यासाठी हाय-डेफिनिशन (HD) फॉरमॅटमध्ये उपलब्ध आहेत. कोणत्याही प्रमाणपत्राच्या फोटोवर टॅप करून तुम्ही ते पूर्ण पडद्यावर (Fullscreen) झूम करू शकता.",
+              en: "All certificates are available in high-definition (HD) format for crisp viewing on mobile screens. Tap on any certificate image to inspect and zoom in full screen.",
+            })}
+          </div>
+        </div>
+
         {/* =========================================================
             FEATURED CARD 1: TRUST REGISTRATION CERTIFICATE (15 984)
            ========================================================= */}
-        <div className="relative mb-10 overflow-hidden rounded-2xl border-2 border-primary/30 bg-card p-6 shadow-md transition-all sm:p-8">
+        <div
+          id="trust-cert"
+          className="relative mb-10 overflow-hidden rounded-2xl border-2 border-primary/30 bg-card p-4 sm:p-6 md:p-8 shadow-md transition-all scroll-mt-24"
+        >
           <div
             className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
             aria-hidden="true"
           />
 
           {/* Header Row */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                <Award className="h-7 w-7" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-5">
+            <div className="flex items-start sm:items-center gap-3 min-w-0">
+              <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <Award className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3 w-3" />
                     {t({ mr: "पडताळणीकृत नोंदणी", en: "Verified Registration" })}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-maroon">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-maroon">
                     {t({ mr: "धर्मादाय आयुक्त कार्यालय", en: "Charity Commissioner" })}
                   </span>
                 </div>
-                <h2 className="mt-1 text-xl font-bold tracking-tight text-maroon sm:text-2xl">
+                <h2 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-maroon leading-tight break-words">
                   {t(trustRegistrationDetails.title)} — {trustRegistrationDetails.trustNumber}
                 </h2>
-                <p className="text-xs text-muted-foreground">{t(trustRegistrationDetails.subTitle)}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t(trustRegistrationDetails.subTitle)}</p>
               </div>
             </div>
 
             {/* Quick Badges */}
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="rounded-lg border border-border bg-sand px-3 py-1 font-mono font-medium">
+            <div className="flex flex-wrap items-center gap-2 text-xs shrink-0">
+              <span className="rounded-lg border border-border bg-sand px-2.5 py-1 font-mono font-medium">
                 Trust No: <strong className="text-foreground">{trustRegistrationDetails.trustNumber}</strong>
               </span>
-              <span className="rounded-lg border border-border bg-sand px-3 py-1 font-mono font-medium">
+              <span className="rounded-lg border border-border bg-sand px-2.5 py-1 font-mono font-medium">
                 Society No: <strong className="text-foreground">{trustRegistrationDetails.societyNumber}</strong>
               </span>
             </div>
@@ -331,16 +568,16 @@ function Certificates() {
           <div className="mt-6 grid gap-6 lg:grid-cols-12 lg:items-start">
             {/* Visual Certificate Picture Display */}
             <div className="lg:col-span-5">
-              <div className="overflow-hidden rounded-2xl border border-border/80 bg-sand/30 p-2 shadow-sm transition-all hover:shadow-md">
+              <div className="overflow-hidden rounded-2xl border border-border/80 bg-sand/30 p-2.5 shadow-sm transition-all hover:shadow-md">
                 {/* Page Switcher Tabs */}
-                <div className="mb-2 flex items-center justify-between gap-1 border-b border-border/60 pb-2">
+                <div className="mb-2.5 flex items-center justify-between gap-1.5 border-b border-border/60 pb-2">
                   <button
                     type="button"
                     onClick={() => setSelectedTrustPage(1)}
-                    className={`flex-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer ${
+                    className={`flex-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer min-h-[36px] flex items-center justify-center text-center ${
                       selectedTrustPage === 1
                         ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-card text-muted-foreground hover:bg-accent"
+                        : "bg-card text-muted-foreground hover:bg-accent hover:text-foreground"
                     }`}
                   >
                     {t({ mr: "पान १ (विश्वस्त नोंदणी)", en: "Page 1 (Trust Reg)" })}
@@ -348,18 +585,27 @@ function Certificates() {
                   <button
                     type="button"
                     onClick={() => setSelectedTrustPage(2)}
-                    className={`flex-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer ${
+                    className={`flex-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer min-h-[36px] flex items-center justify-center text-center ${
                       selectedTrustPage === 2
                         ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-card text-muted-foreground hover:bg-accent"
+                        : "bg-card text-muted-foreground hover:bg-accent hover:text-foreground"
                     }`}
                   >
                     {t({ mr: "पान २ (संस्था नोंदणी)", en: "Page 2 (Society Reg)" })}
                   </button>
                 </div>
 
-                {/* Picture Container */}
-                <div className="relative group overflow-hidden rounded-xl border border-border bg-white">
+                {/* Picture Container with Tap-to-Zoom */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openTrustLightbox(selectedTrustPage)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") openTrustLightbox(selectedTrustPage);
+                  }}
+                  className="relative group overflow-hidden rounded-xl border border-border bg-white cursor-pointer select-none"
+                  title={t({ mr: "मोठ्या आकारात पाहण्यासाठी टॅप करा", en: "Tap to view in full screen" })}
+                >
                   <img
                     src={
                       selectedTrustPage === 1
@@ -370,31 +616,37 @@ function Certificates() {
                     className="aspect-[613/872] w-full rounded-lg object-contain shadow-sm transition-transform duration-300 group-hover:scale-[1.01]"
                     loading="lazy"
                   />
-                  <div className="absolute bottom-2 right-2 rounded-md bg-black/60 px-2 py-0.5 text-[11px] text-white backdrop-blur-sm">
+
+                  {/* Tap-to-Zoom Overlay Badge */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                    <div className="rounded-full bg-black/75 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm shadow-md flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                      <ZoomIn className="h-3.5 w-3.5 text-amber-300" />
+                      <span>{t({ mr: "झूम करण्यासाठी टॅप करा", en: "Tap to Zoom" })}</span>
+                    </div>
+                  </div>
+
+                  <div className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-[11px] text-white backdrop-blur-sm">
                     {selectedTrustPage === 1 ? "पान १ (F-15984)" : "पान २ (Maha-67/2014)"}
                   </div>
                 </div>
 
-                <div className="mt-2 flex items-center justify-between px-2 text-[11px] text-muted-foreground">
-                  <span className="flex items-center gap-1 font-medium">
-                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                    {selectedTrustPage === 1
-                      ? t({ mr: "नोंदणीचे प्रमाणपत्र (अधिनियम १९५०)", en: "Trust Certificate (Act 1950)" })
-                      : t({ mr: "नोंदणी प्रमाणपत्र (अधिनियम १८६०)", en: "Society Certificate (Act 1860)" })}
+                <div className="mt-2.5 flex items-center justify-between px-1 text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1 font-medium truncate">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">
+                      {selectedTrustPage === 1
+                        ? t({ mr: "नोंदणीचे प्रमाणपत्र (अधिनियम १९५०)", en: "Trust Certificate (Act 1950)" })
+                        : t({ mr: "नोंदणी प्रमाणपत्र (अधिनियम १८६०)", en: "Society Certificate (Act 1860)" })}
+                    </span>
                   </span>
-                  <a
-                    href={
-                      selectedTrustPage === 1
-                        ? trustRegistrationDetails.page1Image
-                        : trustRegistrationDetails.page2Image
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary font-medium hover:underline flex items-center gap-0.5"
+                  <button
+                    type="button"
+                    onClick={() => openTrustLightbox(selectedTrustPage)}
+                    className="text-primary font-semibold hover:underline flex items-center gap-1 shrink-0 ml-2 cursor-pointer"
                   >
-                    {t({ mr: "फोटो झूम करा", en: "Zoom Picture" })}
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                    <Maximize2 className="h-3 w-3" />
+                    {t({ mr: "झूम करा", en: "Zoom" })}
+                  </button>
                 </div>
               </div>
             </div>
@@ -414,7 +666,7 @@ function Certificates() {
                           type="button"
                           onClick={() => handleCopy(item.value, item.key)}
                           title={t({ mr: "कॉपी करा", en: "Copy" })}
-                          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
+                          className="inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95 transition-all cursor-pointer min-h-[28px]"
                         >
                           {copiedKey === item.key ? (
                             <>
@@ -440,7 +692,7 @@ function Certificates() {
               </div>
 
               {/* Legal Act Reference Box */}
-              <div className="rounded-xl border border-border/70 bg-sand/40 p-3.5 text-xs text-muted-foreground space-y-1.5">
+              <div className="rounded-xl border border-border/70 bg-sand/40 p-3.5 text-xs text-muted-foreground space-y-1.5 leading-relaxed">
                 <p>
                   <strong className="text-foreground">
                     {t({ mr: "१. विश्वस्त नोंदणी:", en: "1. Public Trust Registration:" })}
@@ -460,26 +712,26 @@ function Certificates() {
           </div>
 
           {/* Call to Actions for Trust Certificate */}
-          <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-border/80 pt-6">
+          <div className="mt-6 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 border-t border-border/80 pt-5">
             {/* View PDF */}
             <a
               href={trustRegistrationDetails.pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 transition-all active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all active:scale-[0.98] min-h-[44px]"
             >
-              <FileText className="h-4 w-4" />
+              <FileText className="h-4 w-4 shrink-0" />
               <span>{t({ mr: "अधिकृत नोंदणी PDF उघडा", en: "Open Official Trust PDF" })}</span>
-              <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+              <ExternalLink className="h-3.5 w-3.5 opacity-80 shrink-0" />
             </a>
 
             {/* Download PDF */}
             <a
               href={trustRegistrationDetails.pdfUrl}
               download={trustRegistrationDetails.pdfFileName}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-card px-6 py-2.5 text-sm font-semibold text-maroon hover:bg-accent transition-all active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/50 bg-card px-5 py-2.5 text-sm font-semibold text-maroon hover:bg-accent transition-all active:scale-[0.98] min-h-[44px]"
             >
-              <Download className="h-4 w-4 text-primary" />
+              <Download className="h-4 w-4 text-primary shrink-0" />
               <span>{t({ mr: "नोंदणी PDF डाउनलोड करा", en: "Download Trust PDF" })}</span>
             </a>
 
@@ -487,50 +739,134 @@ function Certificates() {
             <button
               type="button"
               onClick={() => setShowTrustPreview(!showTrustPreview)}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer min-h-[44px]"
             >
-              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Eye className="h-4 w-4 text-muted-foreground shrink-0" />
               <span>
                 {showTrustPreview
                   ? t({ mr: "पूर्वावलोकन बंद करा", en: "Close Preview" })
                   : t({ mr: "प्रमाणपत्र २ पाने पूर्वावलोकन पहा", en: "Preview 2-Page Certificate" })}
               </span>
               {showTrustPreview ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
               )}
             </button>
           </div>
 
-          {/* Interactive Document Preview */}
+          {/* Mobile-Friendly Document Preview Accordion */}
           {showTrustPreview && (
             <div className="mt-6 rounded-2xl border border-border bg-sand/30 p-3 sm:p-5">
-              <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+              <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5 font-medium text-foreground">
-                  <Award className="h-4 w-4 text-primary" />
+                  <Award className="h-4 w-4 text-primary shrink-0" />
                   {t({
                     mr: "धर्मादाय आयुक्त कार्यालय — २ पानांचे अधिकृत नोंदणी प्रमाणपत्र दस्तऐवज",
                     en: "Office of Charity Commissioner — 2-Page Official Registration Certificate",
                   })}
                 </span>
-                <a
-                  href={trustRegistrationDetails.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 font-semibold text-primary hover:underline"
-                >
-                  {t({ mr: "पूर्ण पडद्यावर उघडा", en: "Open Fullscreen" })}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* View mode toggle on tablet/desktop */}
+                  <div className="hidden sm:inline-flex rounded-lg border border-border bg-card p-0.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setTrustPreviewMode("image")}
+                      className={`px-2 py-0.5 rounded font-medium cursor-pointer ${
+                        trustPreviewMode === "image"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t({ mr: "HD दस्तऐवज", en: "HD Image" })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTrustPreviewMode("pdf")}
+                      className={`px-2 py-0.5 rounded font-medium cursor-pointer ${
+                        trustPreviewMode === "pdf"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t({ mr: "PDF व्ह्यू", en: "PDF View" })}
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => openTrustLightbox(selectedTrustPage)}
+                    className="flex items-center gap-1 font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                    {t({ mr: "पूर्ण पडद्यावर झूम करा", en: "Fullscreen Zoom" })}
+                  </button>
+                </div>
               </div>
-              <div className="overflow-hidden rounded-xl border border-border bg-white shadow-inner">
-                <iframe
-                  src={`${trustRegistrationDetails.pdfUrl}#toolbar=1&navpanes=0`}
-                  title="Trust Registration Certificate PDF Preview"
-                  className="h-[650px] w-full"
-                />
-              </div>
+
+              {/* Document Image View (Reliable on all mobile devices) */}
+              {trustPreviewMode === "image" ? (
+                <div className="space-y-3">
+                  {/* Page switcher tabs in preview */}
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTrustPage(1)}
+                      className={`rounded-full px-4 py-1 text-xs font-semibold transition-colors cursor-pointer ${
+                        selectedTrustPage === 1
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card border border-border text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {t({ mr: "पान १ (F-15984)", en: "Page 1 (F-15984)" })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTrustPage(2)}
+                      className={`rounded-full px-4 py-1 text-xs font-semibold transition-colors cursor-pointer ${
+                        selectedTrustPage === 2
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card border border-border text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {t({ mr: "पान २ (Maha-67/2014)", en: "Page 2 (Maha-67/2014)" })}
+                    </button>
+                  </div>
+
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openTrustLightbox(selectedTrustPage)}
+                    className="overflow-hidden rounded-xl border border-border bg-white shadow-inner cursor-pointer"
+                  >
+                    <img
+                      src={
+                        selectedTrustPage === 1
+                          ? trustRegistrationDetails.page1Image
+                          : trustRegistrationDetails.page2Image
+                      }
+                      alt="Trust Certificate Preview"
+                      className="mx-auto max-h-[70vh] w-auto object-contain"
+                    />
+                  </div>
+
+                  <div className="text-center text-xs text-muted-foreground">
+                    {t({
+                      mr: "💡 अधिक स्पष्ट वाचण्यासाठी प्रमाणपत्रावर टॅप करा किंवा 'पूर्ण पडद्यावर झूम करा' दाबा.",
+                      en: "💡 Tap image or click 'Fullscreen Zoom' to inspect text in ultra high-definition.",
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-hidden rounded-xl border border-border bg-white shadow-inner">
+                  <iframe
+                    src={`${trustRegistrationDetails.pdfUrl}#toolbar=1&navpanes=0`}
+                    title="Trust Registration Certificate PDF Preview"
+                    className="h-[600px] w-full"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -538,132 +874,193 @@ function Certificates() {
         {/* =========================================================
             FEATURED CARD 2: CSR REGISTRATION (CSR_Registration)
            ========================================================= */}
-        <div className="relative mb-10 overflow-hidden rounded-2xl border-2 border-primary/30 bg-card p-6 shadow-md transition-all sm:p-8">
+        <div
+          id="csr-cert"
+          className="relative mb-10 overflow-hidden rounded-2xl border-2 border-primary/30 bg-card p-4 sm:p-6 md:p-8 shadow-md transition-all scroll-mt-24"
+        >
           <div
             className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
             aria-hidden="true"
           />
 
           {/* Header Row */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                <Briefcase className="h-7 w-7" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-5">
+            <div className="flex items-start sm:items-center gap-3 min-w-0">
+              <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <Briefcase className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3 w-3" />
                     {t({ mr: "कॉर्पोरेट व्यवहार मंत्रालय मान्यता", en: "Ministry of Corporate Affairs Approved" })}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-maroon">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-maroon">
                     {t({ mr: "CSR उपक्रमांसाठी अधिकृत", en: "Approved for CSR Activities" })}
                   </span>
                 </div>
-                <h2 className="mt-1 text-xl font-bold tracking-tight text-maroon sm:text-2xl">
+                <h2 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-maroon leading-tight break-words">
                   {t(csrDetails.title)} — {csrDetails.registrationNumber}
                 </h2>
-                <p className="text-xs text-muted-foreground">{t(csrDetails.subTitle)}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t(csrDetails.subTitle)}</p>
               </div>
             </div>
 
             {/* Quick Badges */}
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="rounded-lg border border-border bg-sand px-3 py-1 font-mono font-medium">
+            <div className="flex flex-wrap items-center gap-2 text-xs shrink-0">
+              <span className="rounded-lg border border-border bg-sand px-2.5 py-1 font-mono font-medium">
                 CSR Reg No: <strong className="text-foreground">{csrDetails.registrationNumber}</strong>
               </span>
-              <span className="rounded-lg border border-border bg-sand px-3 py-1 font-mono font-medium">
+              <span className="rounded-lg border border-border bg-sand px-2.5 py-1 font-mono font-medium">
                 SRN: <strong className="text-foreground">{csrDetails.srn}</strong>
               </span>
             </div>
           </div>
 
-          {/* Institution Notice Box */}
-          <div className="mt-6 rounded-xl border border-border/80 bg-sand/40 p-4 sm:p-5">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="flex items-start gap-2.5">
-                <Building2 className="mt-1 h-5 w-5 shrink-0 text-primary" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t({ mr: "नोंदणीकृत संस्थेचे नाव", en: "Registered Entity Name" })}
-                  </p>
-                  <p className="text-sm font-bold text-foreground">{csrDetails.name}</p>
+          {/* Body: Picture + Key Details */}
+          <div className="mt-6 grid gap-6 lg:grid-cols-12 lg:items-start">
+            {/* Visual Certificate Picture Display for CSR */}
+            <div className="lg:col-span-5">
+              <div className="overflow-hidden rounded-2xl border border-border/80 bg-sand/30 p-2.5 shadow-sm transition-all hover:shadow-md">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={openCsrLightbox}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") openCsrLightbox();
+                  }}
+                  className="relative group overflow-hidden rounded-xl border border-border bg-white cursor-pointer select-none"
+                  title={t({ mr: "मोठ्या आकारात पाहण्यासाठी टॅप करा", en: "Tap to view in full screen" })}
+                >
+                  <img
+                    src={csrDetails.imageUrl}
+                    alt="Official CSR Registration Certificate"
+                    className="aspect-[613/872] w-full rounded-lg object-contain shadow-sm transition-transform duration-300 group-hover:scale-[1.01]"
+                    loading="lazy"
+                  />
+
+                  {/* Tap-to-Zoom Overlay Badge */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                    <div className="rounded-full bg-black/75 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm shadow-md flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                      <ZoomIn className="h-3.5 w-3.5 text-amber-300" />
+                      <span>{t({ mr: "झूम करण्यासाठी टॅप करा", en: "Tap to Zoom" })}</span>
+                    </div>
+                  </div>
+
+                  <div className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-[11px] text-white backdrop-blur-sm">
+                    CSR-1 (MCA)
+                  </div>
+                </div>
+
+                <div className="mt-2.5 flex items-center justify-between px-1 text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1 font-medium truncate">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">
+                      {t({ mr: "कंपनी निबंधक (ROC Delhi) अधिकृत पत्र", en: "ROC Delhi Official Letter" })}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={openCsrLightbox}
+                    className="text-primary font-semibold hover:underline flex items-center gap-1 shrink-0 ml-2 cursor-pointer"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                    {t({ mr: "झूम करा", en: "Zoom" })}
+                  </button>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5">
-                <Calendar className="mt-1 h-5 w-5 shrink-0 text-primary" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t({ mr: "मंजुरी दिनांक व प्राधिकारी", en: "Approval Date & Authority" })}
-                  </p>
-                  <p className="text-sm font-bold text-foreground">
-                    दि. {csrDetails.approvalDate} — {t(csrDetails.authority)}
-                  </p>
+            </div>
+
+            {/* Structured Details */}
+            <div className="space-y-3 lg:col-span-7">
+              {/* Institution Notice Box */}
+              <div className="rounded-xl border border-border/80 bg-sand/40 p-3.5 sm:p-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-start gap-2.5">
+                    <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t({ mr: "नोंदणीकृत संस्थेचे नाव", en: "Registered Entity Name" })}
+                      </p>
+                      <p className="text-xs sm:text-sm font-bold text-foreground break-words">{csrDetails.name}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t({ mr: "मंजुरी दिनांक व प्राधिकारी", en: "Approval Date & Authority" })}
+                      </p>
+                      <p className="text-xs sm:text-sm font-bold text-foreground">
+                        दि. {csrDetails.approvalDate} — {t(csrDetails.authority)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              {/* Key Details Grid */}
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {csrDetailsList.map((item) => (
+                  <div
+                    key={item.key}
+                    className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-3 transition-colors hover:border-primary/40"
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-xs text-muted-foreground">{t(item.label)}</span>
+                      {item.copyable && (
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(item.value, item.key)}
+                          title={t({ mr: "कॉपी करा", en: "Copy" })}
+                          className="inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95 transition-all cursor-pointer min-h-[28px]"
+                        >
+                          {copiedKey === item.key ? (
+                            <>
+                              <Check className="h-3 w-3 text-emerald-600" />
+                              <span className="text-emerald-600 font-medium">
+                                {t({ mr: "कॉपी झाले", en: "Copied" })}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3 w-3" />
+                              <span>{t({ mr: "कॉपी", en: "Copy" })}</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                    <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground sm:text-sm">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Key Details Grid */}
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {csrDetailsList.map((item) => (
-              <div
-                key={item.key}
-                className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-3 transition-colors hover:border-primary/40"
-              >
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs text-muted-foreground">{t(item.label)}</span>
-                  {item.copyable && (
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(item.value, item.key)}
-                      title={t({ mr: "कॉपी करा", en: "Copy" })}
-                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
-                    >
-                      {copiedKey === item.key ? (
-                        <>
-                          <Check className="h-3 w-3 text-emerald-600" />
-                          <span className="text-emerald-600 font-medium">
-                            {t({ mr: "कॉपी झाले", en: "Copied" })}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3 w-3" />
-                          <span>{t({ mr: "कॉपी", en: "Copy" })}</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-                <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground sm:text-sm">
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </div>
-
           {/* Call to Actions for CSR PDF */}
-          <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-border/80 pt-6">
+          <div className="mt-6 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 border-t border-border/80 pt-5">
             {/* View CSR PDF */}
             <a
               href={csrDetails.pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 transition-all active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all active:scale-[0.98] min-h-[44px]"
             >
-              <FileText className="h-4 w-4" />
+              <FileText className="h-4 w-4 shrink-0" />
               <span>{t({ mr: "अधिकृत CSR PDF उघडा", en: "Open Official CSR PDF" })}</span>
-              <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+              <ExternalLink className="h-3.5 w-3.5 opacity-80 shrink-0" />
             </a>
 
             {/* Download CSR PDF */}
             <a
               href={csrDetails.pdfUrl}
               download={csrDetails.pdfFileName}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-card px-6 py-2.5 text-sm font-semibold text-maroon hover:bg-accent transition-all active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/50 bg-card px-5 py-2.5 text-sm font-semibold text-maroon hover:bg-accent transition-all active:scale-[0.98] min-h-[44px]"
             >
-              <Download className="h-4 w-4 text-primary" />
+              <Download className="h-4 w-4 text-primary shrink-0" />
               <span>{t({ mr: "CSR PDF डाउनलोड करा", en: "Download CSR PDF" })}</span>
             </a>
 
@@ -671,18 +1068,18 @@ function Certificates() {
             <button
               type="button"
               onClick={() => setShowCsrPreview(!showCsrPreview)}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer min-h-[44px]"
             >
-              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Eye className="h-4 w-4 text-muted-foreground shrink-0" />
               <span>
                 {showCsrPreview
                   ? t({ mr: "पूर्वावलोकन बंद करा", en: "Close Preview" })
                   : t({ mr: "CSR दस्तऐवज पूर्वावलोकन पहा", en: "Preview CSR Document" })}
               </span>
               {showCsrPreview ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
               )}
             </button>
           </div>
@@ -690,31 +1087,83 @@ function Certificates() {
           {/* Interactive CSR Document Preview */}
           {showCsrPreview && (
             <div className="mt-6 rounded-2xl border border-border bg-sand/30 p-3 sm:p-5">
-              <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+              <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5 font-medium text-foreground">
-                  <Briefcase className="h-4 w-4 text-primary" />
+                  <Briefcase className="h-4 w-4 text-primary shrink-0" />
                   {t({
                     mr: "कंपनी निबंधक (ROC Delhi) — अधिकृत स्वाक्षरीकृत CSR नोंदणी पत्र",
                     en: "Registrar of Companies (ROC Delhi) — Official Signed CSR Approval Letter",
                   })}
                 </span>
-                <a
-                  href={csrDetails.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 font-semibold text-primary hover:underline"
-                >
-                  {t({ mr: "पूर्ण पडद्यावर उघडा", en: "Open Fullscreen" })}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="hidden sm:inline-flex rounded-lg border border-border bg-card p-0.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setCsrPreviewMode("image")}
+                      className={`px-2 py-0.5 rounded font-medium cursor-pointer ${
+                        csrPreviewMode === "image"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t({ mr: "HD दस्तऐवज", en: "HD Image" })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCsrPreviewMode("pdf")}
+                      className={`px-2 py-0.5 rounded font-medium cursor-pointer ${
+                        csrPreviewMode === "pdf"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t({ mr: "PDF व्ह्यू", en: "PDF View" })}
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={openCsrLightbox}
+                    className="flex items-center gap-1 font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                    {t({ mr: "पूर्ण पडद्यावर झूम करा", en: "Fullscreen Zoom" })}
+                  </button>
+                </div>
               </div>
-              <div className="overflow-hidden rounded-xl border border-border bg-white shadow-inner">
-                <iframe
-                  src={`${csrDetails.pdfUrl}#toolbar=1&navpanes=0`}
-                  title="CSR Registration PDF Preview"
-                  className="h-[600px] w-full"
-                />
-              </div>
+
+              {csrPreviewMode === "image" ? (
+                <div className="space-y-3">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={openCsrLightbox}
+                    className="overflow-hidden rounded-xl border border-border bg-white shadow-inner cursor-pointer"
+                  >
+                    <img
+                      src={csrDetails.imageUrl}
+                      alt="CSR Registration Certificate Preview"
+                      className="mx-auto max-h-[70vh] w-auto object-contain"
+                    />
+                  </div>
+
+                  <div className="text-center text-xs text-muted-foreground">
+                    {t({
+                      mr: "💡 अधिक स्पष्ट वाचण्यासाठी प्रमाणपत्रावर टॅप करा किंवा 'पूर्ण पडद्यावर झूम करा' दाबा.",
+                      en: "💡 Tap image or click 'Fullscreen Zoom' to inspect text in ultra high-definition.",
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-hidden rounded-xl border border-border bg-white shadow-inner">
+                  <iframe
+                    src={`${csrDetails.pdfUrl}#toolbar=1&navpanes=0`}
+                    title="CSR Registration PDF Preview"
+                    className="h-[600px] w-full"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -722,62 +1171,90 @@ function Certificates() {
         {/* =========================================================
             FEATURED CARD 3: PAN CARD (स्थायी लेखा संख्या कार्ड)
            ========================================================= */}
-        <div className="relative mb-10 overflow-hidden rounded-2xl border-2 border-primary/30 bg-card p-6 shadow-md transition-all sm:p-8">
+        <div
+          id="pan-cert"
+          className="relative mb-10 overflow-hidden rounded-2xl border-2 border-primary/30 bg-card p-4 sm:p-6 md:p-8 shadow-md transition-all scroll-mt-24"
+        >
           <div
             className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
             aria-hidden="true"
           />
 
           {/* Header Row */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                <CreditCard className="h-7 w-7" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-5">
+            <div className="flex items-start sm:items-center gap-3 min-w-0">
+              <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <CreditCard className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3 w-3" />
                     {t({ mr: "अधिकृत पॅन कार्ड", en: "Official PAN Card" })}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-maroon">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-maroon">
                     {t({ mr: "कायमस्वरूपी वैधता", en: "Permanent Validity" })}
                   </span>
                 </div>
-                <h2 className="mt-1 text-xl font-bold tracking-tight text-maroon sm:text-2xl">
+                <h2 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-maroon leading-tight break-words">
                   {t(panCardDetails.title)} — {panCardDetails.panNumber}
                 </h2>
-                <p className="text-xs text-muted-foreground">{t(panCardDetails.authority)}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t(panCardDetails.authority)}</p>
               </div>
             </div>
 
             {/* Quick PAN Badge */}
-            <div className="flex items-center gap-2 text-xs">
-              <span className="rounded-lg border border-border bg-sand px-3 py-1 font-mono font-medium">
+            <div className="flex items-center gap-2 text-xs shrink-0">
+              <span className="rounded-lg border border-border bg-sand px-2.5 py-1 font-mono font-medium">
                 PAN: <strong className="text-foreground">{panCardDetails.panNumber}</strong>
               </span>
             </div>
           </div>
 
-          {/* Body: 2 Columns on Desktop (Card Image + Key Information) */}
+          {/* Body: Card Image + Key Information */}
           <div className="mt-6 grid gap-6 lg:grid-cols-12 lg:items-center">
             {/* Visual PAN Card Preview */}
             <div className="lg:col-span-5">
-              <div className="group relative overflow-hidden rounded-2xl border border-border/80 bg-sand/30 p-2 shadow-sm transition-all hover:shadow-md">
-                <img
-                  src={panCardDetails.imageUrl}
-                  alt="Official PAN Card - Maa Narmada Adhyatmik Sanstha"
-                  className="aspect-[595/375] w-full rounded-xl object-contain shadow-sm transition-transform duration-300 group-hover:scale-[1.01]"
-                  loading="lazy"
-                />
-                <div className="mt-2 flex items-center justify-between px-2 text-[11px] text-muted-foreground">
+              <div className="overflow-hidden rounded-2xl border border-border/80 bg-sand/30 p-2.5 shadow-sm transition-all hover:shadow-md">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={openPanLightbox}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") openPanLightbox();
+                  }}
+                  className="relative group overflow-hidden rounded-xl border border-border bg-white cursor-pointer select-none"
+                  title={t({ mr: "मोठ्या आकारात पाहण्यासाठी टॅप करा", en: "Tap to view in full screen" })}
+                >
+                  <img
+                    src={panCardDetails.imageUrl}
+                    alt="Official PAN Card - Maa Narmada Adhyatmik Sanstha"
+                    className="aspect-[595/375] w-full rounded-xl object-contain shadow-sm transition-transform duration-300 group-hover:scale-[1.01]"
+                    loading="lazy"
+                  />
+
+                  {/* Tap-to-Zoom Overlay Badge */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                    <div className="rounded-full bg-black/75 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm shadow-md flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                      <ZoomIn className="h-3.5 w-3.5 text-amber-300" />
+                      <span>{t({ mr: "झूम करण्यासाठी टॅप करा", en: "Tap to Zoom" })}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-2.5 flex items-center justify-between px-1 text-[11px] text-muted-foreground">
                   <span className="flex items-center gap-1 font-medium">
-                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                     {t({ mr: "डिजिटल कार्ड प्रत", en: "Digital Card Copy" })}
                   </span>
-                  <span className="font-mono text-foreground font-semibold">
-                    {panCardDetails.panNumber}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={openPanLightbox}
+                    className="text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                    {t({ mr: "झूम करा", en: "Zoom" })}
+                  </button>
                 </div>
               </div>
             </div>
@@ -797,7 +1274,7 @@ function Certificates() {
                           type="button"
                           onClick={() => handleCopy(item.value, item.key)}
                           title={t({ mr: "कॉपी करा", en: "Copy" })}
-                          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
+                          className="inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95 transition-all cursor-pointer min-h-[28px]"
                         >
                           {copiedKey === item.key ? (
                             <>
@@ -823,7 +1300,7 @@ function Certificates() {
               </div>
 
               {/* Institution Address Notice */}
-              <div className="rounded-xl border border-border/70 bg-sand/40 p-3 text-xs text-muted-foreground">
+              <div className="rounded-xl border border-border/70 bg-sand/40 p-3.5 text-xs text-muted-foreground leading-relaxed">
                 <span className="font-semibold text-foreground">
                   {t({ mr: "नोंदणीकृत पत्ता:", en: "Registered Address:" })}
                 </span>{" "}
@@ -833,26 +1310,26 @@ function Certificates() {
           </div>
 
           {/* Call to Actions for PAN PDF */}
-          <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-border/80 pt-6">
+          <div className="mt-6 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 border-t border-border/80 pt-5">
             {/* View PAN PDF */}
             <a
               href={panCardDetails.pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 transition-all active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all active:scale-[0.98] min-h-[44px]"
             >
-              <FileText className="h-4 w-4" />
+              <FileText className="h-4 w-4 shrink-0" />
               <span>{t({ mr: "PAN अधिकृत PDF उघडा", en: "Open Official PAN PDF" })}</span>
-              <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+              <ExternalLink className="h-3.5 w-3.5 opacity-80 shrink-0" />
             </a>
 
             {/* Download PAN PDF */}
             <a
               href={panCardDetails.pdfUrl}
               download={panCardDetails.pdfFileName}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-card px-6 py-2.5 text-sm font-semibold text-maroon hover:bg-accent transition-all active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/50 bg-card px-5 py-2.5 text-sm font-semibold text-maroon hover:bg-accent transition-all active:scale-[0.98] min-h-[44px]"
             >
-              <Download className="h-4 w-4 text-primary" />
+              <Download className="h-4 w-4 text-primary shrink-0" />
               <span>{t({ mr: "PAN PDF डाउनलोड करा", en: "Download PAN PDF" })}</span>
             </a>
 
@@ -860,18 +1337,18 @@ function Certificates() {
             <button
               type="button"
               onClick={() => setShowPanPreview(!showPanPreview)}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer min-h-[44px]"
             >
-              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Eye className="h-4 w-4 text-muted-foreground shrink-0" />
               <span>
                 {showPanPreview
                   ? t({ mr: "पूर्वावलोकन बंद करा", en: "Close Preview" })
                   : t({ mr: "PDF पूर्वावलोकन पहा", en: "Preview PAN PDF" })}
               </span>
               {showPanPreview ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
               )}
             </button>
           </div>
@@ -879,31 +1356,83 @@ function Certificates() {
           {/* Interactive PAN PDF Preview */}
           {showPanPreview && (
             <div className="mt-6 rounded-2xl border border-border bg-sand/30 p-3 sm:p-5">
-              <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+              <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5 font-medium text-foreground">
-                  <CreditCard className="h-4 w-4 text-primary" />
+                  <CreditCard className="h-4 w-4 text-primary shrink-0" />
                   {t({
                     mr: "पॅन कार्ड अधिकृत PDF दस्तऐवज",
                     en: "Official PAN Card PDF Document",
                   })}
                 </span>
-                <a
-                  href={panCardDetails.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 font-semibold text-primary hover:underline"
-                >
-                  {t({ mr: "पूर्ण पडद्यावर उघडा", en: "Open Fullscreen" })}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="hidden sm:inline-flex rounded-lg border border-border bg-card p-0.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setPanPreviewMode("image")}
+                      className={`px-2 py-0.5 rounded font-medium cursor-pointer ${
+                        panPreviewMode === "image"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t({ mr: "HD दस्तऐवज", en: "HD Image" })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPanPreviewMode("pdf")}
+                      className={`px-2 py-0.5 rounded font-medium cursor-pointer ${
+                        panPreviewMode === "pdf"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t({ mr: "PDF व्ह्यू", en: "PDF View" })}
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={openPanLightbox}
+                    className="flex items-center gap-1 font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                    {t({ mr: "पूर्ण पडद्यावर झूम करा", en: "Fullscreen Zoom" })}
+                  </button>
+                </div>
               </div>
-              <div className="overflow-hidden rounded-xl border border-border bg-white shadow-inner">
-                <iframe
-                  src={`${panCardDetails.pdfUrl}#toolbar=1&navpanes=0`}
-                  title="PAN Card PDF Preview"
-                  className="h-[480px] w-full"
-                />
-              </div>
+
+              {panPreviewMode === "image" ? (
+                <div className="space-y-3">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={openPanLightbox}
+                    className="overflow-hidden rounded-xl border border-border bg-white shadow-inner cursor-pointer"
+                  >
+                    <img
+                      src={panCardDetails.imageUrl}
+                      alt="PAN Card Preview"
+                      className="mx-auto max-h-[60vh] w-auto object-contain"
+                    />
+                  </div>
+
+                  <div className="text-center text-xs text-muted-foreground">
+                    {t({
+                      mr: "💡 अधिक स्पष्ट वाचण्यासाठी प्रमाणपत्रावर टॅप करा किंवा 'पूर्ण पडद्यावर झूम करा' दाबा.",
+                      en: "💡 Tap image or click 'Fullscreen Zoom' to inspect text in ultra high-definition.",
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-hidden rounded-xl border border-border bg-white shadow-inner">
+                  <iframe
+                    src={`${panCardDetails.pdfUrl}#toolbar=1&navpanes=0`}
+                    title="PAN Card PDF Preview"
+                    className="h-[480px] w-full"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -911,132 +1440,224 @@ function Certificates() {
         {/* =========================================================
             FEATURED CARD 4: FORM NO. 10AC (80G APPROVAL ORDER)
            ========================================================= */}
-        <div className="relative mb-12 overflow-hidden rounded-2xl border-2 border-primary/30 bg-card p-6 shadow-md transition-all sm:p-8">
+        <div
+          id="form10ac-cert"
+          className="relative mb-12 overflow-hidden rounded-2xl border-2 border-primary/30 bg-card p-4 sm:p-6 md:p-8 shadow-md transition-all scroll-mt-24"
+        >
           <div
             className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
             aria-hidden="true"
           />
 
           {/* Header Row */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                <ShieldCheck className="h-7 w-7" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-5">
+            <div className="flex items-start sm:items-center gap-3 min-w-0">
+              <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3 w-3" />
                     {t({ mr: "अधिकृत आयकर आदेश", en: "Official IT Order" })}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-maroon">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-maroon">
                     {t({ mr: "कलम 80G तात्पुरती मंजुरी", en: "Section 80G Approval" })}
                   </span>
                 </div>
-                <h2 className="mt-1 text-xl font-bold tracking-tight text-maroon sm:text-2xl">
+                <h2 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-maroon leading-tight break-words">
                   {t(form10AC.title)}
                 </h2>
-                <p className="text-xs text-muted-foreground">{t(form10AC.subRule)}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t(form10AC.subRule)}</p>
               </div>
             </div>
 
             {/* Quick Badges */}
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="rounded-lg border border-border bg-sand px-3 py-1 font-mono font-medium">
+            <div className="flex flex-wrap items-center gap-2 text-xs shrink-0">
+              <span className="rounded-lg border border-border bg-sand px-2.5 py-1 font-mono font-medium">
                 PAN: <strong className="text-foreground">{form10AC.pan}</strong>
               </span>
-              <span className="rounded-lg border border-border bg-sand px-3 py-1 font-mono font-medium">
+              <span className="rounded-lg border border-border bg-sand px-2.5 py-1 font-mono font-medium">
                 URN: <strong className="text-foreground">{form10AC.urn}</strong>
               </span>
             </div>
           </div>
 
-          {/* Entity Summary */}
-          <div className="mt-6 rounded-xl border border-border/80 bg-sand/40 p-4 sm:p-5">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="flex items-start gap-2.5">
-                <Building2 className="mt-1 h-5 w-5 shrink-0 text-primary" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t({ mr: "संस्थेचे अधिकृत नाव", en: "Registered Institution Name" })}
-                  </p>
-                  <p className="text-sm font-bold text-foreground">{form10AC.name}</p>
+          {/* Body: Picture + Key Details */}
+          <div className="mt-6 grid gap-6 lg:grid-cols-12 lg:items-start">
+            {/* Visual Certificate Picture Display for Form 10AC */}
+            <div className="lg:col-span-5">
+              <div className="overflow-hidden rounded-2xl border border-border/80 bg-sand/30 p-2.5 shadow-sm transition-all hover:shadow-md">
+                {/* Page Switcher Tabs */}
+                <div className="mb-2.5 flex items-center justify-between gap-1.5 border-b border-border/60 pb-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedForm10ACPage(1)}
+                    className={`flex-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer min-h-[36px] flex items-center justify-center text-center ${
+                      selectedForm10ACPage === 1
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-card text-muted-foreground hover:bg-accent hover:text-foreground"
+                    }`}
+                  >
+                    {t({ mr: "पान १ (मंजुरी आदेश)", en: "Page 1 (Approval Order)" })}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedForm10ACPage(2)}
+                    className={`flex-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer min-h-[36px] flex items-center justify-center text-center ${
+                      selectedForm10ACPage === 2
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-card text-muted-foreground hover:bg-accent hover:text-foreground"
+                    }`}
+                  >
+                    {t({ mr: "पान २ (अटी व शर्ती)", en: "Page 2 (Conditions)" })}
+                  </button>
+                </div>
+
+                {/* Picture Container with Tap-to-Zoom */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openForm10ACLightbox(selectedForm10ACPage)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") openForm10ACLightbox(selectedForm10ACPage);
+                  }}
+                  className="relative group overflow-hidden rounded-xl border border-border bg-white cursor-pointer select-none"
+                  title={t({ mr: "मोठ्या आकारात पाहण्यासाठी टॅप करा", en: "Tap to view in full screen" })}
+                >
+                  <img
+                    src={
+                      selectedForm10ACPage === 1
+                        ? form10AC.page1Image
+                        : form10AC.page2Image
+                    }
+                    alt="Official Form 10AC Section 80G Approval Certificate"
+                    className="aspect-[613/872] w-full rounded-lg object-contain shadow-sm transition-transform duration-300 group-hover:scale-[1.01]"
+                    loading="lazy"
+                  />
+
+                  {/* Tap-to-Zoom Overlay Badge */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                    <div className="rounded-full bg-black/75 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm shadow-md flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                      <ZoomIn className="h-3.5 w-3.5 text-amber-300" />
+                      <span>{t({ mr: "झूम करण्यासाठी टॅप करा", en: "Tap to Zoom" })}</span>
+                    </div>
+                  </div>
+
+                  <div className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-[11px] text-white backdrop-blur-sm">
+                    {selectedForm10ACPage === 1 ? "पान १ (Form 10AC)" : "पान २ (Conditions)"}
+                  </div>
+                </div>
+
+                <div className="mt-2.5 flex items-center justify-between px-1 text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1 font-medium truncate">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">
+                      {t({ mr: "आयकर विभाग कलम 80G मंजुरी", en: "Income Tax 80G Approval" })}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => openForm10ACLightbox(selectedForm10ACPage)}
+                    className="text-primary font-semibold hover:underline flex items-center gap-1 shrink-0 ml-2 cursor-pointer"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                    {t({ mr: "झूम करा", en: "Zoom" })}
+                  </button>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5">
-                <Calendar className="mt-1 h-5 w-5 shrink-0 text-primary" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t({ mr: "मंजुरी कालावधी व दिनांक", en: "Approval Period & Date" })}
-                  </p>
-                  <p className="text-sm font-bold text-foreground">
-                    {t(form10AC.assessmentYears)} (दि. {form10AC.approvalDate})
-                  </p>
+            </div>
+
+            {/* Structured Details */}
+            <div className="space-y-3 lg:col-span-7">
+              {/* Entity Summary */}
+              <div className="rounded-xl border border-border/80 bg-sand/40 p-3.5 sm:p-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-start gap-2.5">
+                    <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t({ mr: "संस्थेचे अधिकृत नाव", en: "Registered Institution Name" })}
+                      </p>
+                      <p className="text-xs sm:text-sm font-bold text-foreground break-words">{form10AC.name}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t({ mr: "मंजुरी कालावधी व दिनांक", en: "Approval Period & Date" })}
+                      </p>
+                      <p className="text-xs sm:text-sm font-bold text-foreground">
+                        {t(form10AC.assessmentYears)} (दि. {form10AC.approvalDate})
+                      </p>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              {/* Key Details Grid */}
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {formDetails.map((item) => (
+                  <div
+                    key={item.key}
+                    className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-3 transition-colors hover:border-primary/40"
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-xs text-muted-foreground">{t(item.label)}</span>
+                      {item.copyable && (
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(item.value, item.key)}
+                          title={t({ mr: "कॉपी करा", en: "Copy" })}
+                          className="inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95 transition-all cursor-pointer min-h-[28px]"
+                        >
+                          {copiedKey === item.key ? (
+                            <>
+                              <Check className="h-3 w-3 text-emerald-600" />
+                              <span className="text-emerald-600 font-medium">
+                                {t({ mr: "कॉपी झाले", en: "Copied" })}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3 w-3" />
+                              <span>{t({ mr: "कॉपी", en: "Copy" })}</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                    <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground sm:text-sm">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Key Details Grid */}
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {formDetails.map((item) => (
-              <div
-                key={item.key}
-                className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-3.5 transition-colors hover:border-primary/40"
-              >
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs text-muted-foreground">{t(item.label)}</span>
-                  {item.copyable && (
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(item.value, item.key)}
-                      title={t({ mr: "कॉपी करा", en: "Copy" })}
-                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
-                    >
-                      {copiedKey === item.key ? (
-                        <>
-                          <Check className="h-3 w-3 text-emerald-600" />
-                          <span className="text-emerald-600 font-medium">
-                            {t({ mr: "कॉपी झाले", en: "Copied" })}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3 w-3" />
-                          <span>{t({ mr: "कॉपी", en: "Copy" })}</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-                <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground sm:text-sm">
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </div>
-
           {/* Call to Actions for Form 10AC PDF */}
-          <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-border/80 pt-6">
+          <div className="mt-6 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 border-t border-border/80 pt-5">
             {/* View PDF */}
             <a
               href={form10AC.pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 transition-all active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all active:scale-[0.98] min-h-[44px]"
             >
-              <FileText className="h-4 w-4" />
+              <FileText className="h-4 w-4 shrink-0" />
               <span>{t({ mr: "अधिकृत फॉर्म १०AC PDF उघडा", en: "Open Official Form 10AC PDF" })}</span>
-              <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+              <ExternalLink className="h-3.5 w-3.5 opacity-80 shrink-0" />
             </a>
 
             {/* Download PDF */}
             <a
               href={form10AC.pdfUrl}
               download={form10AC.pdfFileName}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-card px-6 py-2.5 text-sm font-semibold text-maroon hover:bg-accent transition-all active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/50 bg-card px-5 py-2.5 text-sm font-semibold text-maroon hover:bg-accent transition-all active:scale-[0.98] min-h-[44px]"
             >
-              <Download className="h-4 w-4 text-primary" />
+              <Download className="h-4 w-4 text-primary shrink-0" />
               <span>{t({ mr: "फॉर्म १०AC डाउनलोड करा", en: "Download Form 10AC PDF" })}</span>
             </a>
 
@@ -1044,18 +1665,18 @@ function Certificates() {
             <button
               type="button"
               onClick={() => setShowForm10ACPreview(!showForm10ACPreview)}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer min-h-[44px]"
             >
-              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Eye className="h-4 w-4 text-muted-foreground shrink-0" />
               <span>
                 {showForm10ACPreview
                   ? t({ mr: "पूर्वावलोकन बंद करा", en: "Close Preview" })
                   : t({ mr: "दस्तऐवज पूर्वावलोकन पहा", en: "Preview Document" })}
               </span>
               {showForm10ACPreview ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
               )}
             </button>
           </div>
@@ -1063,31 +1684,112 @@ function Certificates() {
           {/* Interactive Form 10AC Document Preview */}
           {showForm10ACPreview && (
             <div className="mt-6 rounded-2xl border border-border bg-sand/30 p-3 sm:p-5">
-              <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+              <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5 font-medium text-foreground">
-                  <FileText className="h-4 w-4 text-primary" />
+                  <FileText className="h-4 w-4 text-primary shrink-0" />
                   {t({
                     mr: "फॉर्म क्र. १०AC — २ पानांचे अधिकृत स्वाक्षरीकृत दस्तऐवज",
                     en: "Form No. 10AC — 2-Page Official Digitally Signed Document",
                   })}
                 </span>
-                <a
-                  href={form10AC.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 font-semibold text-primary hover:underline"
-                >
-                  {t({ mr: "पूर्ण पडद्यावर पहा", en: "View Fullscreen" })}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="hidden sm:inline-flex rounded-lg border border-border bg-card p-0.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setForm10ACPreviewMode("image")}
+                      className={`px-2 py-0.5 rounded font-medium cursor-pointer ${
+                        form10ACPreviewMode === "image"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t({ mr: "HD दस्तऐवज", en: "HD Image" })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm10ACPreviewMode("pdf")}
+                      className={`px-2 py-0.5 rounded font-medium cursor-pointer ${
+                        form10ACPreviewMode === "pdf"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t({ mr: "PDF व्ह्यू", en: "PDF View" })}
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => openForm10ACLightbox(selectedForm10ACPage)}
+                    className="flex items-center gap-1 font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                    {t({ mr: "पूर्ण पडद्यावर झूम करा", en: "Fullscreen Zoom" })}
+                  </button>
+                </div>
               </div>
-              <div className="overflow-hidden rounded-xl border border-border bg-white shadow-inner">
-                <iframe
-                  src={`${form10AC.pdfUrl}#toolbar=1&navpanes=0`}
-                  title="Form No. 10AC PDF Preview"
-                  className="h-[650px] w-full"
-                />
-              </div>
+
+              {form10ACPreviewMode === "image" ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedForm10ACPage(1)}
+                      className={`rounded-full px-4 py-1 text-xs font-semibold transition-colors cursor-pointer ${
+                        selectedForm10ACPage === 1
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card border border-border text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {t({ mr: "पान १ (मंजुरी आदेश)", en: "Page 1 (Approval Order)" })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedForm10ACPage(2)}
+                      className={`rounded-full px-4 py-1 text-xs font-semibold transition-colors cursor-pointer ${
+                        selectedForm10ACPage === 2
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card border border-border text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {t({ mr: "पान २ (अटी व शर्ती)", en: "Page 2 (Conditions)" })}
+                    </button>
+                  </div>
+
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openForm10ACLightbox(selectedForm10ACPage)}
+                    className="overflow-hidden rounded-xl border border-border bg-white shadow-inner cursor-pointer"
+                  >
+                    <img
+                      src={
+                        selectedForm10ACPage === 1
+                          ? form10AC.page1Image
+                          : form10AC.page2Image
+                      }
+                      alt="Form 10AC Certificate Preview"
+                      className="mx-auto max-h-[70vh] w-auto object-contain"
+                    />
+                  </div>
+
+                  <div className="text-center text-xs text-muted-foreground">
+                    {t({
+                      mr: "💡 अधिक स्पष्ट वाचण्यासाठी प्रमाणपत्रावर टॅप करा किंवा 'पूर्ण पडद्यावर झूम करा' दाबा.",
+                      en: "💡 Tap image or click 'Fullscreen Zoom' to inspect text in ultra high-definition.",
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-hidden rounded-xl border border-border bg-white shadow-inner">
+                  <iframe
+                    src={`${form10AC.pdfUrl}#toolbar=1&navpanes=0`}
+                    title="Form No. 10AC PDF Preview"
+                    className="h-[600px] w-full"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1095,7 +1797,7 @@ function Certificates() {
         {/* =========================================================
             ALL CERTIFICATES SUMMARY GRID
            ========================================================= */}
-        <div className="mb-8">
+        <div id="all-certs" className="mb-8 scroll-mt-24">
           <div className="mb-4">
             <h3 className="text-lg font-bold text-maroon sm:text-xl">
               {t({ mr: "सर्व नोंदणी व प्रमाणपत्रे सूची", en: "All Registration & Certificates" })}
@@ -1112,18 +1814,18 @@ function Certificates() {
             {certificates.map((c) => (
               <Card
                 key={c.name.en}
-                className="flex flex-col justify-between border border-border/80 transition-shadow hover:shadow-md"
+                className="flex flex-col justify-between border border-border/80 transition-shadow hover:shadow-md p-4 sm:p-5"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-base font-bold text-maroon">{t(c.name)}</h4>
+                    <h4 className="text-base font-bold text-maroon leading-tight">{t(c.name)}</h4>
                     {c.isVerified ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 shrink-0">
                         <CheckCircle2 className="h-3 w-3" />
                         {t({ mr: "पडताळणीकृत", en: "Verified" })}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-400 shrink-0">
                         <Clock className="h-3 w-3" />
                         {t({ mr: "प्रक्रियेत", en: "In Process" })}
                       </span>
@@ -1131,46 +1833,55 @@ function Certificates() {
                   </div>
 
                   {c.subTitle && (
-                    <p className="mt-1 text-xs text-muted-foreground">{t(c.subTitle)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{t(c.subTitle)}</p>
                   )}
 
-                  {/* Certificate picture thumbnail if available */}
+                  {/* Certificate picture thumbnail */}
                   {c.image && (
-                    <div className="mt-3 group relative overflow-hidden rounded-xl border border-border/70 bg-sand/20">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => openCertificateItemLightbox(c)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") openCertificateItemLightbox(c);
+                      }}
+                      className="mt-3 group relative overflow-hidden rounded-xl border border-border/70 bg-sand/20 cursor-pointer select-none"
+                      title={t({ mr: "मोठ्या आकारात पाहण्यासाठी टॅप करा", en: "Tap to view in full screen" })}
+                    >
                       <img
                         src={c.image}
                         alt={t(c.name)}
-                        className="h-36 w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]"
+                        className="h-40 w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03]"
                         loading="lazy"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                        <span className="text-[11px] text-white font-medium flex items-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          {t({ mr: "प्रमाणपत्र प्रत", en: "Certificate Copy" })}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent flex items-end p-2.5">
+                        <span className="text-[11px] text-white font-semibold flex items-center gap-1.5 drop-shadow-sm">
+                          <Eye className="h-3.5 w-3.5 text-amber-300" />
+                          {t({ mr: "प्रमाणपत्र प्रत पहा (झूम)", en: "View Certificate (Zoom)" })}
                         </span>
                       </div>
                     </div>
                   )}
 
-                  <dl className="mt-4 space-y-2 text-sm">
+                  <dl className="mt-4 space-y-2 text-xs sm:text-sm">
                     {c.number && (
                       <div className="flex justify-between gap-2 border-b border-border/40 pb-1.5">
                         <dt className="text-muted-foreground">
                           {c.numberLabel ? t(c.numberLabel) : t({ mr: "क्रमांक", en: "Number" })}
                         </dt>
-                        <dd className="font-mono font-semibold text-foreground">{c.number}</dd>
+                        <dd className="font-mono font-semibold text-foreground break-all text-right">{c.number}</dd>
                       </div>
                     )}
                     <div className="flex justify-between gap-2">
                       <dt className="text-muted-foreground">
                         {t({ mr: "वैधता / स्थिती", en: "Validity / Status" })}
                       </dt>
-                      <dd className="font-medium text-foreground">{c.validity}</dd>
+                      <dd className="font-medium text-foreground text-right">{c.validity}</dd>
                     </div>
                   </dl>
                 </div>
 
-                {/* Card PDF & Picture actions if available */}
+                {/* Card PDF & Picture actions */}
                 <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
                   {c.pdf && (
                     <>
@@ -1178,7 +1889,7 @@ function Certificates() {
                         href={c.pdf}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-maroon hover:bg-primary/20 transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-maroon hover:bg-primary/20 transition-colors min-h-[36px]"
                       >
                         <FileText className="h-3.5 w-3.5 text-primary" />
                         {t({ mr: "PDF पहा", en: "View PDF" })}
@@ -1187,7 +1898,7 @@ function Certificates() {
                       <a
                         href={c.pdf}
                         download={c.pdfName || "Certificate.pdf"}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors min-h-[36px]"
                       >
                         <Download className="h-3.5 w-3.5" />
                         {t({ mr: "डाउनलोड", en: "Download" })}
@@ -1195,15 +1906,14 @@ function Certificates() {
                     </>
                   )}
                   {c.image && (
-                    <a
-                      href={c.image}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                    <button
+                      type="button"
+                      onClick={() => openCertificateItemLightbox(c)}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer min-h-[36px]"
                     >
                       <ImageIcon className="h-3.5 w-3.5 text-primary" />
                       {t({ mr: "फोटो पहा", en: "View Picture" })}
-                    </a>
+                    </button>
                   )}
                 </div>
               </Card>
@@ -1212,7 +1922,7 @@ function Certificates() {
         </div>
 
         {/* Note on Transparency & Documentation */}
-        <div className="rounded-xl border border-border/70 bg-sand/40 p-4 text-center text-xs text-muted-foreground sm:p-5">
+        <div className="rounded-xl border border-border/70 bg-sand/40 p-4 text-center text-xs text-muted-foreground sm:p-5 leading-relaxed">
           <p>
             {t({
               mr: "📌 मा नर्मदा आध्यात्मिक संस्थेकडून धर्मादाय आयुक्त, आयकर विभाग, कॉर्पोरेट व्यवहार मंत्रालय (MCA) व इतर सक्षम प्राधिकरणांकडून मिळालेली अधिकृत कागदपत्रेच पारदर्शकतेसाठी येथे प्रसिद्ध करण्यात आली आहेत.",
@@ -1221,6 +1931,174 @@ function Certificates() {
           </p>
         </div>
       </Section>
+
+      {/* =========================================================
+          FULLSCREEN INTERACTIVE LIGHTBOX MODAL (MOBILE & DESKTOP)
+         ========================================================= */}
+      {lightbox && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={lightbox.title}
+          className="fixed inset-0 z-50 flex flex-col bg-black/95 text-white backdrop-blur-md animate-in fade-in duration-200"
+        >
+          {/* Top Control Bar */}
+          <div className="flex items-center justify-between gap-3 border-b border-white/15 px-3 py-2.5 sm:px-6 sm:py-3 bg-black/40">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm sm:text-base font-bold text-white truncate">
+                {lightbox.title}
+              </h3>
+              {lightbox.subtitle && (
+                <p className="text-[11px] sm:text-xs text-white/70 truncate">
+                  {lightbox.subtitle}
+                </p>
+              )}
+            </div>
+
+            {/* Middle Zoom & Reset controls */}
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setLightboxZoom((z) => Math.max(1, z - 0.25))}
+                disabled={lightboxZoom <= 1}
+                title="Zoom Out"
+                className="rounded-lg bg-white/10 p-2 text-white hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setLightboxZoom(1)}
+                title="Reset Zoom"
+                className="rounded-lg bg-white/10 px-2 py-1 text-xs font-mono text-white hover:bg-white/20 transition-colors cursor-pointer min-h-[36px] flex items-center justify-center"
+              >
+                {Math.round(lightboxZoom * 100)}%
+              </button>
+              <button
+                type="button"
+                onClick={() => setLightboxZoom((z) => Math.min(3, z + 0.25))}
+                disabled={lightboxZoom >= 3}
+                title="Zoom In"
+                className="rounded-lg bg-white/10 p-2 text-white hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </button>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={closeLightbox}
+                title="Close"
+                className="ml-2 rounded-full bg-white/20 p-2 text-white hover:bg-white/30 active:scale-95 transition-all cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Central Image Viewer */}
+          <div
+            className="relative flex-1 overflow-auto p-2 sm:p-4 flex items-center justify-center touch-pinch-zoom"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) closeLightbox();
+            }}
+          >
+            {/* Previous Page Arrow (if multiple pages) */}
+            {lightbox.pages.length > 1 && (
+              <button
+                type="button"
+                onClick={handleLightboxPrev}
+                className="absolute left-2 sm:left-4 z-10 rounded-full bg-black/60 p-2 sm:p-3 text-white backdrop-blur-sm hover:bg-black/80 active:scale-95 transition-all cursor-pointer"
+                title="Previous Page"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+            )}
+
+            {/* Document Image */}
+            <div
+              className="max-h-full max-w-full transition-transform duration-150 ease-out flex items-center justify-center"
+              style={{
+                transform: `scale(${lightboxZoom})`,
+                transformOrigin: "center center",
+              }}
+              onDoubleClick={() => setLightboxZoom((z) => (z > 1 ? 1 : 2))}
+            >
+              <img
+                src={lightbox.pages[lightbox.currentPage]?.url}
+                alt={lightbox.pages[lightbox.currentPage]?.label || lightbox.title}
+                className="max-h-[82vh] max-w-[95vw] rounded-lg object-contain shadow-2xl bg-white"
+              />
+            </div>
+
+            {/* Next Page Arrow (if multiple pages) */}
+            {lightbox.pages.length > 1 && (
+              <button
+                type="button"
+                onClick={handleLightboxNext}
+                className="absolute right-2 sm:right-4 z-10 rounded-full bg-black/60 p-2 sm:p-3 text-white backdrop-blur-sm hover:bg-black/80 active:scale-95 transition-all cursor-pointer"
+                title="Next Page"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            )}
+          </div>
+
+          {/* Bottom Bar: Pages Selector + Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 border-t border-white/15 px-3 py-2.5 sm:px-6 sm:py-3 bg-black/60">
+            {/* Page switcher tabs if multi-page */}
+            {lightbox.pages.length > 1 ? (
+              <div className="flex items-center gap-1.5 overflow-x-auto max-w-full">
+                {lightbox.pages.map((p, idx) => (
+                  <button
+                    key={p.url}
+                    type="button"
+                    onClick={() => {
+                      setLightbox((prev) => (prev ? { ...prev, currentPage: idx } : null));
+                      setLightboxZoom(1);
+                    }}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                      lightbox.currentPage === idx
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-white/10 text-white/80 hover:bg-white/20"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-xs text-white/70">
+                {lightbox.pages[0]?.label}
+              </div>
+            )}
+
+            {/* Download and External Links */}
+            <div className="flex items-center gap-2">
+              {lightbox.pdfUrl && (
+                <a
+                  href={lightbox.pdfUrl}
+                  download={lightbox.pdfFileName || "Certificate.pdf"}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all active:scale-95"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>{t({ mr: "PDF डाउनलोड", en: "Download PDF" })}</span>
+                </a>
+              )}
+
+              <a
+                href={lightbox.pages[lightbox.currentPage]?.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition-all"
+              >
+                <span>{t({ mr: "मूळ प्रतिमा उघडा", en: "Open Raw" })}</span>
+                <ExternalLink className="h-3 w-3 opacity-70" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

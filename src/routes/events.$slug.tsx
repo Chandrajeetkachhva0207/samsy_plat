@@ -15,6 +15,7 @@ import {
   events,
   formatEventDate,
   normalizeEvent,
+  type EventItem,
 } from "@/content/events";
 
 import { useLang } from "@/lib/lang";
@@ -36,7 +37,7 @@ export const Route = createFileRoute(
         );
 
         const found = parsed.find(
-          (e) => e.slug === params.slug
+          (e: EventItem) => e.slug === params.slug
         );
 
         if (found) {
@@ -174,9 +175,8 @@ function getCategoryLabel(
     },
   };
 
-  const selected =
-    categories[category] ||
-    categories.general;
+  const fallback = { mr: "सर्वसाधारण", en: "General" };
+  const selected = categories[category] ?? fallback;
 
   return lang === "mr"
     ? selected.mr
