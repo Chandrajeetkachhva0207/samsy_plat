@@ -155,7 +155,7 @@ function Contact() {
                   className="aspect-4/3 w-full"
                 />
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">
+              {/* <p className="mt-3 text-sm text-muted-foreground">
 <<<<<<< Updated upstream
                 {t({
                   mr: "आळंदी देवाची येथील संस्थेचे अधिकृत स्थान नकाशावर दर्शविले आहे.",
@@ -163,7 +163,7 @@ function Contact() {
                 })}
                
 >>>>>>> Stashed changes
-              </p>
+              </p> */}
             </Card>
           </div>
 
