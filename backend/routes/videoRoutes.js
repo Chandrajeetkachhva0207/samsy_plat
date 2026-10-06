@@ -8,21 +8,53 @@ const {
 } = require("../controllers/videoController");
 
 const protect = require("../middleware/authMiddleware");
+
 const adminOnly = require("../middleware/adminMiddleware");
+
+const videoUpload = require(
+    "../middleware/videoUploadMiddleware"
+);
 
 const router = express.Router();
 
 
-// Public
-router.get("/", getVideos);
+// =====================================================
+// PUBLIC
+// =====================================================
+
+router.get(
+    "/",
+    getVideos
+);
 
 
-// Admin
-router.post("/", protect, adminOnly, createVideo);
+// =====================================================
+// ADMIN
+// =====================================================
 
-router.put("/:id", protect, adminOnly, updateVideo);
+router.post(
+    "/",
+    protect,
+    adminOnly,
+    videoUpload.single("video"),
+    createVideo
+);
 
-router.delete("/:id", protect, adminOnly, deleteVideo);
+
+router.put(
+    "/:id",
+    protect,
+    adminOnly,
+    updateVideo
+);
+
+
+router.delete(
+    "/:id",
+    protect,
+    adminOnly,
+    deleteVideo
+);
 
 
 module.exports = router;

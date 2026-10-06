@@ -1,87 +1,164 @@
 import React, { useEffect, useState } from "react";
+
 import { createFileRoute } from "@tanstack/react-router";
+
+import {
+  ExternalLink,
+  Play,
+  Plus,
+  Trash2,
+  Upload,
+  Youtube,
+} from "lucide-react";
 
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui";
 import { api } from "@/lib/api";
 
-import {
-  Plus,
-  Trash2,
-  Video as VideoIcon,
-  Youtube,
-} from "lucide-react";
-
 export const Route = createFileRoute("/admin/videos")({
   head: () => ({
-    meta: [
-      {
-        title: "व्हिडिओ व्यवस्थापन — प्रशासकीय पॅनेल",
-      },
-    ],
+    meta: [{ title: "व्हिडिओ व्यवस्थापन — प्रशासकीय पॅनेल" }],
   }),
   component: AdminVideos,
 });
 
-interface BilingualText {
+type BilingualText = {
   mr: string;
   en: string;
-}
+};
 
 interface VideoItem {
   _id: string;
   title: BilingualText | string;
   url: string;
-  date?: string;
+  videoType?: "youtube" | "upload";
+  cloudinaryPublicId?: string;
   description?: BilingualText | string;
   isActive?: boolean;
+  createdAt?: string;
 }
+
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function getBilingualText(value: unknown): BilingualText {
+  if (typeof value === "string") {
+    return {
+      mr: value,
+      en: "",
+    };
+  }
+
+  if (value && typeof value === "object") {
+    const item = value as Record<string, unknown>;
+
+    return {
+      mr: typeof item.mr === "string" ? item.mr : "",
+      en: typeof item.en === "string" ? item.en : "",
+    };
+  }
+
+  return {
+    mr: "",
+    en: "",
+  };
+}
+
+function isYoutubeUrl(url: string) {
+  return /youtube\.com|youtu\.be/i.test(url);
+}
+
+function getYoutubeEmbedUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+
+    if (parsed.hostname.includes("youtu.be")) {
+      const videoId = parsed.pathname.replace("/", "").trim();
+
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+
+    if (parsed.hostname.includes("youtube.com")) {
+      const videoId = parsed.searchParams.get("v");
+
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+
+      const parts = parsed.pathname.split("/").filter(Boolean);
+
+      if (parts[0] === "shorts" && parts[1]) {
+        return `https://www.youtube.com/embed/${parts[1]}`;
+      }
+
+      if (parts[0] === "embed" && parts[1]) {
+        return `https://www.youtube.com/embed/${parts[1]}`;
+      }
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+/* =========================================================
+   ADMIN VIDEOS
+========================================================= */
 
 function AdminVideos() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
 
-  /* =========================================
-     BILINGUAL FORM DATA
-  ========================================= */
+  const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const [titleMr, setTitleMr] = useState("");
-  const [titleEn, setTitleEn] = useState("");
+  const [sourceType, setSourceType] = useState<"youtube" | "upload">(
+    "youtube"
+  );
 
-  const [url, setUrl] = useState("");
-  const [date, setDate] = useState("");
+  const [form, setForm] = useState({
+    titleMr: "",
+    titleEn: "",
+    youtubeUrl: "",
+    descriptionMr: "",
+    descriptionEn: "",
+  });
 
-  const [descriptionMr, setDescriptionMr] =
-    useState("");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
 
-  const [descriptionEn, setDescriptionEn] =
-    useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const [saving, setSaving] = useState(false);
-
-  /* =========================================
+  /* =========================================================
      LOAD VIDEOS
-  ========================================= */
+  ========================================================= */
 
   const loadVideos = async () => {
+    setLoading(true);
+
     try {
-      setLoading(true);
+      setError("");
 
-      const res = await api.getVideos();
+      const response = await api.getVideos();
 
-      if (res.success) {
-        setVideos(res.data || []);
-      }
-    } catch (error) {
-      console.error(
-        "Failed to load videos:",
-        error
-      );
+      const data = Array.isArray(response)
+        ? response
+        : response?.data || [];
 
-      alert(
-        "व्हिडिओ लोड करण्यात अडचण आली."
-      );
+      setVideos(data);
+    } catch (err) {
+      console.error("Failed to load videos:", err);
+
+      setVideos([]);
+
+      setError("व्हिडिओ लोड करताना समस्या आली.");
     } finally {
       setLoading(false);
     }
@@ -91,111 +168,245 @@ function AdminVideos() {
     loadVideos();
   }, []);
 
-  /* =========================================
-     ADD VIDEO
-  ========================================= */
+  /* =========================================================
+     RESET FORM
+  ========================================================= */
 
-  const handleAddVideo = async (
-    e: React.FormEvent
-  ) => {
-    e.preventDefault();
+  const resetForm = () => {
+    setForm({
+      titleMr: "",
+      titleEn: "",
+      youtubeUrl: "",
+      descriptionMr: "",
+      descriptionEn: "",
+    });
 
-    if (!titleMr.trim()) {
-      alert(
-        "कृपया व्हिडिओचे मराठी शीर्षक भरा."
-      );
-      return;
-    }
+    setVideoFile(null);
 
-    if (!titleEn.trim()) {
-      alert(
-        "Please enter the English video title."
-      );
-      return;
-    }
+    setSourceType("youtube");
 
-    if (!url.trim()) {
-      alert(
-        "कृपया YouTube URL भरा."
-      );
-      return;
-    }
+    const fileInput = document.getElementById(
+      "video-file"
+    ) as HTMLInputElement | null;
 
-    if (
-      !url.includes("youtube.com") &&
-      !url.includes("youtu.be")
-    ) {
-      alert(
-        "कृपया योग्य YouTube URL द्या."
-      );
-      return;
-    }
-
-    try {
-      setSaving(true);
-
-      await api.createVideo({
-        title: {
-          mr: titleMr.trim(),
-          en: titleEn.trim(),
-        },
-
-        url: url.trim(),
-
-        date:
-          date ||
-          new Date().toISOString(),
-
-        description: {
-          mr: descriptionMr.trim(),
-          en: descriptionEn.trim(),
-        },
-
-        isActive: true,
-      });
-
-      alert(
-        "व्हिडिओ यशस्वीरित्या जोडला."
-      );
-
-      /* Reset form */
-
-      setTitleMr("");
-      setTitleEn("");
-
-      setUrl("");
-      setDate("");
-
-      setDescriptionMr("");
-      setDescriptionEn("");
-
-      setShowForm(false);
-
-      await loadVideos();
-    } catch (error: any) {
-      console.error(
-        "Create video error:",
-        error
-      );
-
-      alert(
-        error?.message ||
-          "व्हिडिओ जोडताना अडचण आली."
-      );
-    } finally {
-      setSaving(false);
+    if (fileInput) {
+      fileInput.value = "";
     }
   };
 
-  /* =========================================
-     DELETE VIDEO
-  ========================================= */
+  /* =========================================================
+     OPEN MODAL
+  ========================================================= */
 
-  const handleDelete = async (
-    id: string
+  const openModal = () => {
+    setError("");
+    setSuccess("");
+
+    resetForm();
+
+    setShowModal(true);
+  };
+
+  /* =========================================================
+     FILE CHANGE
+  ========================================================= */
+
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
+    const file = event.target.files?.[0] || null;
+
+    setError("");
+    setSuccess("");
+
+    if (!file) {
+      setVideoFile(null);
+      return;
+    }
+
+    if (!file.type.startsWith("video/")) {
+      setVideoFile(null);
+
+      event.target.value = "";
+
+      setError("कृपया फक्त video file निवडा.");
+
+      return;
+    }
+
+    if (file.size > MAX_VIDEO_SIZE) {
+      setVideoFile(null);
+
+      event.target.value = "";
+
+      setError("व्हिडिओचा कमाल आकार 100 MB असू शकतो.");
+
+      return;
+    }
+
+    setVideoFile(file);
+  };
+
+  /* =========================================================
+     ADD VIDEO
+  ========================================================= */
+
+  const handleSubmit = async (
+    event: React.FormEvent
+  ) => {
+    event.preventDefault();
+
+    setError("");
+    setSuccess("");
+
+    /* -----------------------------------------
+       TITLE VALIDATION
+    ----------------------------------------- */
+
+    if (!form.titleMr.trim()) {
+      setError("कृपया व्हिडिओचे नाव मराठीत भरा.");
+      return;
+    }
+
+    if (!form.titleEn.trim()) {
+      setError("कृपया व्हिडिओचे नाव English मध्ये भरा.");
+      return;
+    }
+
+    /* -----------------------------------------
+       DESCRIPTION VALIDATION
+    ----------------------------------------- */
+
+    if (!form.descriptionMr.trim()) {
+      setError("कृपया व्हिडिओचे वर्णन मराठीत भरा.");
+      return;
+    }
+
+    if (!form.descriptionEn.trim()) {
+      setError("कृपया व्हिडिओचे वर्णन English मध्ये भरा.");
+      return;
+    }
+
+    /* -----------------------------------------
+       YOUTUBE VALIDATION
+    ----------------------------------------- */
+
+    if (sourceType === "youtube") {
+      if (!form.youtubeUrl.trim()) {
+        setError("कृपया YouTube URL भरा.");
+        return;
+      }
+
+      if (!isYoutubeUrl(form.youtubeUrl.trim())) {
+        setError("कृपया योग्य YouTube URL भरा.");
+        return;
+      }
+    }
+
+    /* -----------------------------------------
+       UPLOAD VALIDATION
+    ----------------------------------------- */
+
+    if (sourceType === "upload") {
+      if (!videoFile) {
+        setError("कृपया व्हिडिओ file निवडा.");
+        return;
+      }
+
+      if (videoFile.size > MAX_VIDEO_SIZE) {
+        setError("व्हिडिओचा कमाल आकार 100 MB असू शकतो.");
+        return;
+      }
+    }
+
+    try {
+      setSubmitting(true);
+
+      const formData = new FormData();
+
+      /* -----------------------------------------
+         IMPORTANT:
+         Marathi and English are stored separately.
+         NO FALLBACK FROM MR -> EN.
+      ----------------------------------------- */
+
+      formData.append(
+        "title",
+        JSON.stringify({
+          mr: form.titleMr.trim(),
+          en: form.titleEn.trim(),
+        })
+      );
+
+      formData.append(
+        "description",
+        JSON.stringify({
+          mr: form.descriptionMr.trim(),
+          en: form.descriptionEn.trim(),
+        })
+      );
+
+      /* -----------------------------------------
+         VIDEO SOURCE
+      ----------------------------------------- */
+
+      if (sourceType === "youtube") {
+        formData.append(
+          "url",
+          form.youtubeUrl.trim()
+        );
+
+        formData.append(
+          "videoType",
+          "youtube"
+        );
+      } else {
+        formData.append(
+          "video",
+          videoFile as File
+        );
+
+        formData.append(
+          "videoType",
+          "upload"
+        );
+      }
+
+      /* -----------------------------------------
+         API REQUEST
+      ----------------------------------------- */
+
+      await api.createVideo(formData);
+
+      setSuccess(
+        sourceType === "youtube"
+          ? "YouTube व्हिडिओ यशस्वीपणे जोडला."
+          : "व्हिडिओ यशस्वीपणे upload झाला."
+      );
+
+      setShowModal(false);
+
+      resetForm();
+
+      await loadVideos();
+    } catch (err) {
+      console.error("Video upload error:", err);
+
+      setError(
+        "व्हिडिओ जोडताना समस्या आली. कृपया पुन्हा प्रयत्न करा."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  /* =========================================================
+     DELETE VIDEO
+  ========================================================= */
+
+  const handleDelete = async (id: string) => {
     const confirmed = window.confirm(
-      "हा व्हिडिओ हटवायचा आहे का?"
+      "हा व्हिडिओ कायमचा हटवायचा आहे का?"
     );
 
     if (!confirmed) {
@@ -203,447 +414,627 @@ function AdminVideos() {
     }
 
     try {
+      setDeletingId(id);
+
+      setError("");
+      setSuccess("");
+
       await api.deleteVideo(id);
 
-      alert(
-        "व्हिडिओ यशस्वीरित्या हटवला."
+      setVideos((current) =>
+        current.filter(
+          (video) => video._id !== id
+        )
       );
 
-      await loadVideos();
-    } catch (error: any) {
-      console.error(
-        "Delete video error:",
-        error
+      setSuccess(
+        "व्हिडिओ यशस्वीपणे हटवला."
       );
+    } catch (err) {
+      console.error("Delete video error:", err);
 
-      alert(
-        error?.message ||
-          "व्हिडिओ हटवताना अडचण आली."
+      setError(
+        "व्हिडिओ हटवताना समस्या आली."
       );
+    } finally {
+      setDeletingId(null);
     }
   };
 
-  /* =========================================
-     GET BILINGUAL TEXT
-  ========================================= */
-
-  const getText = (
-    value:
-      | BilingualText
-      | string
-      | undefined,
-    language: "mr" | "en"
-  ) => {
-    if (!value) {
-      return "";
-    }
-
-    if (typeof value === "string") {
-      return value;
-    }
-
-    return (
-      value[language] ||
-      value.mr ||
-      value.en ||
-      ""
-    );
-  };
+  /* =========================================================
+     UI
+  ========================================================= */
 
   return (
-    <AdminLayout title="व्हिडिओ व्यवस्थापन (Manage Videos)">
-      <div className="space-y-8">
+    <AdminLayout
+      title="व्हिडिओ व्यवस्थापन (Manage Videos)"
+    >
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
-        {/* =========================================
-            PAGE HEADER
-        ========================================= */}
+      <div className="mb-6 flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          संस्थेचे YouTube किंवा upload केलेले व्हिडिओ
+          जोडा किंवा हटवा.
+        </p>
 
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <p className="text-sm text-muted-foreground">
-              संस्थेचे अधिकृत YouTube व्हिडिओ येथे जोडा किंवा हटवा.
-            </p>
-          </div>
+        <button
+          onClick={openModal}
+          className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90"
+        >
+          <Plus className="h-4 w-4" />
 
-          <button
-            type="button"
-            onClick={() =>
-              setShowForm(!showForm)
-            }
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-90"
-          >
-            <Plus className="h-4 w-4" />
+          <span>
+            नवीन व्हिडिओ जोडा
+          </span>
+        </button>
+      </div>
 
-            {showForm
-              ? "फॉर्म बंद करा"
-              : "नवीन व्हिडिओ जोडा"}
-          </button>
+      {/* =====================================================
+          SUCCESS MESSAGE
+      ===================================================== */}
+
+      {success && (
+        <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+          {success}
         </div>
+      )}
 
-        {/* =========================================
-            ADD VIDEO FORM
-        ========================================= */}
+      {/* =====================================================
+          ERROR MESSAGE
+      ===================================================== */}
 
-        {showForm && (
-          <Card className="p-6">
-            <div className="mb-6 flex items-center gap-2">
-              <Youtube className="h-5 w-5 text-red-600" />
+      {error && (
+        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      )}
 
-              <h2 className="text-lg font-bold text-maroon">
-                नवीन व्हिडिओ जोडा
-              </h2>
+      {/* =====================================================
+          LOADING
+      ===================================================== */}
+
+      {loading ? (
+        <div className="py-12 text-center text-sm text-muted-foreground">
+          व्हिडिओ लोड होत आहेत...
+        </div>
+      ) : videos.length === 0 ? (
+        /* ===================================================
+           EMPTY
+        =================================================== */
+
+        <Card className="p-8 text-center text-sm text-muted-foreground">
+          <Play className="mx-auto mb-3 h-10 w-10 opacity-40" />
+
+          सध्या कोणतेही व्हिडिओ उपलब्ध नाहीत.
+
+          <br />
+
+          व्हिडिओ जोडण्यासाठी वरील बटणावर क्लिक करा.
+        </Card>
+      ) : (
+        /* ===================================================
+           VIDEO GRID
+        =================================================== */
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {videos.map((video) => {
+            const title = getBilingualText(
+              video.title
+            );
+
+            const description =
+              getBilingualText(
+                video.description
+              );
+
+            const youtube =
+              video.videoType === "youtube" ||
+              (!video.videoType &&
+                isYoutubeUrl(video.url));
+
+            const embedUrl = youtube
+              ? getYoutubeEmbedUrl(video.url)
+              : "";
+
+            /*
+             * Admin page shows Marathi title first.
+             * English title is shown separately only
+             * when it is actually different.
+             */
+
+            const displayTitle =
+              title.mr ||
+              title.en ||
+              "Untitled Video";
+
+            const displayEnglishTitle =
+              title.en &&
+              title.en !== title.mr
+                ? title.en
+                : "";
+
+            return (
+              <Card
+                key={video._id}
+                className="group overflow-hidden"
+              >
+                {/* =================================================
+                    VIDEO PREVIEW
+                ================================================= */}
+
+                <div className="aspect-video bg-slate-100">
+                  {youtube && embedUrl ? (
+                    <iframe
+                      src={embedUrl}
+                      title={displayTitle}
+                      className="h-full w-full"
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      src={video.url}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="h-full w-full object-contain"
+                    >
+                      आपल्या ब्राउझरमध्ये व्हिडिओ प्ले करता येत नाही.
+                    </video>
+                  )}
+                </div>
+
+                {/* =================================================
+                    VIDEO DETAILS
+                ================================================= */}
+
+                <div className="border-t border-border bg-card p-3">
+
+                  {/* TYPE */}
+
+                  <div className="mb-2">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold ${
+                        youtube
+                          ? "bg-red-50 text-red-700"
+                          : "bg-orange-50 text-orange-700"
+                      }`}
+                    >
+                      {youtube ? (
+                        <>
+                          <Youtube className="h-3.5 w-3.5" />
+                          YouTube
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-3.5 w-3.5" />
+                          Uploaded Video
+                        </>
+                      )}
+                    </span>
+                  </div>
+
+                  {/* MARATHI TITLE */}
+
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {displayTitle}
+                  </p>
+
+                  {/* ENGLISH TITLE */}
+
+                  {displayEnglishTitle && (
+                    <p className="mt-1 truncate text-xs text-muted-foreground">
+                      {displayEnglishTitle}
+                    </p>
+                  )}
+
+                  {/* DESCRIPTION */}
+
+                  {(description.mr ||
+                    description.en) && (
+                    <div className="mt-2 space-y-1">
+                      {description.mr && (
+                        <p className="line-clamp-2 text-xs leading-5 text-muted-foreground">
+                          {description.mr}
+                        </p>
+                      )}
+
+                      {description.en &&
+                        description.en !==
+                          description.mr && (
+                          <p className="line-clamp-2 text-xs leading-5 text-muted-foreground">
+                            {description.en}
+                          </p>
+                        )}
+                    </div>
+                  )}
+
+                  {/* ACTIONS */}
+
+                  <div className="mt-3 flex items-center gap-3">
+                    <a
+                      href={video.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+
+                      Open
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleDelete(
+                          video._id
+                        )
+                      }
+                      disabled={
+                        deletingId ===
+                        video._id
+                      }
+                      className="flex items-center gap-1 text-xs text-red-600 hover:underline disabled:opacity-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+
+                      {deletingId ===
+                      video._id
+                        ? "Deleting..."
+                        : "हटवा (Delete)"}
+                    </button>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* =====================================================
+          ADD VIDEO MODAL
+      ===================================================== */}
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="max-h-[90vh] w-full max-w-md overflow-y-auto p-6">
+
+            {/* MODAL HEADER */}
+
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Play className="h-5 w-5" />
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold text-maroon">
+                  नवीन व्हिडिओ जोडणे
+                </h2>
+
+                <p className="text-xs text-muted-foreground">
+                  Add Video
+                </p>
+              </div>
             </div>
 
             <form
-              onSubmit={handleAddVideo}
-              className="space-y-5"
+              onSubmit={handleSubmit}
+              className="grid gap-4 text-sm"
             >
 
-              {/* =====================================
-                  MARATHI TITLE
-              ===================================== */}
+              {/* =================================================
+                  VIDEO TYPE
+              ================================================= */}
 
               <div>
-                <label className="mb-1.5 block text-sm font-semibold">
-                  व्हिडिओ शीर्षक (मराठी)
+                <label className="mb-2 block text-xs font-semibold">
+                  व्हिडिओचा प्रकार (Video Type)
                 </label>
 
-                <input
-                  type="text"
-                  value={titleMr}
-                  onChange={(e) =>
-                    setTitleMr(e.target.value)
-                  }
-                  placeholder="उदा. गुरुपौर्णिमा उत्सव"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
-                />
+                <div className="grid grid-cols-2 gap-3">
+
+                  {/* YOUTUBE */}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSourceType("youtube");
+                      setError("");
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-semibold transition ${
+                      sourceType === "youtube"
+                        ? "border-red-300 bg-red-50 text-red-700"
+                        : "border-border bg-background text-muted-foreground hover:border-red-200"
+                    }`}
+                  >
+                    <Youtube className="h-4 w-4" />
+
+                    YouTube
+                  </button>
+
+                  {/* UPLOAD */}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSourceType("upload");
+                      setError("");
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-semibold transition ${
+                      sourceType === "upload"
+                        ? "border-orange-300 bg-orange-50 text-orange-700"
+                        : "border-border bg-background text-muted-foreground hover:border-orange-200"
+                    }`}
+                  >
+                    <Upload className="h-4 w-4" />
+
+                    Upload
+                  </button>
+                </div>
               </div>
 
-              {/* =====================================
-                  ENGLISH TITLE
-              ===================================== */}
+              {/* =================================================
+                  VIDEO FILE
+              ================================================= */}
 
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold">
-                  Video Title (English)
-                </label>
+              {sourceType === "upload" && (
+                <div>
+                  <label
+                    htmlFor="video-file"
+                    className="mb-1 block text-xs font-semibold"
+                  >
+                    व्हिडिओ निवडा (Select Video File)
+                  </label>
 
-                <input
-                  type="text"
-                  value={titleEn}
-                  onChange={(e) =>
-                    setTitleEn(e.target.value)
-                  }
-                  placeholder="e.g. Guru Purnima Celebration"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
-                />
-              </div>
+                  <div className="rounded-lg border border-dashed border-orange-300 bg-orange-50/50 p-3">
 
-              {/* =====================================
+                    <input
+                      id="video-file"
+                      type="file"
+                      accept="video/*"
+                      onChange={
+                        handleFileChange
+                      }
+                      className="w-full text-xs text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary hover:file:bg-primary/20"
+                    />
+
+                    <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
+                      Mobile किंवा laptop मधून
+                      video निवडा.
+                      <br />
+                      Maximum size: 100 MB.
+                    </p>
+
+                    {videoFile && (
+                      <div className="mt-2 rounded-lg bg-white px-3 py-2 text-xs">
+                        <span className="font-semibold">
+                          Selected:
+                        </span>{" "}
+                        {videoFile.name}
+
+                        <br />
+
+                        <span className="text-muted-foreground">
+                          {(
+                            videoFile.size /
+                            (1024 * 1024)
+                          ).toFixed(2)}{" "}
+                          MB
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
                   YOUTUBE URL
-              ===================================== */}
+              ================================================= */}
+
+              {sourceType === "youtube" && (
+                <div>
+                  <label
+                    htmlFor="youtube-url"
+                    className="mb-1 block text-xs font-semibold"
+                  >
+                    YouTube URL
+                  </label>
+
+                  <input
+                    id="youtube-url"
+                    type="url"
+                    value={form.youtubeUrl}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        youtubeUrl:
+                          e.target.value,
+                      })
+                    }
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  />
+
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    YouTube video, Shorts किंवा
+                    youtu.be URL वापरू शकता.
+                  </p>
+                </div>
+              )}
+
+              {/* =================================================
+                  MARATHI TITLE
+              ================================================= */}
 
               <div>
-                <label className="mb-1.5 block text-sm font-semibold">
-                  YouTube Video URL
-                </label>
-
-                <input
-                  type="url"
-                  value={url}
-                  onChange={(e) =>
-                    setUrl(e.target.value)
-                  }
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
-                />
-
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  YouTube video ची पूर्ण URL येथे paste करा.
-                </p>
-              </div>
-
-              {/* =====================================
-                  DATE
-              ===================================== */}
-
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold">
-                  दिनांक
-                </label>
-
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) =>
-                    setDate(e.target.value)
-                  }
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
-                />
-              </div>
-
-              {/* =====================================
-                  MARATHI DESCRIPTION
-              ===================================== */}
-
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold">
-                  वर्णन (मराठी)
-                </label>
-
-                <textarea
-                  value={descriptionMr}
-                  onChange={(e) =>
-                    setDescriptionMr(
-                      e.target.value
-                    )
-                  }
-                  placeholder="व्हिडिओबद्दल मराठीत माहिती..."
-                  rows={3}
-                  className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
-                />
-              </div>
-
-              {/* =====================================
-                  ENGLISH DESCRIPTION
-              ===================================== */}
-
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold">
-                  Description (English)
-                </label>
-
-                <textarea
-                  value={descriptionEn}
-                  onChange={(e) =>
-                    setDescriptionEn(
-                      e.target.value
-                    )
-                  }
-                  placeholder="Enter video description in English..."
-                  rows={3}
-                  className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
-                />
-              </div>
-
-              {/* =====================================
-                  BUTTONS
-              ===================================== */}
-
-              <div className="flex flex-wrap gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+                <label
+                  htmlFor="title-mr"
+                  className="mb-1 block text-xs font-semibold"
                 >
-                  {saving
-                    ? "जतन करत आहे..."
-                    : "व्हिडिओ जतन करा"}
-                </button>
+                  व्हिडिओचे नाव (मराठी) *
+                </label>
+
+                <input
+                  id="title-mr"
+                  type="text"
+                  required
+                  value={form.titleMr}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      titleMr:
+                        e.target.value,
+                    })
+                  }
+                  placeholder="व्हिडिओचे नाव"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                />
+              </div>
+
+              {/* =================================================
+                  ENGLISH TITLE
+              ================================================= */}
+
+              <div>
+                <label
+                  htmlFor="title-en"
+                  className="mb-1 block text-xs font-semibold"
+                >
+                  Video Title (English) *
+                </label>
+
+                <input
+                  id="title-en"
+                  type="text"
+                  required
+                  value={form.titleEn}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      titleEn:
+                        e.target.value,
+                    })
+                  }
+                  placeholder="Video title"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                />
+              </div>
+
+              {/* =================================================
+                  MARATHI DESCRIPTION
+              ================================================= */}
+
+              <div>
+                <label
+                  htmlFor="description-mr"
+                  className="mb-1 block text-xs font-semibold"
+                >
+                  वर्णन (मराठी) *
+                </label>
+
+                <textarea
+                  id="description-mr"
+                  required
+                  value={form.descriptionMr}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      descriptionMr:
+                        e.target.value,
+                    })
+                  }
+                  placeholder="व्हिडिओबद्दल थोडक्यात माहिती"
+                  rows={3}
+                  className="w-full resize-none rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                />
+              </div>
+
+              {/* =================================================
+                  ENGLISH DESCRIPTION
+              ================================================= */}
+
+              <div>
+                <label
+                  htmlFor="description-en"
+                  className="mb-1 block text-xs font-semibold"
+                >
+                  Description (English) *
+                </label>
+
+                <textarea
+                  id="description-en"
+                  required
+                  value={form.descriptionEn}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      descriptionEn:
+                        e.target.value,
+                    })
+                  }
+                  placeholder="Short video description"
+                  rows={3}
+                  className="w-full resize-none rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                />
+              </div>
+
+              {/* =================================================
+                  BUTTONS
+              ================================================= */}
+
+              <div className="flex justify-end gap-3 pt-2">
+
+                {/* CANCEL */}
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowForm(false)
-                  }
-                  className="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-accent"
+                  onClick={() => {
+                    setShowModal(false);
+                    resetForm();
+                    setError("");
+                  }}
+                  className="rounded-full border border-border px-4 py-2 text-xs font-semibold"
                 >
                   रद्द करा
+                </button>
+
+                {/* SUBMIT */}
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {submitting ? (
+                    <>
+                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+
+                      {sourceType === "upload"
+                        ? "अपलोड होत आहे..."
+                        : "जोडत आहे..."}
+                    </>
+                  ) : (
+                    <>
+                      {sourceType === "upload" ? (
+                        <Upload className="h-3.5 w-3.5" />
+                      ) : (
+                        <Plus className="h-3.5 w-3.5" />
+                      )}
+
+                      {sourceType === "upload"
+                        ? "जोडा (Upload)"
+                        : "जोडा (Add)"}
+                    </>
+                  )}
                 </button>
               </div>
             </form>
           </Card>
-        )}
-
-        {/* =========================================
-            VIDEO LIST
-        ========================================= */}
-
-        <div>
-          <div className="mb-4 flex items-center gap-2">
-            <VideoIcon className="h-5 w-5 text-maroon" />
-
-            <h2 className="text-lg font-bold text-maroon">
-              जोडलेले व्हिडिओ
-            </h2>
-          </div>
-
-          {loading ? (
-            <div className="py-10 text-center text-sm text-muted-foreground">
-              व्हिडिओ लोड होत आहेत...
-            </div>
-          ) : videos.length === 0 ? (
-            <Card className="p-8 text-center">
-              <VideoIcon className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-
-              <p className="text-sm text-muted-foreground">
-                अजून कोणताही व्हिडिओ जोडलेला नाही.
-              </p>
-            </Card>
-          ) : (
-            <div className="grid gap-5 sm:grid-cols-2">
-              {videos.map((video) => (
-                <Card
-                  key={video._id}
-                  className="overflow-hidden"
-                >
-                  {/* Video */}
-                  <div className="aspect-video bg-sand">
-                    <iframe
-                      src={getYoutubeEmbedUrl(
-                        video.url
-                      )}
-                      title={getText(
-                        video.title,
-                        "en"
-                      )}
-                      className="h-full w-full"
-                      loading="lazy"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4">
-
-                    {/* Marathi title */}
-                    <h3 className="font-semibold text-maroon">
-                      {getText(
-                        video.title,
-                        "mr"
-                      )}
-                    </h3>
-
-                    {/* English title */}
-                    <p className="mt-1 text-sm font-medium text-muted-foreground">
-                      {getText(
-                        video.title,
-                        "en"
-                      )}
-                    </p>
-
-                    {/* Marathi description */}
-                    {getText(
-                      video.description,
-                      "mr"
-                    ) && (
-                      <p className="mt-3 text-sm text-muted-foreground">
-                        {getText(
-                          video.description,
-                          "mr"
-                        )}
-                      </p>
-                    )}
-
-                    {/* English description */}
-                    {getText(
-                      video.description,
-                      "en"
-                    ) && (
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {getText(
-                          video.description,
-                          "en"
-                        )}
-                      </p>
-                    )}
-
-                    {/* Actions */}
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <a
-                        href={video.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-sm font-semibold text-maroon underline underline-offset-4"
-                      >
-                        YouTube वर पहा
-                      </a>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleDelete(
-                            video._id
-                          )
-                        }
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-
-                        हटवा
-                      </button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
         </div>
-      </div>
+      )}
     </AdminLayout>
   );
-}
-
-/* =====================================================
-   YOUTUBE URL → EMBED URL
-===================================================== */
-
-function getYoutubeEmbedUrl(
-  url: string
-): string {
-  try {
-    const parsed = new URL(url);
-
-    let videoId = "";
-
-    if (
-      parsed.hostname.includes(
-        "youtu.be"
-      )
-    ) {
-      videoId =
-        parsed.pathname.slice(1);
-    } else if (
-      parsed.hostname.includes(
-        "youtube.com"
-      )
-    ) {
-      videoId =
-        parsed.searchParams.get("v") ||
-        "";
-
-      if (
-        !videoId &&
-        parsed.pathname.startsWith(
-          "/shorts/"
-        )
-      ) {
-        videoId =
-          parsed.pathname.split(
-            "/shorts/"
-          )[1];
-      }
-
-      if (
-        !videoId &&
-        parsed.pathname.startsWith(
-          "/embed/"
-        )
-      ) {
-        videoId =
-          parsed.pathname.split(
-            "/embed/"
-          )[1];
-      }
-    }
-
-    if (videoId) {
-      return `https://www.youtube-nocookie.com/embed/${videoId}`;
-    }
-  } catch {
-    // Invalid URL
-  }
-
-  return "";
 }

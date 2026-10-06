@@ -5,14 +5,19 @@ const videoSchema = new mongoose.Schema(
         // =========================================
         // BILINGUAL VIDEO TITLE
         // =========================================
+
         title: {
             type: mongoose.Schema.Types.Mixed,
             required: true,
         },
 
         // =========================================
-        // YOUTUBE URL
+        // VIDEO URL
         // =========================================
+        //
+        // YouTube URL OR Cloudinary video URL
+        // =========================================
+
         url: {
             type: String,
             required: true,
@@ -20,9 +25,27 @@ const videoSchema = new mongoose.Schema(
         },
 
         // =========================================
-        // VIDEO DATE
+        // VIDEO TYPE
         // =========================================
-        date: {
+        //
+        // youtube = YouTube video
+        // upload  = Cloudinary uploaded video
+        // =========================================
+
+        videoType: {
+            type: String,
+            enum: ["youtube", "upload"],
+            default: "youtube",
+        },
+
+        // =========================================
+        // CLOUDINARY PUBLIC ID
+        // =========================================
+        //
+        // Used when deleting uploaded videos
+        // =========================================
+
+        cloudinaryPublicId: {
             type: String,
             default: "",
         },
@@ -30,6 +53,7 @@ const videoSchema = new mongoose.Schema(
         // =========================================
         // BILINGUAL DESCRIPTION
         // =========================================
+
         description: {
             type: mongoose.Schema.Types.Mixed,
             default: {
@@ -41,6 +65,7 @@ const videoSchema = new mongoose.Schema(
         // =========================================
         // ACTIVE / INACTIVE
         // =========================================
+
         isActive: {
             type: Boolean,
             default: true,
@@ -51,4 +76,7 @@ const videoSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model("Video", videoSchema);
+module.exports = mongoose.model(
+    "Video",
+    videoSchema
+);

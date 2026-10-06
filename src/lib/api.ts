@@ -295,11 +295,19 @@ export const api = {
   getVideos: () =>
     request("/videos"),
 
-  createVideo: (payload: any) =>
-    request("/videos", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }),
+  createVideo: (
+  payload: FormData | any
+) => {
+  const isFormData =
+    payload instanceof FormData;
+
+  return request("/videos", {
+    method: "POST",
+    body: isFormData
+      ? payload
+      : JSON.stringify(payload),
+  });
+},
 
   deleteVideo: (id: string) =>
     request(`/videos/${id}`, {
