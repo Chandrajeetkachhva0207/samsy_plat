@@ -56,8 +56,8 @@ function getBilingualText(value: unknown): BilingualText {
     const item = value as Record<string, unknown>;
 
     return {
-      mr: typeof item.mr === "string" ? item.mr : "",
-      en: typeof item.en === "string" ? item.en : "",
+      mr: typeof item["mr"] === "string" ? (item["mr"] as string) : "",
+      en: typeof item["en"] === "string" ? (item["en"] as string) : "",
     };
   }
 
@@ -1037,67 +1037,4 @@ function AdminVideos() {
       )}
     </AdminLayout>
   );
-}
-
-/* =====================================================
-   YOUTUBE URL → EMBED URL
-===================================================== */
-
-function getYoutubeEmbedUrl(
-  url: string
-): string {
-  try {
-    const parsed = new URL(url);
-
-    let videoId = "";
-
-    if (
-      parsed.hostname.includes(
-        "youtu.be"
-      )
-    ) {
-      videoId =
-        parsed.pathname.slice(1);
-    } else if (
-      parsed.hostname.includes(
-        "youtube.com"
-      )
-    ) {
-      videoId =
-        parsed.searchParams.get("v") ||
-        "";
-
-      if (
-        !videoId &&
-        parsed.pathname.startsWith(
-          "/shorts/"
-        )
-      ) {
-        videoId =
-          parsed.pathname.split(
-            "/shorts/"
-          )[1] ?? "";
-      }
-
-      if (
-        !videoId &&
-        parsed.pathname.startsWith(
-          "/embed/"
-        )
-      ) {
-        videoId =
-          parsed.pathname.split(
-            "/embed/"
-          )[1] ?? "";
-      }
-    }
-
-    if (videoId) {
-      return `https://www.youtube-nocookie.com/embed/${videoId}`;
-    }
-  } catch {
-    // Invalid URL
-  }
-
-  return "";
 }

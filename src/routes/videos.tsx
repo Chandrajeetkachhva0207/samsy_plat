@@ -45,8 +45,8 @@ function getBilingualText(value: unknown): BilingualText {
     const item = value as Record<string, unknown>;
 
     return {
-      mr: typeof item.mr === "string" ? item.mr : "",
-      en: typeof item.en === "string" ? item.en : "",
+      mr: typeof item["mr"] === "string" ? (item["mr"] as string) : "",
+      en: typeof item["en"] === "string" ? (item["en"] as string) : "",
     };
   }
 
