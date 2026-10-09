@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 380">
+<defs><linearGradient id="t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f7bff"/><stop offset="1" stop-color="#0b2fb8"/></linearGradient>
+<linearGradient id="d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a3fd6"/><stop offset="1" stop-color="#061a6b"/></linearGradient></defs>
+<ellipse cx="210" cy="320" rx="190" ry="40" fill="#2a7bff" opacity=".18"/>
+<path d="M60 250 L210 200 L360 250 L360 284 L210 334 L60 284 Z" fill="url(#d)" stroke="#5aa8ff" stroke-opacity=".6"/>
+<path d="M60 250 L210 200 L360 250 L210 300 Z" fill="url(#t)" opacity=".85"/>
+<text x="210" y="274" fill="#fff" font-family="Inter,Arial" font-size="13" font-weight="700" text-anchor="middle">INFRASTRUCTURE</text>
+<path d="M60 190 L210 140 L360 190 L360 224 L210 274 L60 224 Z" fill="url(#d)" stroke="#5aa8ff" stroke-opacity=".6"/>
+<path d="M60 190 L210 140 L360 190 L210 240 Z" fill="url(#t)" opacity=".85"/>
+<text x="210" y="214" fill="#fff" font-family="Inter,Arial" font-size="13" font-weight="700" text-anchor="middle">BLOCKCHAIN LAYER</text>
+<path d="M60 120 L210 70 L360 120 L360 154 L210 204 L60 154 Z" fill="url(#d)" stroke="#5aa8ff" stroke-opacity=".6"/>
+<path d="M60 120 L210 70 L360 120 L210 170 Z" fill="url(#t)" opacity=".85"/>
+<text x="210" y="144" fill="#fff" font-family="Inter,Arial" font-size="13" font-weight="700" text-anchor="middle">APPLICATIONS</text>
+</svg>
