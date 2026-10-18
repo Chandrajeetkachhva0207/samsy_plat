@@ -3,6 +3,7 @@ const StudentProfile = require("../models/StudentProfile");
 const FeeRecord = require("../models/FeeRecord");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { sendPasswordResetOtpEmail } = require("../utils/emailService");
 
 // Generate JWT
 const generateToken = (user) => {
@@ -244,15 +245,19 @@ const forgotPassword = async (req, res) => {
         user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
         await user.save();
 
-        console.log(`[AUTH] Password Reset OTP for ${user.email} / ${user.mobile}: ${otp}`);
+        console.log(`[AUTH] Password Reset OTP generated for ${user.email} / ${user.mobile}`);
+
+        // Send OTP directly to user's Gmail / Email
+        await sendPasswordResetOtpEmail({
+            toEmail: user.email,
+            recipientName: user.name,
+            otp,
+        });
 
         return res.status(200).json({
             success: true,
-            message: "पासवर्ड रिसेट OTP पाठवण्यात आला आहे (15 मिनिटांसाठी वैध)",
-            // Return otp in dev/response for easy local verification & client testing
-            demoOtp: otp,
+            message: `पासवर्ड रीसेट OTP आपल्या नोंदणीकृत ई-मेलवर (${user.email}) पाठवला आहे. कृपया आपला Gmail इनबॉक्स तपासा.`,
             email: user.email,
-            mobile: user.mobile,
         });
     } catch (error) {
         console.error("Forgot password error:", error);

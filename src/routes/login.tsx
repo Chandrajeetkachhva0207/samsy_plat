@@ -73,7 +73,6 @@ function LoginPage() {
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [demoOtpNotice, setDemoOtpNotice] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -93,7 +92,6 @@ function LoginPage() {
   const clearMessages = () => {
     setError(null);
     setSuccess(null);
-    setDemoOtpNotice(null);
   };
 
   // 1. Handle Login (Email or Mobile)
@@ -206,13 +204,11 @@ function LoginPage() {
       if (res.success) {
         setOtpSent(true);
         setSuccess(
-          lang === "mr"
-            ? "OTP पाठवण्यात आला आहे (१५ मिनिटांसाठी वैध)."
-            : "OTP sent successfully (valid for 15 minutes)."
+          res.message ||
+            (lang === "mr"
+              ? "✅ पासवर्ड रीसेट OTP आपल्या नोंदणीकृत ई-मेलवर (Gmail) पाठवला आहे. कृपया आपला ईमेल इनबॉक्स व स्पॅम फोल्डर तपासा."
+              : "✅ Password reset OTP has been sent to your registered Gmail address. Please check your inbox.")
         );
-        if (res.demoOtp) {
-          setDemoOtpNotice(res.demoOtp);
-        }
       } else {
         setError(res.message);
       }
@@ -356,40 +352,54 @@ function LoginPage() {
             </p>
           </div>
 
-          {/* Mode Switcher Tabs: 1. Registration First, 2. Sign In Second */}
-          {mode !== "forgot" && (
-            <div className="mb-6 grid grid-cols-2 rounded-full bg-sand/70 p-1 border border-border/50">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("register");
-                  clearMessages();
-                }}
-                className={`rounded-full py-2 text-xs font-semibold transition-all ${
-                  mode === "register"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {lang === "mr" ? "१. विद्यार्थी नोंदणी (Register)" : "1. Register (Sign Up)"}
-              </button>
+          {/* Mode Switcher Tabs: 1. Registration First, 2. Sign In, 3. Forgot Password */}
+          <div className="mb-6 grid grid-cols-3 rounded-full bg-sand/70 p-1 border border-border/50 text-[11px] sm:text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                setMode("register");
+                clearMessages();
+              }}
+              className={`rounded-full py-2 px-1 text-center font-semibold transition-all ${
+                mode === "register"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {lang === "mr" ? "१. नोंदणी" : "1. Register"}
+            </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("login");
-                  clearMessages();
-                }}
-                className={`rounded-full py-2 text-xs font-semibold transition-all ${
-                  mode === "login"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {lang === "mr" ? "२. लॉगिन करा (Sign In)" : "2. Sign In (Login)"}
-              </button>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={() => {
+                setMode("login");
+                clearMessages();
+              }}
+              className={`rounded-full py-2 px-1 text-center font-semibold transition-all ${
+                mode === "login"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {lang === "mr" ? "२. लॉगिन" : "2. Sign In"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setMode("forgot");
+                clearMessages();
+              }}
+              className={`rounded-full py-2 px-1 text-center font-semibold transition-all flex items-center justify-center gap-1 ${
+                mode === "forgot"
+                  ? "bg-maroon text-white shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <KeyRound className="h-3.5 w-3.5" />
+              <span>{lang === "mr" ? "३. पासवर्ड विसरलात?" : "3. Forgot Pass?"}</span>
+            </button>
+          </div>
 
           {/* Error Alert */}
           {error && (
@@ -407,22 +417,6 @@ function LoginPage() {
             </div>
           )}
 
-          {/* Demo OTP Alert for fast testing */}
-          {demoOtpNotice && (
-            <div className="mb-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-900 border border-amber-300">
-              <p className="font-bold">
-                {lang === "mr" ? "पडताळणी OTP:" : "Verification OTP:"}{" "}
-                <span className="font-mono text-base tracking-widest text-maroon">
-                  {demoOtpNotice}
-                </span>
-              </p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                {lang === "mr"
-                  ? "(हा OTP खालील बॉक्समध्ये टाकून नवीन पासवर्ड सेट करा)"
-                  : "(Enter this OTP below to set a new password)"}
-              </p>
-            </div>
-          )}
 
           {/* ----------------- 1. LOGIN FORM ----------------- */}
           {mode === "login" && (
@@ -453,7 +447,7 @@ function LoginPage() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-semibold text-foreground">
-                    {lang === "mr" ? "संकेतशब्द (Password)" : "Password"}
+                    {lang === "mr" ? "संकेतशब्द (Password)" : "Password"} *
                   </label>
                   <button
                     type="button"
@@ -461,9 +455,10 @@ function LoginPage() {
                       setMode("forgot");
                       clearMessages();
                     }}
-                    className="text-xs font-medium text-maroon hover:underline"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-maroon hover:underline bg-maroon/10 hover:bg-maroon/20 px-2 py-0.5 rounded border border-maroon/30 transition-colors"
                   >
-                    {lang === "mr" ? "संकेतशब्द विसरलात?" : "Forgot Password?"}
+                    <KeyRound className="h-3 w-3" />
+                    <span>{lang === "mr" ? "🔑 संकेतशब्द विसरलात? (Forgot Password?)" : "🔑 Forgot Password?"}</span>
                   </button>
                 </div>
                 <div className="relative">
@@ -710,9 +705,23 @@ function LoginPage() {
                 </form>
               ) : (
                 <form onSubmit={handleResetPassword} className="grid gap-4">
+                  <div className="rounded-lg bg-blue-50/80 p-3 text-xs text-blue-900 border border-blue-200 flex items-start gap-2">
+                    <Mail className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold">
+                        {lang === "mr" ? "आपला Gmail इनबॉक्स तपासा (Check Gmail)" : "Check Your Gmail Inbox"}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-blue-800">
+                        {lang === "mr"
+                          ? `आम्ही ${forgotIdentifier} या ईमेलवर ६-अंकी सुरक्षित OTP पाठवला आहे. कृपया Gmail तपासून खाली OTP टाका.`
+                          : `A 6-digit OTP has been sent to ${forgotIdentifier}. Please check Gmail and enter it below.`}
+                      </p>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-foreground mb-1">
-                      {lang === "mr" ? "६-अंकी OTP प्रविष्ट करा" : "Enter 6-Digit OTP"}
+                      {lang === "mr" ? "Gmail वर आलेला ६-अंकी OTP टाका" : "Enter 6-Digit OTP from Gmail"} *
                     </label>
                     <input
                       type="text"
