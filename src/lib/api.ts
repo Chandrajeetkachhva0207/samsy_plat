@@ -170,6 +170,8 @@ export const api = {
     request<{
       success: boolean;
       message: string;
+      emailSent?: boolean;
+      otp?: string;
       demoOtp?: string;
     }>("/auth/forgot-password", {
       method: "POST",
@@ -654,5 +656,32 @@ export const api = {
     }>(`/admin/students/${id}/payments`, {
       method: "POST",
       body: JSON.stringify(payload),
+    }),
+
+  adminDeleteStudentFees: (id: string, reason?: string) =>
+    request<{
+      success: boolean;
+      message: string;
+      fees: any;
+    }>(`/admin/students/${id}/fees`, {
+      method: "DELETE",
+      body: JSON.stringify({ reason }),
+    }),
+
+  adminDeleteFeePayment: (id: string, paymentId: string) =>
+    request<{
+      success: boolean;
+      message: string;
+      fees: any;
+    }>(`/admin/students/${id}/payments/${paymentId}`, {
+      method: "DELETE",
+    }),
+
+  adminDeleteStudent: (id: string) =>
+    request<{
+      success: boolean;
+      message: string;
+    }>(`/admin/students/${id}`, {
+      method: "DELETE",
     }),
 };

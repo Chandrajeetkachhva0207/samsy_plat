@@ -19,6 +19,8 @@ import {
   Receipt,
   RefreshCw,
   Search,
+  Trash2,
+  AlertTriangle,
   User,
   Users,
   Wallet,
@@ -82,6 +84,8 @@ function AdminStudentsPage() {
   const [feeDueDate, setFeeDueDate] = useState("");
   const [feeNotes, setFeeNotes] = useState("");
   const [academicYear, setAcademicYear] = useState("2025-2026");
+  const [showDeleteFeeConfirm, setShowDeleteFeeConfirm] = useState(false);
+  const [deleteFeeReason, setDeleteFeeReason] = useState("");
 
   // Record payment form states
   const [installmentName, setInstallmentName] = useState("हप्ता १ (1st Installment)");
@@ -245,6 +249,75 @@ function AdminStudentsPage() {
       setModalMessage({
         type: "error",
         text: err?.message || "शुल्क सेव्ह करताना त्रुटी आली",
+      });
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // Delete / Reset Fee Structure
+  const handleDeleteFees = async () => {
+    if (!selectedStudent) return;
+    setModalLoading(true);
+    setModalMessage(null);
+
+    try {
+      const res = await api.adminDeleteStudentFees(
+        selectedStudent._id,
+        deleteFeeReason || "फी रचना ॲडमिनद्वारे डिलीट / रीसेट केली"
+      );
+
+      if (res.success) {
+        setModalMessage({
+          type: "success",
+          text: "विद्यार्थ्याची फी रचना यशस्वीरीत्या डिलीट / रीसेट केली!",
+        });
+        setStudentFees(res.fees);
+        setFeeTotal(0);
+        setFeeDueDate("");
+        setFeeNotes("");
+        setShowDeleteFeeConfirm(false);
+        setDeleteFeeReason("");
+        fetchStudents();
+      }
+    } catch (err: any) {
+      setModalMessage({
+        type: "error",
+        text: err?.message || "शुल्क रचना डिलीट करताना त्रुटी आली",
+      });
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // Delete Specific Payment Installment
+  const handleDeletePayment = async (paymentId: string) => {
+    if (!selectedStudent || !paymentId) return;
+    if (
+      !window.confirm(
+        "तुम्हाला खात्री आहे का? ही भरलेली पावती कायमची डिलीट केली जाईल आणि हिशेब पुन्हा मोजला जाईल."
+      )
+    ) {
+      return;
+    }
+
+    setModalLoading(true);
+    setModalMessage(null);
+
+    try {
+      const res = await api.adminDeleteFeePayment(selectedStudent._id, paymentId);
+      if (res.success) {
+        setModalMessage({
+          type: "success",
+          text: res.message || "पेमेंट पावती यशस्वीरीत्या डिलीट केली!",
+        });
+        setStudentFees(res.fees);
+        fetchStudents();
+      }
+    } catch (err: any) {
+      setModalMessage({
+        type: "error",
+        text: err?.message || "पेमेंट डिलीट करताना त्रुटी आली",
       });
     } finally {
       setModalLoading(false);
@@ -1043,15 +1116,84 @@ function AdminStudentsPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleSaveFees}
-                    disabled={modalLoading}
-                    className="rounded-full bg-primary px-6 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-                  >
-                    {modalLoading ? "सेव्ह होत आहे..." : "शुल्क रचना सेव्ह करा (Save Fees)"}
-                  </button>
+                {/* Confirmation Box for Deleting Fee Structure */}
+                {showDeleteFeeConfirm && (
+                  <div className="rounded-xl border border-red-300 bg-red-50/80 p-4 animate-in fade-in">
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-full bg-red-100 p-2 text-red-600">
+                        <AlertTriangle className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-red-900 text-sm">
+                          विद्यार्थ्याची शुल्क रचना डिलीट / रीसेट करायची आहे का?
+                        </h4>
+                        <p className="mt-1 text-xs text-red-700">
+                          यामुळे या विद्यार्थ्याची एकूण देय फी ₹० होईल आणि पुढील देय तारीख काढून टाकली जाईल. हा बदल ऑडिट लॉगमध्ये नोंदवला जाईल.
+                        </p>
+
+                        <div className="mt-3">
+                          <label className="block text-xs font-semibold text-red-900 mb-1">
+                            डिलीट करण्याचे कारण / शेरा (Reason):
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="उदा. चुकीची रक्कम नोंदवली होती / शिष्यवृत्ती / प्रवेश रद्द"
+                            value={deleteFeeReason}
+                            onChange={(e) => setDeleteFeeReason(e.target.value)}
+                            className="w-full rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs text-black focus:outline-hidden focus:ring-2 focus:ring-red-400"
+                          />
+                        </div>
+
+                        <div className="mt-3 flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowDeleteFeeConfirm(false);
+                              setDeleteFeeReason("");
+                            }}
+                            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-100"
+                          >
+                            रद्द करा (Cancel)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleDeleteFees}
+                            disabled={modalLoading}
+                            className="rounded-lg bg-red-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-red-700 flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            <span>{modalLoading ? "डिलीट होत आहे..." : "होय, फी रचना डिलीट करा (Confirm Delete)"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/60">
+                  <div>
+                    {Number(studentFees?.totalFees || 0) > 0 && !showDeleteFeeConfirm && (
+                      <button
+                        type="button"
+                        onClick={() => setShowDeleteFeeConfirm(true)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50/60 px-4 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-red-600" />
+                        <span>शुल्क रचना डिलीट करा (Delete Fee Structure)</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSaveFees}
+                      disabled={modalLoading}
+                      className="rounded-full bg-primary px-6 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+                    >
+                      {modalLoading ? "सेव्ह होत आहे..." : "शुल्क रचना सेव्ह करा (Save Fees)"}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Audit Trail Log */}
@@ -1308,14 +1450,24 @@ function AdminStudentsPage() {
                               {p.receivedBy || "Admin"}
                             </td>
                             <td className="p-2.5 text-right">
-                              <button
-                                type="button"
-                                onClick={() => setPrintableReceipt(p)}
-                                className="inline-flex items-center gap-1 rounded bg-maroon/10 hover:bg-maroon hover:text-white text-maroon px-2.5 py-1 text-[11px] font-semibold transition-colors"
-                              >
-                                <Printer className="h-3.5 w-3.5" />
-                                <span>पावती प्रिंट</span>
-                              </button>
+                              <div className="inline-flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setPrintableReceipt(p)}
+                                  className="inline-flex items-center gap-1 rounded bg-maroon/10 hover:bg-maroon hover:text-white text-maroon px-2.5 py-1 text-[11px] font-semibold transition-colors"
+                                >
+                                  <Printer className="h-3.5 w-3.5" />
+                                  <span>पावती प्रिंट</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePayment(p._id || p.receiptNo)}
+                                  title="पेमेंट नोंद डिलीट करा"
+                                  className="inline-flex items-center justify-center rounded bg-red-50 hover:bg-red-600 hover:text-white text-red-600 p-1.5 transition-colors border border-red-200"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}

@@ -476,6 +476,155 @@ const recordFeePayment = async (req, res) => {
     }
 };
 
+// =====================================================
+// DELETE / RESET STUDENT FEE STRUCTURE
+// =====================================================
+
+const deleteStudentFees = async (req, res) => {
+    try {
+        const { id } = req.params; // StudentProfile ID
+
+        const profile = await StudentProfile.findById(id);
+        if (!profile) {
+            return res.status(404).json({
+                success: false,
+                message: "विद्यार्थी सापडला नाही",
+            });
+        }
+
+        const feeRecord = await FeeRecord.findOne({ studentProfile: profile._id });
+        if (!feeRecord) {
+            return res.status(404).json({
+                success: false,
+                message: "शुल्क रचना सापडली नाही",
+            });
+        }
+
+        const oldTotal = feeRecord.totalFees || 0;
+        feeRecord.totalFees = 0;
+        feeRecord.nextDueDate = null;
+        feeRecord.feeScheduleNotes = "";
+
+        if (!feeRecord.feeHistory) feeRecord.feeHistory = [];
+        feeRecord.feeHistory.push({
+            changedAt: new Date(),
+            changedBy: req.user?.name || "Admin",
+            oldTotal,
+            newTotal: 0,
+            reason: req.body?.reason || "फी रचना ॲडमिनने रीसेट/डिलीट केली",
+        });
+
+        await feeRecord.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "विद्यार्थ्याची फी रचना यशस्वीरीत्या रीसेट केली (Fee structure reset)",
+            fees: feeRecord,
+        });
+    } catch (error) {
+        console.error("Admin delete student fees error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "शुल्क रचना डिलीट करताना त्रुटी आली",
+        });
+    }
+};
+
+// =====================================================
+// DELETE A SPECIFIC FEE PAYMENT INSTALLMENT
+// =====================================================
+
+const deleteFeePayment = async (req, res) => {
+    try {
+        const { id, paymentId } = req.params;
+
+        const profile = await StudentProfile.findById(id);
+        if (!profile) {
+            return res.status(404).json({
+                success: false,
+                message: "विद्यार्थी सापडला नाही",
+            });
+        }
+
+        const feeRecord = await FeeRecord.findOne({ studentProfile: profile._id });
+        if (!feeRecord) {
+            return res.status(404).json({
+                success: false,
+                message: "शुल्क नोंद सापडली नाही",
+            });
+        }
+
+        const paymentIndex = feeRecord.payments.findIndex(
+            (p) => String(p._id) === String(paymentId) || p.receiptNo === paymentId
+        );
+
+        if (paymentIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: "पेमेंट पावती सापडली नाही",
+            });
+        }
+
+        const removedPayment = feeRecord.payments[paymentIndex];
+        feeRecord.payments.splice(paymentIndex, 1);
+
+        if (!feeRecord.feeHistory) feeRecord.feeHistory = [];
+        feeRecord.feeHistory.push({
+            changedAt: new Date(),
+            changedBy: req.user?.name || "Admin",
+            oldTotal: feeRecord.totalFees,
+            newTotal: feeRecord.totalFees,
+            reason: `पेमेंट डिलीट केले: पावती क्र. ${removedPayment.receiptNo} (रक्कम ₹${removedPayment.amount})`,
+        });
+
+        await feeRecord.save();
+
+        return res.status(200).json({
+            success: true,
+            message: `पेमेंट पावती (${removedPayment.receiptNo}) यशस्वीरीत्या डिलीट केली`,
+            fees: feeRecord,
+        });
+    } catch (error) {
+        console.error("Admin delete fee payment error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "पेमेंट डिलीट करताना त्रुटी आली",
+        });
+    }
+};
+
+// =====================================================
+// DELETE STUDENT PROFILE & FEES
+// =====================================================
+
+const deleteStudent = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const profile = await StudentProfile.findById(id);
+        if (!profile) {
+            return res.status(404).json({
+                success: false,
+                message: "विद्यार्थी सापडला नाही",
+            });
+        }
+
+        await FeeRecord.deleteOne({ studentProfile: profile._id });
+        await StudentProfile.findByIdAndDelete(id);
+
+        return res.status(200).json({
+            success: true,
+            message: "विद्यार्थी व संबंधित फी रेकॉर्ड यशस्वीरीत्या डिलीट केले",
+        });
+    } catch (error) {
+        console.error("Admin delete student error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "विद्यार्थी डिलीट करताना त्रुटी आली",
+        });
+    }
+};
+
 module.exports = {
     getAllStudents,
     getStudentDetails,
@@ -483,4 +632,8 @@ module.exports = {
     updateStudentByAdmin,
     setStudentFees,
     recordFeePayment,
+    deleteStudentFees,
+    deleteFeePayment,
+    deleteStudent,
 };
+

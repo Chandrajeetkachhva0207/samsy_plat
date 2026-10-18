@@ -248,17 +248,30 @@ const forgotPassword = async (req, res) => {
         console.log(`[AUTH] Password Reset OTP generated for ${user.email} / ${user.mobile}`);
 
         // Send OTP directly to user's Gmail / Email
-        await sendPasswordResetOtpEmail({
+        const emailResult = await sendPasswordResetOtpEmail({
             toEmail: user.email,
             recipientName: user.name,
             otp,
         });
 
-        return res.status(200).json({
-            success: true,
-            message: `पासवर्ड रीसेट OTP आपल्या नोंदणीकृत ई-मेलवर (${user.email}) पाठवला आहे. कृपया आपला Gmail इनबॉक्स तपासा.`,
-            email: user.email,
-        });
+        if (emailResult.sent) {
+            return res.status(200).json({
+                success: true,
+                emailSent: true,
+                message: `पासवर्ड रीसेट OTP आपल्या नोंदणीकृत ई-मेलवर (${user.email}) यशस्वीरीत्या पाठवला आहे. कृपया आपला Gmail इनबॉक्स किंवा स्पॅम फोल्डर तपासा.`,
+                email: user.email,
+            });
+        } else {
+            console.warn(`[AUTH] Gmail SMTP not configured or failed to dispatch. Displaying dev OTP: ${otp}`);
+            return res.status(200).json({
+                success: true,
+                emailSent: false,
+                otp: otp,
+                message: `Gmail SMTP अद्याप backend/.env मध्ये सेट केलेले नाही. चाचणीसाठी आपला OTP खाली दिला आहे: ${otp}`,
+                email: user.email,
+                reason: emailResult.reason || emailResult.error || "GMAIL_NOT_CONFIGURED",
+            });
+        }
     } catch (error) {
         console.error("Forgot password error:", error);
         return res.status(500).json({

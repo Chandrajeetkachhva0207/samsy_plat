@@ -73,6 +73,8 @@ function LoginPage() {
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [devOtpCode, setDevOtpCode] = useState<string | null>(null);
+  const [emailDelivered, setEmailDelivered] = useState<boolean>(true);
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -203,12 +205,25 @@ function LoginPage() {
       const res = await api.forgotPassword(forgotIdentifier);
       if (res.success) {
         setOtpSent(true);
-        setSuccess(
-          res.message ||
-            (lang === "mr"
-              ? "✅ पासवर्ड रीसेट OTP आपल्या नोंदणीकृत ई-मेलवर (Gmail) पाठवला आहे. कृपया आपला ईमेल इनबॉक्स व स्पॅम फोल्डर तपासा."
-              : "✅ Password reset OTP has been sent to your registered Gmail address. Please check your inbox.")
-        );
+        if (res.emailSent === false && res.otp) {
+          setEmailDelivered(false);
+          setDevOtpCode(res.otp);
+          setOtp(res.otp);
+          setSuccess(
+            lang === "mr"
+              ? `⚠️ Gmail SMTP अद्याप backend/.env मध्ये सेट केलेले नाही. चाचणीसाठी आपला OTP खाली दिला आहे: ${res.otp}`
+              : `⚠️ Gmail SMTP not configured in backend/.env. Test OTP: ${res.otp}`
+          );
+        } else {
+          setEmailDelivered(true);
+          setDevOtpCode(null);
+          setSuccess(
+            res.message ||
+              (lang === "mr"
+                ? "✅ पासवर्ड रीसेट OTP आपल्या नोंदणीकृत ई-मेलवर (Gmail) पाठवला आहे. कृपया आपला ईमेल इनबॉक्स व स्पॅम फोल्डर तपासा."
+                : "✅ Password reset OTP has been sent to your registered Gmail address. Please check your inbox.")
+          );
+        }
       } else {
         setError(res.message);
       }
@@ -705,19 +720,33 @@ function LoginPage() {
                 </form>
               ) : (
                 <form onSubmit={handleResetPassword} className="grid gap-4">
-                  <div className="rounded-lg bg-blue-50/80 p-3 text-xs text-blue-900 border border-blue-200 flex items-start gap-2">
-                    <Mail className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-semibold">
-                        {lang === "mr" ? "आपला Gmail इनबॉक्स तपासा (Check Gmail)" : "Check Your Gmail Inbox"}
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-blue-800">
-                        {lang === "mr"
-                          ? `आम्ही ${forgotIdentifier} या ईमेलवर ६-अंकी सुरक्षित OTP पाठवला आहे. कृपया Gmail तपासून खाली OTP टाका.`
-                          : `A 6-digit OTP has been sent to ${forgotIdentifier}. Please check Gmail and enter it below.`}
+                  {!emailDelivered && devOtpCode ? (
+                    <div className="rounded-xl bg-amber-50 p-3.5 text-xs text-amber-900 border border-amber-300 shadow-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-amber-950">🔑 चाचणी पडताळणी OTP (Test OTP):</span>
+                        <span className="font-mono text-lg font-bold bg-amber-200/80 text-amber-950 px-3 py-0.5 rounded-lg border border-amber-400 tracking-widest">
+                          {devOtpCode}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-[11px] text-amber-800 leading-relaxed">
+                        <strong>टीप:</strong> थेट Gmail इनबॉक्समध्ये ईमेल येण्यासाठी <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">backend/.env</code> मध्ये <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">GMAIL_USER</code> आणि <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">GMAIL_APP_PASSWORD</code> कॉन्फिगर करणे आवश्यक आहे. सध्या हा चाचणी OTP वापरून आपण पासवर्ड बदलू शकता.
                       </p>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="rounded-lg bg-blue-50/80 p-3 text-xs text-blue-900 border border-blue-200 flex items-start gap-2">
+                      <Mail className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold">
+                          {lang === "mr" ? "आपला Gmail इनबॉक्स तपासा (Check Gmail)" : "Check Your Gmail Inbox"}
+                        </p>
+                        <p className="mt-0.5 text-[11px] text-blue-800">
+                          {lang === "mr"
+                            ? `आम्ही ${forgotIdentifier} या ईमेलवर ६-अंकी सुरक्षित OTP पाठवला आहे. कृपया Gmail तपासून खाली OTP टाका.`
+                            : `A 6-digit OTP has been sent to ${forgotIdentifier}. Please check Gmail and enter it below.`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-xs font-semibold text-foreground mb-1">

@@ -9,6 +9,9 @@ const {
     updateStudentByAdmin,
     setStudentFees,
     recordFeePayment,
+    deleteStudentFees,
+    deleteFeePayment,
+    deleteStudent,
 } = require("../controllers/adminStudentController");
 
 const router = express.Router();
@@ -21,6 +24,9 @@ router.get("/:id", getStudentDetails);
 router.put("/:id/verify", verifyStudent);
 router.put("/:id/profile", updateStudentByAdmin);
 router.put("/:id/fees", setStudentFees);
+router.delete("/:id/fees", deleteStudentFees);
 router.post("/:id/payments", recordFeePayment);
+router.delete("/:id/payments/:paymentId", deleteFeePayment);
+router.delete("/:id", deleteStudent);
 
 module.exports = router;
