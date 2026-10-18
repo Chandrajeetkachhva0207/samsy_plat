@@ -287,10 +287,10 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-[85vh] flex flex-col justify-center py-12 bg-sand/20">
-      <Container className="max-w-md">
+    <div className="min-h-[85vh] flex flex-col justify-center bg-sand/20 px-3 py-6 sm:px-4 sm:py-10">
+      <Container className="w-full max-w-md">
         {/* Back to Home */}
-        <div className="mb-5">
+        <div className="mb-3 sm:mb-5">
           <Link
             to="/"
             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-maroon transition-colors"
@@ -302,53 +302,28 @@ function LoginPage() {
           </Link>
         </div>
 
-        <Card className="p-6 sm:p-8 shadow-md border-border/80">
+        <Card className="w-full min-w-0 border-border/80 p-4 shadow-md sm:p-6 md:p-8">
           {/* Header */}
-          <div className="text-center mb-6">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-maroon/10 text-maroon shadow-inner">
+          <div className="mb-5 text-center sm:mb-6">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-maroon/10 text-maroon shadow-inner sm:h-12 sm:w-12">
               {mode === "forgot" ? (
                 <KeyRound className="h-7 w-7 text-maroon" />
               ) : (
-                <ShieldCheck className="h-7 w-7 text-maroon" />
+                <ShieldCheck className="h-6 w-6 text-maroon" />
               )}
             </div>
 
-            {/* 2-Step Flow Indicator */}
-            {mode !== "forgot" && (
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-sand/80 px-3.5 py-1 text-[11px] font-semibold border border-primary/20">
-                <span
-                  className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-colors ${
-                    mode === "register"
-                      ? "bg-maroon text-white shadow-xs"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  <span>Step 1:</span> {lang === "mr" ? "प्रथम नोंदणी (Register)" : "Register"}
-                </span>
-                <span className="text-muted-foreground font-bold">➔</span>
-                <span
-                  className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-colors ${
-                    mode === "login"
-                      ? "bg-maroon text-white shadow-xs"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  <span>Step 2:</span> {lang === "mr" ? "लॉगिन करा (Sign In)" : "Sign In"}
-                </span>
-              </div>
-            )}
-
-            <h1 className="text-xl font-bold text-maroon">
+            <h1 className="text-lg font-bold leading-snug text-maroon sm:text-xl">
               {mode === "register"
                 ? lang === "mr"
-                  ? "१. नवीन विद्यार्थी नोंदणी (Step 1: Register)"
-                  : "Step 1: Student Registration"
+                  ? "नवीन विद्यार्थी नोंदणी"
+                  : "Student Registration"
                 : mode === "login"
                   ? lang === "mr"
-                    ? "२. विद्यार्थी पॅनेल लॉगिन (Step 2: Sign In)"
-                    : "Step 2: Sign In to Student Panel"
+                    ? "विद्यार्थी लॉगिन"
+                    : "Sign In to Student Portal"
                   : lang === "mr"
-                    ? "संकेतशब्द विसरलात? (Forgot Password)"
+                    ? "संकेतशब्द विसरलात?"
                     : "Forgot Password"}
             </h1>
 
@@ -368,20 +343,20 @@ function LoginPage() {
           </div>
 
           {/* Mode Switcher Tabs: 1. Registration First, 2. Sign In, 3. Forgot Password */}
-          <div className="mb-6 grid grid-cols-3 rounded-full bg-sand/70 p-1 border border-border/50 text-[11px] sm:text-xs">
+          <div className="mb-5 grid grid-cols-3 gap-1 rounded-xl border border-border/50 bg-sand/70 p-1 text-[11px] sm:mb-6 sm:rounded-full sm:text-xs">
             <button
               type="button"
               onClick={() => {
                 setMode("register");
                 clearMessages();
               }}
-              className={`rounded-full py-2 px-1 text-center font-semibold transition-all ${
+              className={`min-w-0 rounded-lg px-1.5 py-2 text-center font-semibold leading-tight transition-all sm:rounded-full sm:px-2 ${
                 mode === "register"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {lang === "mr" ? "१. नोंदणी" : "1. Register"}
+              {lang === "mr" ? "नोंदणी" : "Register"}
             </button>
 
             <button
@@ -390,13 +365,13 @@ function LoginPage() {
                 setMode("login");
                 clearMessages();
               }}
-              className={`rounded-full py-2 px-1 text-center font-semibold transition-all ${
+              className={`min-w-0 rounded-lg px-1.5 py-2 text-center font-semibold leading-tight transition-all sm:rounded-full sm:px-2 ${
                 mode === "login"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {lang === "mr" ? "२. लॉगिन" : "2. Sign In"}
+              {lang === "mr" ? "लॉगिन" : "Sign In"}
             </button>
 
             <button
@@ -405,14 +380,13 @@ function LoginPage() {
                 setMode("forgot");
                 clearMessages();
               }}
-              className={`rounded-full py-2 px-1 text-center font-semibold transition-all flex items-center justify-center gap-1 ${
+              className={`min-w-0 rounded-lg px-1.5 py-2 text-center font-semibold leading-tight transition-all sm:rounded-full sm:px-2 ${
                 mode === "forgot"
                   ? "bg-maroon text-white shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <KeyRound className="h-3.5 w-3.5" />
-              <span>{lang === "mr" ? "३. पासवर्ड विसरलात?" : "3. Forgot Pass?"}</span>
+              <span>{lang === "mr" ? "पासवर्ड विसरलात?" : "Forgot password?"}</span>
             </button>
           </div>
 
@@ -435,7 +409,7 @@ function LoginPage() {
 
           {/* ----------------- 1. LOGIN FORM ----------------- */}
           {mode === "login" && (
-            <form onSubmit={handleLogin} className="grid gap-4 text-sm">
+            <form onSubmit={handleLogin} className="grid gap-3.5 text-sm sm:gap-4">
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1">
                   {lang === "mr"
@@ -460,7 +434,7 @@ function LoginPage() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="mb-1 flex items-center justify-between gap-2">
                   <label className="block text-xs font-semibold text-foreground">
                     {lang === "mr" ? "संकेतशब्द (Password)" : "Password"} *
                   </label>
@@ -470,10 +444,9 @@ function LoginPage() {
                       setMode("forgot");
                       clearMessages();
                     }}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-maroon hover:underline bg-maroon/10 hover:bg-maroon/20 px-2 py-0.5 rounded border border-maroon/30 transition-colors"
+                    className="shrink-0 text-[11px] font-semibold text-maroon hover:underline sm:text-xs"
                   >
-                    <KeyRound className="h-3 w-3" />
-                    <span>{lang === "mr" ? "🔑 संकेतशब्द विसरलात? (Forgot Password?)" : "🔑 Forgot Password?"}</span>
+                    {lang === "mr" ? "पासवर्ड विसरलात?" : "Forgot password?"}
                   </button>
                 </div>
                 <div className="relative">
@@ -515,8 +488,8 @@ function LoginPage() {
                     ? "प्रक्रिया सुरू आहे..."
                     : "Signing in..."
                   : lang === "mr"
-                    ? "Step 2: लॉगिन करा (Sign In)"
-                    : "Step 2: Sign In"}
+                    ? "लॉगिन करा"
+                    : "Sign In"}
               </button>
 
               <div className="mt-3 text-center text-xs text-muted-foreground border-t border-border/50 pt-3">
@@ -530,8 +503,8 @@ function LoginPage() {
                   className="font-semibold text-maroon hover:underline ml-1"
                 >
                   {lang === "mr"
-                    ? "➔ Step 1: प्रथम येथे नोंदणी करा (Register First)"
-                    : "➔ Step 1: Register First"}
+                    ? "नवीन नोंदणी करा"
+                    : "Register here"}
                 </button>
               </div>
             </form>
@@ -539,7 +512,7 @@ function LoginPage() {
 
           {/* ----------------- 2. REGISTRATION FORM ----------------- */}
           {mode === "register" && (
-            <form onSubmit={handleRegister} className="grid gap-3.5 text-sm">
+            <form onSubmit={handleRegister} className="grid gap-3 text-sm sm:gap-3.5">
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1">
                   {lang === "mr" ? "विद्यार्थ्याचे पूर्ण नाव" : "Student Full Name"} *
@@ -654,8 +627,8 @@ function LoginPage() {
                     ? "नोंदणी होत आहे..."
                     : "Registering..."
                   : lang === "mr"
-                    ? "Step 1: विद्यार्थी नोंदणी पूर्ण करा (Register)"
-                    : "Step 1: Complete Registration"}
+                    ? "नोंदणी पूर्ण करा"
+                    : "Create account"}
               </button>
 
               <div className="mt-3 text-center text-xs text-muted-foreground border-t border-border/50 pt-3">
@@ -669,8 +642,8 @@ function LoginPage() {
                   className="font-semibold text-maroon hover:underline ml-1"
                 >
                   {lang === "mr"
-                    ? "➔ Step 2: येथे लॉगिन करा (Sign In to Student Panel)"
-                    : "➔ Step 2: Sign In to Student Panel"}
+                    ? "लॉगिन करा"
+                    : "Sign in here"}
                 </button>
               </div>
             </form>
@@ -678,7 +651,7 @@ function LoginPage() {
 
           {/* ----------------- 3. FORGOT PASSWORD FLOW ----------------- */}
           {mode === "forgot" && (
-            <div className="grid gap-4 text-sm">
+            <div className="grid gap-3.5 text-sm sm:gap-4">
               {!otpSent ? (
                 <form onSubmit={handleRequestOtp} className="grid gap-4">
                   <div>

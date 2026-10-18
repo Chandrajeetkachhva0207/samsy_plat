@@ -1,3 +1,4 @@
+
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { nav, org, secondaryNav } from "@/content/site";
@@ -11,145 +12,114 @@ export function Header() {
   const { user, isAdmin, logout } = useAuth();
   const [open, setOpen] = useState(false);
 
+  const closeMenu = () => setOpen(false);
+
+  const buttonClass =
+    "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-2 text-[10px] font-semibold leading-tight transition-colors sm:px-4 sm:py-2 sm:text-sm";
+
+  const languageButtonClass = (active: boolean) =>
+    `px-3 py-1.5 transition-colors ${active
+      ? "bg-primary text-primary-foreground"
+      : "text-muted-foreground hover:bg-accent"
+    }`;
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
       <div className="saffron-rule" aria-hidden="true" />
 
-      <Container className="flex items-center gap-3 py-3">
-        {/* Logo + Organization Name */}
+      {/* Top bar */}
+      <Container className="flex min-w-0 items-center gap-2 py-2 sm:gap-3 sm:py-3">
+        {/* Logo and organization name */}
         <Link
           to="/"
-          className="flex min-w-0 items-center gap-3"
-          onClick={() => setOpen(false)}
+          onClick={closeMenu}
+          className="flex min-w-0 flex-1 items-center gap-2 sm:flex-initial sm:gap-3"
         >
           <img
             src={narmadaLogo}
             alt={t(org.name)}
-            className="h-14 w-14 shrink-0 rounded-full border-2 border-primary/50 object-cover shadow-sm transition-transform hover:scale-105"
+            className="block h-10 w-10 min-h-10 min-w-10 shrink-0 rounded-full border-2 border-primary/50 object-cover object-center shadow-sm sm:h-12 sm:w-12 sm:min-h-12 sm:min-w-12 lg:h-14 lg:w-14 lg:min-h-14 lg:min-w-14"
           />
 
           <span className="min-w-0">
-            <span className="block truncate font-display text-base leading-tight font-semibold text-maroon sm:text-lg">
+            <span className="block truncate font-display text-sm font-semibold leading-tight text-maroon sm:text-base lg:text-lg">
               {t(org.name)}
             </span>
-
-            <span className="block truncate text-xs text-muted-foreground">
+            <span className="mt-0.5 hidden truncate text-xs text-muted-foreground sm:block">
               {t(org.tagline)}
             </span>
           </span>
         </Link>
 
-        <div className="ml-auto flex items-center gap-2">
-          {/* Language Switch */}
+        {/* Top actions */}
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+          {/* Language selector: tablet and desktop */}
           <div
             className="hidden items-center overflow-hidden rounded-full border border-border text-xs sm:flex"
             role="group"
-            aria-label={t({
-              mr: "भाषा",
-              en: "Language",
-            })}
+            aria-label={t({ mr: "भाषा", en: "Language" })}
           >
             <button
+              type="button"
               onClick={() => setLang("mr")}
               aria-pressed={lang === "mr"}
-              className={`px-3 py-1.5 ${
-                lang === "mr"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground"
-              }`}
+              className={languageButtonClass(lang === "mr")}
             >
               मराठी
             </button>
 
             <button
+              type="button"
               onClick={() => setLang("en")}
               aria-pressed={lang === "en"}
-              className={`px-3 py-1.5 ${
-                lang === "en"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground"
-              }`}
+              className={languageButtonClass(lang === "en")}
             >
               English
             </button>
           </div>
 
-          {/* Login / Admin / User */}
+          {/* Login, Admin or Student Portal */}
           {!user ? (
-            <div className="flex items-center gap-1.5">
-              <Link
-                to="/login"
-                search={{ mode: "register" }}
-                className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-colors"
-              >
-                {t({
-                  mr: "१. नोंदणी (Register)",
-                  en: "1. Register",
-                })}
-              </Link>
-              <Link
-                to="/login"
-                search={{ mode: "login" }}
-                className="rounded-full border border-primary/50 bg-sand/60 px-3 py-1.5 text-xs font-semibold text-maroon hover:bg-sand transition-colors"
-              >
-                {t({
-                  mr: "२. लॉगिन (Sign In)",
-                  en: "2. Sign In",
-                })}
-              </Link>
-            </div>
+            <Link
+              to="/login"
+              search={{ mode: "login" }}
+              onClick={closeMenu}
+              className={`${buttonClass} max-w-[116px] bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 sm:max-w-none`}            >
+              <span className="sm:hidden">
+                {t({ mr: "नोंदणी / लॉगिन", en: "Register / Login" })}
+              </span>
+              <span className="hidden sm:inline">
+                {t({ mr: "नोंदणी / लॉगिन", en: "Register / Login" })}
+              </span>
+            </Link>
           ) : isAdmin ? (
-            <>
-              <Link
-                to="/admin"
-                className="rounded-full border border-primary/50 bg-sand/60 px-3 py-1.5 text-xs font-semibold text-maroon hover:bg-sand transition-colors"
-              >
-                {t({
-                  mr: "प्रशासन",
-                  en: "Admin",
-                })}
-              </Link>
-
-              <button
-                type="button"
-                onClick={logout}
-                className="hidden rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-maroon sm:block"
-              >
-                {t({
-                  mr: "लॉगआउट",
-                  en: "Logout",
-                })}
-              </button>
-            </>
+            <Link
+              to="/admin"
+              onClick={closeMenu}
+              className={`${buttonClass} border border-primary/50 bg-sand/60 text-maroon hover:bg-sand`}
+            >
+              {t({ mr: "प्रशासन", en: "Admin" })}
+            </Link>
           ) : (
-            <>
-              <Link
-                to="/student/dashboard"
-                className="rounded-full border border-primary/50 bg-sand/60 px-3 py-1.5 text-xs font-semibold text-maroon hover:bg-sand transition-colors"
-              >
-                {t({
-                  mr: "विद्यार्थी डॅशबोर्ड",
-                  en: "Student Portal",
-                })}
-              </Link>
-
-              <button
-                type="button"
-                onClick={logout}
-                className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-maroon transition-colors"
-              >
-                {t({
-                  mr: "लॉगआउट",
-                  en: "Logout",
-                })}
-              </button>
-            </>
+            <Link
+              to="/student/dashboard"
+              onClick={closeMenu}
+              className={`${buttonClass} border border-primary/50 bg-sand/60 text-maroon hover:bg-sand`}
+            >
+              <span className="sm:hidden">
+                {t({ mr: "विद्यार्थी", en: "Student" })}
+              </span>
+              <span className="hidden sm:inline">
+                {t({ mr: "विद्यार्थी डॅशबोर्ड", en: "Student Portal" })}
+              </span>
+            </Link>
           )}
 
-          {/* Support */}
+          {/* Support button: larger screens only */}
           <Link
             to="/support"
-            className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 sm:text-sm"
+            onClick={closeMenu}
+            className={`${buttonClass} hidden bg-primary text-primary-foreground hover:bg-primary/90 xl:inline-flex`}
           >
             {t({
               mr: "सहकार्य करा / देणगी",
@@ -157,42 +127,55 @@ export function Header() {
             })}
           </Link>
 
-          {/* Mobile Menu */}
+          {/* Logout: larger screens */}
+          {user && (
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                closeMenu();
+              }}
+              className={`${buttonClass} hidden border border-border text-muted-foreground hover:bg-accent hover:text-maroon xl:inline-flex`}
+            >
+              {t({ mr: "लॉगआउट", en: "Logout" })}
+            </button>
+          )}
+
+          {/* Mobile and tablet menu toggle */}
           <button
-            onClick={() => setOpen((v) => !v)}
+            type="button"
+            onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
+            aria-controls="site-mobile-menu"
             aria-label={t({
-              mr: "मेनू",
-              en: "Menu",
+              mr: open ? "मेनू बंद करा" : "मेनू उघडा",
+              en: open ? "Close menu" : "Open menu",
             })}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border xl:hidden"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-lg transition-colors hover:bg-accent sm:h-10 sm:w-10 xl:hidden"
           >
             <span aria-hidden="true">{open ? "✕" : "☰"}</span>
           </button>
         </div>
       </Container>
 
-      {/* Desktop nav */}
+      {/* Desktop navigation */}
       <nav
-        aria-label={t({
-          mr: "मुख्य मेनू",
-          en: "Main menu",
-        })}
+        aria-label={t({ mr: "मुख्य मेनू", en: "Main menu" })}
         className="hidden border-t border-border xl:block"
       >
         <Container>
-          <ul className="flex flex-wrap items-center justify-center gap-x-1 py-1.5 text-sm">
-            {nav.map((n) => (
-              <li key={n.to}>
+          <ul className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1 py-2 text-sm">
+            {nav.map((item) => (
+              <li key={item.to}>
                 <Link
-                  to={n.to}
-                  activeOptions={{ exact: n.to === "/" }}
+                  to={item.to}
+                  activeOptions={{ exact: item.to === "/" }}
                   activeProps={{
-                    className: "bg-accent text-maroon",
+                    className: "bg-accent text-maroon font-semibold",
                   }}
-                  className="rounded-full px-3 py-1.5 text-foreground/80 hover:bg-accent"
+                  className="block rounded-full px-3 py-2 text-foreground/80 transition-colors hover:bg-accent"
                 >
-                  {t(n.label)}
+                  {t(item.label)}
                 </Link>
               </li>
             ))}
@@ -200,58 +183,65 @@ export function Header() {
         </Container>
       </nav>
 
-      {/* Mobile drawer */}
-      {open ? (
+      {/* Mobile and tablet drawer */}
+      {open && (
         <nav
-          aria-label={t({
-            mr: "मोबाईल मेनू",
-            en: "Mobile menu",
-          })}
-          className="border-t border-border bg-card xl:hidden"
+          id="site-mobile-menu"
+          aria-label={t({ mr: "मोबाईल मेनू", en: "Mobile menu" })}
+          className="max-h-[calc(100dvh-64px)] overflow-y-auto border-t border-border bg-card xl:hidden"
         >
-          <Container className="py-3">
-            <ul className="grid gap-1">
-              {nav.map((n) => (
-                <li key={n.to}>
+          <Container className="py-3 sm:py-4">
+            {/* Main navigation */}
+            <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2 sm:gap-2">
+              {nav.map((item) => (
+                <li key={item.to}>
                   <Link
-                    to={n.to}
-                    onClick={() => setOpen(false)}
-                    activeOptions={{ exact: n.to === "/" }}
+                    to={item.to}
+                    onClick={closeMenu}
+                    activeOptions={{ exact: item.to === "/" }}
                     activeProps={{
                       className: "bg-accent text-maroon font-semibold",
                     }}
-                    className="block rounded-lg px-3 py-2.5 hover:bg-accent"
+                    className="block rounded-lg px-3 py-2.5 text-sm text-foreground/90 transition-colors hover:bg-accent"
                   >
-                    {t(n.label)}
+                    {t(item.label)}
                   </Link>
                 </li>
               ))}
             </ul>
 
+            {/* Secondary navigation */}
             {secondaryNav && secondaryNav.length > 0 && (
-              <div className="mt-2.5 border-t border-border/70 pt-2.5">
+              <div className="mt-3 border-t border-border/70 pt-3">
                 <p className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  {t({ mr: "अधिकृत माहिती व योजना", en: "Official Info & Plans" })}
+                  {t({
+                    mr: "अधिकृत माहिती व योजना",
+                    en: "Official Info & Plans",
+                  })}
                 </p>
-                <ul className="grid gap-1">
-                  {secondaryNav.map((n) => (
-                    <li key={n.to}>
+
+                <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2 sm:gap-2">
+                  {secondaryNav.map((item) => (
+                    <li key={item.to}>
                       <Link
-                        to={n.to}
-                        onClick={() => setOpen(false)}
+                        to={item.to}
+                        onClick={closeMenu}
                         activeProps={{
                           className: "bg-accent text-maroon font-semibold",
                         }}
-                        className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-accent ${
-                          n.to === "/certificates"
-                            ? "font-semibold text-maroon bg-sand/50"
+                        className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-accent ${item.to === "/certificates"
+                            ? "bg-sand/50 font-semibold text-maroon"
                             : "text-foreground/90"
-                        }`}
+                          }`}
                       >
-                        <span>{t(n.label)}</span>
-                        {n.to === "/certificates" && (
-                          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
-                            {t({ mr: "अधिकृत ४ कागदपत्रे", en: "4 Documents" })}
+                        <span>{t(item.label)}</span>
+
+                        {item.to === "/certificates" && (
+                          <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                            {t({
+                              mr: "अधिकृत ४ कागदपत्रे",
+                              en: "4 Documents",
+                            })}
                           </span>
                         )}
                       </Link>
@@ -261,104 +251,96 @@ export function Header() {
               </div>
             )}
 
-            <div className="mt-3 flex gap-2 sm:hidden">
-              <button
-                onClick={() => setLang("mr")}
-                aria-pressed={lang === "mr"}
-                className={`flex-1 rounded-full border border-border px-3 py-2 text-sm ${
-                  lang === "mr"
-                    ? "bg-primary text-primary-foreground"
-                    : ""
-                }`}
-              >
-                मराठी
-              </button>
+            {/* Mobile language selector */}
+            <div className="mt-3 border-t border-border/70 pt-3 sm:hidden">
+              <p className="mb-2 px-1 text-xs font-semibold text-muted-foreground">
+                {t({ mr: "भाषा निवडा", en: "Choose language" })}
+              </p>
 
-              <button
-                onClick={() => setLang("en")}
-                aria-pressed={lang === "en"}
-                className={`flex-1 rounded-full border border-border px-3 py-2 text-sm ${
-                  lang === "en"
-                    ? "bg-primary text-primary-foreground"
-                    : ""
-                }`}
-              >
-                English
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLang("mr")}
+                  aria-pressed={lang === "mr"}
+                  className={`flex-1 rounded-full border border-border px-3 py-2 text-sm transition-colors ${lang === "mr"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-accent"
+                    }`}
+                >
+                  मराठी
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setLang("en")}
+                  aria-pressed={lang === "en"}
+                  className={`flex-1 rounded-full border border-border px-3 py-2 text-sm transition-colors ${lang === "en"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-accent"
+                    }`}
+                >
+                  English
+                </button>
+              </div>
             </div>
 
-            {/* Mobile Auth */}
-            <div className="mt-3 border-t border-border pt-3">
+            {/* Mobile authentication and account actions */}
+            <div className="mt-3 border-t border-border/70 pt-3">
               {!user ? (
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    to="/login"
-                    search={{ mode: "register" }}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-lg bg-primary px-3 py-2 text-center text-xs font-semibold text-primary-foreground shadow-xs"
-                  >
-                    {t({
-                      mr: "१. नोंदणी (Register)",
-                      en: "1. Register",
-                    })}
-                  </Link>
-                  <Link
-                    to="/login"
-                    search={{ mode: "login" }}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-lg border border-primary/40 bg-sand/40 px-3 py-2 text-center text-xs font-semibold text-maroon hover:bg-sand"
-                  >
-                    {t({
-                      mr: "२. लॉगिन (Sign In)",
-                      en: "2. Sign In",
-                    })}
-                  </Link>
-                </div>
+                <Link
+                  to="/login"
+                  search={{ mode: "login" }}
+                  onClick={closeMenu}
+                  className="block w-full rounded-full bg-primary px-4 py-3 text-center text-sm font-semibold text-primary-foreground shadow-xs transition-colors hover:bg-primary/90"
+                >
+                  {t({
+                    mr: "नोंदणी / लॉगिन",
+                    en: "Register / Login",
+                  })}
+                </Link>
               ) : (
-                <div className="grid gap-1">
-                  {isAdmin ? (
-                    <Link
-                      to="/admin"
-                      onClick={() => setOpen(false)}
-                      className="block rounded-lg px-3 py-2.5 font-semibold text-maroon hover:bg-accent"
-                    >
-                      {t({
-                        mr: "प्रशासन",
-                        en: "Admin Dashboard",
+                <div className="grid gap-2">
+                  <Link
+                    to={isAdmin ? "/admin" : "/student/dashboard"}
+                    onClick={closeMenu}
+                    className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-maroon transition-colors hover:bg-accent"
+                  >
+                    {isAdmin
+                      ? t({ mr: "प्रशासन डॅशबोर्ड", en: "Admin Dashboard" })
+                      : t({
+                        mr: "विद्यार्थी डॅशबोर्ड",
+                        en: "Student Dashboard",
                       })}
-                    </Link>
-                  ) : (
-                    <Link
-                      to="/student/dashboard"
-                      onClick={() => setOpen(false)}
-                      className="block rounded-lg px-3 py-2.5 font-semibold text-maroon hover:bg-accent"
-                    >
-                      {t({
-                        mr: "🎓 विद्यार्थी डॅशबोर्ड",
-                        en: "🎓 Student Dashboard",
-                      })}
-                    </Link>
-                  )}
+                  </Link>
 
                   <button
                     type="button"
                     onClick={() => {
                       logout();
-                      setOpen(false);
+                      closeMenu();
                     }}
-                    className="block w-full rounded-lg px-3 py-2.5 text-left font-semibold text-maroon hover:bg-accent"
+                    className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-maroon transition-colors hover:bg-accent"
                   >
-                    {t({
-                      mr: "लॉगआउट",
-                      en: "Logout",
-                    })}
+                    {t({ mr: "लॉगआउट", en: "Logout" })}
                   </button>
                 </div>
               )}
+
+              {/* Support link inside drawer */}
+              <Link
+                to="/support"
+                onClick={closeMenu}
+                className="mt-2 block rounded-full border border-primary/40 bg-sand/40 px-4 py-2.5 text-center text-sm font-semibold text-maroon transition-colors hover:bg-sand"
+              >
+                {t({
+                  mr: "सहकार्य करा / देणगी",
+                  en: "Support / Donate",
+                })}
+              </Link>
             </div>
           </Container>
         </nav>
-      ) : null}
+      )}
     </header>
   );
 }
