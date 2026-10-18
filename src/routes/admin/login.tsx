@@ -16,8 +16,8 @@ export const Route = createFileRoute("/admin/login")({
 function AdminLogin() {
   const { login, admin } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("admin@maanarmada.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("maanarmadasansthan@gmail.com");
+  const [password, setPassword] = useState("MaaNarmada@2026");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,7 +85,7 @@ function AdminLogin() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@maanarmada.com"
+                  placeholder="maanarmadasansthan@gmail.com"
                   className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />
               </div>
@@ -119,10 +119,10 @@ function AdminLogin() {
 
           <div className="mt-6 border-t border-border/60 pt-4 text-center text-xs text-muted-foreground space-y-1">
             <p>
-              डिफॉल्ट लॉगिन: <code className="bg-sand px-1.5 py-0.5 rounded text-maroon font-semibold">admin@maanarmada.com</code>
+              डिफॉल्ट लॉगिन: <code className="bg-sand px-1.5 py-0.5 rounded text-maroon font-semibold">maanarmadasansthan@gmail.com</code>
             </p>
             <p>
-              पासवर्ड: <code className="bg-sand px-1.5 py-0.5 rounded text-maroon font-semibold">admin123</code>
+              पासवर्ड: <code className="bg-sand px-1.5 py-0.5 rounded text-maroon font-semibold">MaaNarmada@2026</code>
             </p>
           </div>
         </Card>

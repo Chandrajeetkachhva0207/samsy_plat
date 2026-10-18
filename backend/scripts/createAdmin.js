@@ -1,119 +1,79 @@
-
-
 const dotenv = require("dotenv");
 const path = require("path");
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const User = require("../models/User");
 
 // Load environment variables
 dotenv.config({
-    path: path.join(__dirname, "../.env"),
+  path: path.join(__dirname, "../.env"),
 });
 
 // =====================================================
-// PROMOTE EXISTING USER TO ADMIN
+// CREATE OR UPDATE ADMIN USER
 // =====================================================
 
-const promoteToAdmin = async () => {
-    try {
-        // Get email from command line
-        const email = process.argv[2];
+const createOrPromoteAdmin = async () => {
+  try {
+    const email = (process.argv[2] || "maanarmadasansthan@gmail.com").toLowerCase().trim();
+    const password = process.argv[3] || "MaaNarmada@2026";
+    const name = process.argv[4] || "मा नर्मदा संस्था व्यवस्थापक (Admin)";
 
-        if (!email) {
-            console.log("");
-            console.log("Please provide the user's email.");
-            console.log("");
-            console.log("Usage:");
-            console.log(
-                "node scripts/createAdmin.js user@example.com"
-            );
-            console.log("");
+    const uri =
+      process.env.MONGODB_URI ||
+      "mongodb://127.0.0.1:27017/maa_narmada_gurukul";
 
-            process.exit(1);
-        }
+    await mongoose.connect(uri);
+    console.log("MongoDB connected:", uri);
 
-        // MongoDB connection
-        const uri =
-            process.env.MONGODB_URI ||
-            "mongodb://127.0.0.1:27017/maa_narmada";
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-        await mongoose.connect(uri);
+    let user = await User.findOne({ email });
 
-        console.log("MongoDB connected");
+    if (user) {
+      user.role = "admin";
+      user.password = hashedPassword;
+      if (name && !user.name) user.name = name;
+      await user.save();
 
-        // Find existing user
-        const user = await User.findOne({
-            email: email.toLowerCase().trim(),
-        });
+      console.log("");
+      console.log("-----------------------------------");
+      console.log("Admin account updated successfully!");
+      console.log("-----------------------------------");
+      console.log("Name:", user.name);
+      console.log("Email:", user.email);
+      console.log("Role:", user.role);
+      console.log("Password:", password);
+      console.log("-----------------------------------");
+    } else {
+      user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        role: "admin",
+      });
 
-        // User doesn't exist
-        if (!user) {
-            console.log("");
-            console.log(
-                `No user found with email: ${email}`
-            );
-            console.log("");
-            console.log(
-                "The user must register first."
-            );
-
-            await mongoose.disconnect();
-            process.exit(1);
-        }
-
-        // Already admin
-        if (user.role === "admin") {
-            console.log("");
-            console.log("This user is already an admin.");
-            console.log("");
-            console.log("Name:", user.name);
-            console.log("Email:", user.email);
-            console.log("Role:", user.role);
-
-            await mongoose.disconnect();
-            process.exit(0);
-        }
-
-        // Promote user to admin
-        user.role = "admin";
-
-        await user.save();
-
-        console.log("");
-        console.log("-----------------------------------");
-        console.log("User promoted to admin successfully");
-        console.log("-----------------------------------");
-        console.log("Name:", user.name);
-        console.log("Email:", user.email);
-        console.log("Role:", user.role);
-        console.log("-----------------------------------");
-        console.log("");
-        console.log(
-            "Existing password was not changed."
-        );
-        console.log("");
-
-        await mongoose.disconnect();
-
-        process.exit(0);
-
-    } catch (error) {
-        console.error("");
-        console.error(
-            "Error:",
-            error.message
-        );
-        console.error("");
-
-        try {
-            await mongoose.disconnect();
-        } catch (disconnectError) {
-            // Ignore disconnect errors
-        }
-
-        process.exit(1);
+      console.log("");
+      console.log("-----------------------------------");
+      console.log("New Admin account created successfully!");
+      console.log("-----------------------------------");
+      console.log("Name:", user.name);
+      console.log("Email:", user.email);
+      console.log("Role:", user.role);
+      console.log("Password:", password);
+      console.log("-----------------------------------");
     }
+
+    await mongoose.disconnect();
+    process.exit(0);
+  } catch (error) {
+    console.error("Error creating/updating admin:", error.message);
+    try {
+      await mongoose.disconnect();
+    } catch (_) {}
+    process.exit(1);
+  }
 };
 
-promoteToAdmin();
+createOrPromoteAdmin();
