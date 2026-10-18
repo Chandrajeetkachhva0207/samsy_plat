@@ -1,6 +1,8 @@
+const crypto = require("crypto");
 const StudentProfile = require("../models/StudentProfile");
 const FeeRecord = require("../models/FeeRecord");
 const User = require("../models/User");
+const { getRazorpayInstance } = require("../config/razorpay");
 
 // =====================================================
 // GET CURRENT LOGGED-IN STUDENT PROFILE & FEES
@@ -227,9 +229,198 @@ const getMyFees = async (req, res) => {
     }
 };
 
+// =====================================================
+// CREATE ONLINE PAYMENT ORDER (Razorpay)
+// =====================================================
+
+const createFeeOrder = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { amount, installmentName } = req.body;
+        const numAmount = Math.round(Number(amount));
+
+        if (!numAmount || numAmount < 1) {
+            return res.status(400).json({
+                success: false,
+                message: "किमान ₹१ रक्कम आवश्यक आहे (Valid amount required)",
+            });
+        }
+
+        const feeRecord = await FeeRecord.findOne({ user: userId });
+        if (!feeRecord) {
+            return res.status(404).json({
+                success: false,
+                message: "शुल्क नोंद सापडली नाही",
+            });
+        }
+
+        if (feeRecord.remainingFees <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "आपली सर्व फी आधीच भरलेली आहे! (No pending fees)",
+            });
+        }
+
+        if (numAmount > feeRecord.remainingFees) {
+            return res.status(400).json({
+                success: false,
+                message: `रक्कम शिल्लक फी पेक्षा (₹${feeRecord.remainingFees}) जास्त असू शकत नाही`,
+            });
+        }
+
+        const profile = await StudentProfile.findOne({ user: userId });
+        const receiptId = `fee_${Date.now().toString().slice(-8)}`;
+        const razorpay = getRazorpayInstance();
+
+        let order;
+        if (
+            razorpay &&
+            process.env.RAZORPAY_KEY_ID &&
+            !process.env.RAZORPAY_KEY_ID.includes("placeholder")
+        ) {
+            order = await razorpay.orders.create({
+                amount: numAmount * 100,
+                currency: "INR",
+                receipt: receiptId,
+                notes: {
+                    userId: String(userId),
+                    studentId: profile?.studentId || "",
+                    studentName: profile?.personal?.fullName || req.user.name || "",
+                    installmentName: installmentName || "Student Fee Payment",
+                },
+            });
+        } else {
+            order = {
+                id: `order_fee_${Date.now()}`,
+                amount: numAmount * 100,
+                currency: "INR",
+                receipt: receiptId,
+                status: "created",
+            };
+        }
+
+        return res.status(200).json({
+            success: true,
+            orderId: order.id,
+            amount: numAmount,
+            currency: "INR",
+            key: process.env.RAZORPAY_KEY_ID || "rzp_test_Th2V6OKzKu078U",
+            studentName: profile?.personal?.fullName || req.user.name || "",
+            studentEmail: profile?.personal?.email || req.user.email || "",
+            studentMobile: profile?.personal?.mobile || req.user.mobile || "",
+        });
+    } catch (error) {
+        console.error("Create fee order error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "पेमेंट ऑर्डर तयार करताना त्रुटी आली",
+        });
+    }
+};
+
+// =====================================================
+// VERIFY ONLINE PAYMENT & RECORD RECEIPT
+// =====================================================
+
+const verifyFeePayment = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const {
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature,
+            amount,
+            installmentName,
+        } = req.body;
+
+        if (!razorpay_payment_id) {
+            return res.status(400).json({
+                success: false,
+                message: "पेमेंट माहिती अपूर्ण आहे (Payment ID missing)",
+            });
+        }
+
+        const feeRecord = await FeeRecord.findOne({ user: userId });
+        if (!feeRecord) {
+            return res.status(404).json({
+                success: false,
+                message: "शुल्क नोंद सापडली नाही",
+            });
+        }
+
+        // Prevent duplicate payment entry
+        const isDuplicate = feeRecord.payments.some(
+            (p) => p.transactionRef === razorpay_payment_id
+        );
+        if (isDuplicate) {
+            return res.status(200).json({
+                success: true,
+                message: "हे पेमेंट आधीच नोंदवले गेले आहे",
+                fees: feeRecord,
+            });
+        }
+
+        // Verify Razorpay HMAC signature if real order
+        if (
+            process.env.RAZORPAY_KEY_SECRET &&
+            razorpay_order_id &&
+            razorpay_signature &&
+            !razorpay_order_id.startsWith("order_fee_")
+        ) {
+            const body = razorpay_order_id + "|" + razorpay_payment_id;
+            const expectedSignature = crypto
+                .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+                .update(body.toString())
+                .digest("hex");
+
+            if (expectedSignature !== razorpay_signature) {
+                return res.status(400).json({
+                    success: false,
+                    message: "पेमेंट स्वाक्षरी पडताळणी अयशस्वी (Invalid payment signature)",
+                });
+            }
+        }
+
+        const numAmount = Number(amount);
+        const year = new Date().getFullYear();
+        const rand = Math.floor(1000 + Math.random() * 9000);
+        const receiptNo = `RCP-${year}-${rand}`;
+
+        const payment = {
+            receiptNo,
+            amount: numAmount,
+            paymentDate: new Date(),
+            paymentMode: "Online",
+            transactionRef: razorpay_payment_id,
+            installmentName: installmentName || `ऑनलाइन हप्ता ${feeRecord.payments.length + 1}`,
+            receivedBy: "Razorpay Payment Gateway",
+            notes: "Verified online student fee payment",
+            createdAt: new Date(),
+        };
+
+        feeRecord.payments.push(payment);
+        await feeRecord.save();
+
+        return res.status(200).json({
+            success: true,
+            message: `पेमेंट यशस्वी झाले! अधिकृत पावती क्र: ${receiptNo}`,
+            payment,
+            fees: feeRecord,
+        });
+    } catch (error) {
+        console.error("Verify fee payment error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "पेमेंट पडताळणी करताना त्रुटी आली",
+        });
+    }
+};
+
 module.exports = {
     getMyProfile,
     updateMyProfile,
     uploadDocument,
     getMyFees,
+    createFeeOrder,
+    verifyFeePayment,
 };

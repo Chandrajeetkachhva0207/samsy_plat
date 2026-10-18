@@ -506,23 +506,78 @@ export const api = {
       studentInfo: any;
     }>("/students/fees"),
 
+  studentCreateFeeOrder: (payload: {
+    amount: number;
+    installmentName?: string;
+  }) =>
+    request<{
+      success: boolean;
+      orderId: string;
+      amount: number;
+      currency: string;
+      key: string;
+      studentName?: string;
+      studentEmail?: string;
+      studentMobile?: string;
+      message?: string;
+    }>("/students/fees/create-order", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  studentVerifyFeePayment: (payload: {
+    razorpay_order_id?: string;
+    razorpay_payment_id: string;
+    razorpay_signature?: string;
+    amount: number;
+    installmentName?: string;
+  }) =>
+    request<{
+      success: boolean;
+      message: string;
+      payment: any;
+      fees: any;
+    }>("/students/fees/verify-payment", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
   /* ===================================================
      ADMIN STUDENT MANAGEMENT & FEES
   =================================================== */
 
-  adminGetStudents: (query?: { search?: string; status?: string }) => {
+  adminGetStudents: (query?: {
+    search?: string | undefined;
+    status?: string | undefined;
+    course?: string | undefined;
+    paymentStatus?: string | undefined;
+    onlyPending?: boolean | undefined;
+  }) => {
     const params = new URLSearchParams();
     if (query?.search) params.append("search", query.search);
     if (query?.status) params.append("status", query.status);
+    if (query?.course) params.append("course", query.course);
+    if (query?.paymentStatus) params.append("paymentStatus", query.paymentStatus);
+    if (query?.onlyPending) params.append("onlyPending", "true");
     const qs = params.toString() ? `?${params.toString()}` : "";
     return request<{
       success: boolean;
       students: any[];
+      coursesList?: string[];
+      courses?: string[];
       stats: {
         total: number;
         pending: number;
         verified: number;
         incomplete: number;
+        totalFees: number;
+        totalPaid: number;
+        totalRemaining: number;
+        collectionPercentage: number;
+        totalReceipts: number;
+        paidStudents: number;
+        partialStudents: number;
+        pendingStudents: number;
       };
     }>(`/admin/students${qs}`);
   },
@@ -585,6 +640,7 @@ export const api = {
       amount: number;
       paymentMode?: string;
       transactionRef?: string;
+      installmentName?: string;
       paymentDate?: string;
       receivedBy?: string;
       notes?: string;

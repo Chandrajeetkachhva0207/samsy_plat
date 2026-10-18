@@ -4,18 +4,24 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
+  CreditCard,
   Download,
   Eye,
   FileCheck,
   FileText,
   Filter,
   GraduationCap,
+  History,
+  IndianRupee,
+  Percent,
   Plus,
   Printer,
+  Receipt,
   RefreshCw,
   Search,
   User,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 
@@ -32,21 +38,34 @@ export const Route = createFileRoute("/admin/students")({
 
 function AdminStudentsPage() {
   const [students, setStudents] = useState<any[]>([]);
+  const [coursesList, setCoursesList] = useState<string[]>([]);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
     verified: 0,
     incomplete: 0,
+    totalFees: 0,
+    totalPaid: 0,
+    totalRemaining: 0,
+    collectionPercentage: 0,
+    totalReceipts: 0,
+    paidStudents: 0,
+    partialStudents: 0,
+    pendingStudents: 0,
   });
 
+  // Filters
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [courseFilter, setCourseFilter] = useState("ALL");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState("ALL");
+  const [onlyPendingFilter, setOnlyPendingFilter] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Selected student for drawer/modal
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [studentFees, setStudentFees] = useState<any | null>(null);
-  const [modalTab, setModalTab] = useState<"verify" | "fees" | "payment">("verify");
+  const [modalTab, setModalTab] = useState<"verify" | "fees" | "payment" | "receipts">("verify");
   const [modalLoading, setModalLoading] = useState(false);
   const [modalMessage, setModalMessage] = useState<{
     type: "success" | "error";
@@ -65,6 +84,7 @@ function AdminStudentsPage() {
   const [academicYear, setAcademicYear] = useState("2025-2026");
 
   // Record payment form states
+  const [installmentName, setInstallmentName] = useState("हप्ता १ (1st Installment)");
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [paymentMode, setPaymentMode] = useState("Cash");
   const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -76,18 +96,37 @@ function AdminStudentsPage() {
   const [printableReceipt, setPrintableReceipt] = useState<any | null>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  // Fetch students
+  // Fetch students with all filters
   const fetchStudents = async () => {
     setLoading(true);
     try {
       const res = await api.adminGetStudents({
         search,
         status: statusFilter,
+        course: courseFilter !== "ALL" ? courseFilter : undefined,
+        paymentStatus: paymentStatusFilter !== "ALL" ? paymentStatusFilter : undefined,
+        onlyPending: onlyPendingFilter ? true : undefined,
       });
 
       if (res.success) {
         setStudents(res.students || []);
-        if (res.stats) setStats(res.stats);
+        if (res.coursesList) setCoursesList(res.coursesList);
+        if (res.stats) {
+          setStats({
+            total: res.stats.total || 0,
+            pending: res.stats.pending || 0,
+            verified: res.stats.verified || 0,
+            incomplete: res.stats.incomplete || 0,
+            totalFees: res.stats.totalFees || 0,
+            totalPaid: res.stats.totalPaid || 0,
+            totalRemaining: res.stats.totalRemaining || 0,
+            collectionPercentage: res.stats.collectionPercentage || 0,
+            totalReceipts: res.stats.totalReceipts || 0,
+            paidStudents: res.stats.paidStudents || 0,
+            partialStudents: res.stats.partialStudents || 0,
+            pendingStudents: res.stats.pendingStudents || 0,
+          });
+        }
       }
     } catch (err) {
       console.error("Failed to load students:", err);
@@ -98,7 +137,7 @@ function AdminStudentsPage() {
 
   useEffect(() => {
     fetchStudents();
-  }, [statusFilter]);
+  }, [statusFilter, courseFilter, paymentStatusFilter, onlyPendingFilter]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,6 +166,16 @@ function AdminStudentsPage() {
           setFeeDueDate(res.fees.nextDueDate || "");
           setFeeNotes(res.fees.feeScheduleNotes || "");
           setAcademicYear(res.fees.academicYear || "2025-2026");
+
+          // Pre-fill installment name based on past payment count
+          const nextCount = (res.fees.payments?.length || 0) + 1;
+          setInstallmentName(`हप्ता ${nextCount} (${nextCount}${nextCount === 1 ? "st" : nextCount === 2 ? "nd" : nextCount === 3 ? "rd" : "th"} Installment)`);
+          // Default payment amount to remaining fee if small or positive
+          if (res.fees.remainingFees > 0) {
+            setPaymentAmount(Math.min(res.fees.remainingFees, 5000));
+          } else {
+            setPaymentAmount(0);
+          }
         }
       }
     } catch (err: any) {
@@ -221,6 +270,7 @@ function AdminStudentsPage() {
     try {
       const res = await api.adminRecordFeePayment(selectedStudent._id, {
         amount: paymentAmount,
+        installmentName,
         paymentMode,
         paymentDate,
         transactionRef,
@@ -237,6 +287,7 @@ function AdminStudentsPage() {
         setPaymentAmount(0);
         setTransactionRef("");
         setPaymentNotes("");
+        // Refresh student in modal and table
         fetchStudents();
       }
     } catch (err: any) {
@@ -250,85 +301,231 @@ function AdminStudentsPage() {
   };
 
   return (
-    <AdminLayout title="विद्यार्थी व फी व्यवस्थापन (Students & Fee Portal)">
+    <AdminLayout title="विद्यार्थी व फी व्यवस्थापन (Student & Fee Management)">
       <div className="grid gap-6">
-        {/* Top 4 Metric Cards */}
+
+        {/* =========================================================
+            SECTION 1: FINANCIAL OVERVIEW KPI CARDS
+        ========================================================= */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="p-4 bg-card shadow-xs">
+          {/* Total Course Fees */}
+          <Card className="p-4 bg-card shadow-xs border-primary/20">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground">
-                एकूण विद्यार्थी (Total)
+                एकूण अभ्यासक्रम फी (Total Course Fees)
               </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                <Users className="h-4 w-4" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-maroon">
+                <IndianRupee className="h-5 w-5" />
               </div>
             </div>
-            <p className="mt-2 text-2xl font-bold text-foreground">{stats.total}</p>
+            <p className="mt-2 text-2xl font-bold text-foreground">
+              ₹{Number(stats.totalFees || 0).toLocaleString("en-IN")}
+            </p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              एकूण {stats.total} विद्यार्थ्यांची नोंदणी
+            </p>
           </Card>
 
-          <Card className="p-4 bg-card shadow-xs border-amber-300/40">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-800">
-                प्रलंबित पडताळणी (Pending)
-              </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-                <Clock className="h-4 w-4" />
-              </div>
-            </div>
-            <p className="mt-2 text-2xl font-bold text-amber-700">{stats.pending}</p>
-          </Card>
-
-          <Card className="p-4 bg-card shadow-xs border-emerald-300/40">
+          {/* Total Collected Revenue */}
+          <Card className="p-4 bg-card shadow-xs border-emerald-500/30">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-emerald-800">
-                अधिकृत विद्यार्थी (Verified)
+                एकूण जमा महसूल (Collected Revenue)
               </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                <CheckCircle2 className="h-4 w-4" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                <Wallet className="h-5 w-5" />
               </div>
             </div>
-            <p className="mt-2 text-2xl font-bold text-emerald-700">{stats.verified}</p>
+            <p className="mt-2 text-2xl font-bold text-emerald-700">
+              ₹{Number(stats.totalPaid || 0).toLocaleString("en-IN")}
+            </p>
+            <div className="mt-1 flex items-center justify-between text-[11px] text-emerald-800 font-medium">
+              <span>{stats.totalReceipts} पावत्या जारी</span>
+              <span>{stats.paidStudents} पूर्ण फी जमा</span>
+            </div>
           </Card>
 
-          <Card className="p-4 bg-card shadow-xs">
+          {/* Total Pending Balance */}
+          <Card className="p-4 bg-card shadow-xs border-amber-500/30">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground">
-                अपूर्ण प्रोफाइल (Incomplete)
+              <span className="text-xs font-semibold text-amber-800">
+                एकूण थकीत / प्रलंबित फी (Pending Fees)
               </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                <AlertCircle className="h-4 w-4" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                <Clock className="h-5 w-5" />
               </div>
             </div>
-            <p className="mt-2 text-2xl font-bold text-foreground">{stats.incomplete}</p>
+            <p className="mt-2 text-2xl font-bold text-amber-700">
+              ₹{Number(stats.totalRemaining || 0).toLocaleString("en-IN")}
+            </p>
+            <div className="mt-1 flex items-center justify-between text-[11px] text-amber-800">
+              <span>{stats.partialStudents} अंशतः जमा</span>
+              <span>{stats.pendingStudents} पूर्ण थकीत</span>
+            </div>
+          </Card>
+
+          {/* Collection Percentage & Rate */}
+          <Card className="p-4 bg-card shadow-xs border-blue-500/30">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-blue-800">
+                वसूली प्रमाण (Collection Rate)
+              </span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+                <Percent className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="mt-2 text-2xl font-bold text-blue-900">
+              {stats.collectionPercentage}%
+            </p>
+            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-blue-100">
+              <div
+                className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(stats.collectionPercentage, 100)}%` }}
+              />
+            </div>
           </Card>
         </div>
 
-        {/* Search & Filter Toolbar */}
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between rounded-xl border border-border bg-card p-3 shadow-xs">
-          <form onSubmit={handleSearchSubmit} className="relative w-full sm:max-w-md">
+        {/* Quick Status Pill Bar */}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-muted-foreground font-semibold">त्वरित दृश्य:</span>
+          <button
+            onClick={() => {
+              setPaymentStatusFilter("ALL");
+              setOnlyPendingFilter(false);
+              setStatusFilter("ALL");
+            }}
+            className={`rounded-full px-3 py-1 font-medium transition-colors ${
+              paymentStatusFilter === "ALL" && !onlyPendingFilter && statusFilter === "ALL"
+                ? "bg-maroon text-white"
+                : "bg-muted/60 text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            सर्व विद्यार्थी ({stats.total})
+          </button>
+          <button
+            onClick={() => {
+              setPaymentStatusFilter("Paid");
+              setOnlyPendingFilter(false);
+            }}
+            className={`rounded-full px-3 py-1 font-medium transition-colors ${
+              paymentStatusFilter === "Paid"
+                ? "bg-emerald-700 text-white"
+                : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200"
+            }`}
+          >
+            पूर्ण फी जमा ({stats.paidStudents})
+          </button>
+          <button
+            onClick={() => {
+              setPaymentStatusFilter("Partially Paid");
+              setOnlyPendingFilter(false);
+            }}
+            className={`rounded-full px-3 py-1 font-medium transition-colors ${
+              paymentStatusFilter === "Partially Paid"
+                ? "bg-amber-700 text-white"
+                : "bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200"
+            }`}
+          >
+            अंशतः जमा ({stats.partialStudents})
+          </button>
+          <button
+            onClick={() => {
+              setPaymentStatusFilter("Pending");
+              setOnlyPendingFilter(false);
+            }}
+            className={`rounded-full px-3 py-1 font-medium transition-colors ${
+              paymentStatusFilter === "Pending"
+                ? "bg-red-700 text-white"
+                : "bg-red-50 text-red-800 hover:bg-red-100 border border-red-200"
+            }`}
+          >
+            थकीत फी ({stats.pendingStudents})
+          </button>
+          <button
+            onClick={() => {
+              setStatusFilter("Pending Verification");
+            }}
+            className={`rounded-full px-3 py-1 font-medium transition-colors ${
+              statusFilter === "Pending Verification"
+                ? "bg-orange-700 text-white"
+                : "bg-orange-50 text-orange-800 hover:bg-orange-100 border border-orange-200"
+            }`}
+          >
+            प्रवेश प्रलंबित ({stats.pending})
+          </button>
+        </div>
+
+        {/* =========================================================
+            SECTION 2: SEARCH & ADVANCED FILTER TOOLBAR
+        ========================================================= */}
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between rounded-xl border border-border bg-card p-3 shadow-xs">
+          <form onSubmit={handleSearchSubmit} className="relative w-full lg:max-w-xs">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="नाव, Student ID, किंवा मोबाईलने शोधा..."
-              className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-1.5 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+              placeholder="नाव, ID किंवा मोबाईल..."
+              className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-1.5 text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/40"
             />
           </form>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Course Filter */}
+            <select
+              value={courseFilter}
+              onChange={(e) => setCourseFilter(e.target.value)}
+              className="rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-medium focus:ring-2 focus:ring-primary/30"
+              title="अभ्यासक्रम फिल्टर करा"
+            >
+              <option value="ALL">सर्व अभ्यासक्रम (All Courses)</option>
+              {coursesList.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+
+            {/* Payment Status Filter */}
+            <select
+              value={paymentStatusFilter}
+              onChange={(e) => setPaymentStatusFilter(e.target.value)}
+              className="rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-medium focus:ring-2 focus:ring-primary/30"
+              title="फी स्थिती फिल्टर करा"
+            >
+              <option value="ALL">सर्व फी स्थिती (All Fee Status)</option>
+              <option value="Paid">पूर्ण जमा (Paid)</option>
+              <option value="Partially Paid">अंशतः जमा (Partially Paid)</option>
+              <option value="Pending">थकीत (Pending)</option>
+              <option value="Unassigned">फी निश्चित नाही (Unassigned)</option>
+            </select>
+
+            {/* Admission Status Filter */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-auto rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium focus:ring-2 focus:ring-primary/30"
+              className="rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-medium focus:ring-2 focus:ring-primary/30"
+              title="प्रवेश स्थिती फिल्टर करा"
             >
-              <option value="ALL">सर्व स्थिती (All Status)</option>
-              <option value="Pending Verification">पडताळणी प्रलंबित (Pending)</option>
-              <option value="Verified">पडताळणी पूर्ण (Verified)</option>
-              <option value="Incomplete">अपूर्ण (Incomplete)</option>
+              <option value="ALL">सर्व प्रवेश स्थिती</option>
+              <option value="Pending Verification">पडताळणी प्रलंबित</option>
+              <option value="Verified">अधिकृत (Verified)</option>
+              <option value="Incomplete">अपूर्ण प्रोफाइल</option>
             </select>
 
+            {/* Only Pending Balance Toggle */}
+            <label className="flex items-center gap-1.5 text-xs font-medium text-foreground cursor-pointer rounded-lg border border-border bg-sand/30 px-2.5 py-1.5 hover:bg-sand/60">
+              <input
+                type="checkbox"
+                checked={onlyPendingFilter}
+                onChange={(e) => setOnlyPendingFilter(e.target.checked)}
+                className="h-3.5 w-3.5 rounded border-border accent-maroon"
+              />
+              <span>केवळ थकीत फी</span>
+            </label>
+
+            {/* Refresh */}
             <button
               type="button"
               onClick={fetchStudents}
@@ -340,15 +537,17 @@ function AdminStudentsPage() {
           </div>
         </div>
 
-        {/* Students Table */}
+        {/* =========================================================
+            SECTION 3: STUDENTS & FEE RECORDS TABLE
+        ========================================================= */}
         <Card className="overflow-hidden shadow-sm">
           {loading ? (
             <div className="py-12 text-center text-xs text-muted-foreground">
-              विद्यार्थी यादी लोड होत आहे...
+              विद्यार्थी व फी यादी लोड होत आहे...
             </div>
           ) : students.length === 0 ? (
             <div className="py-12 text-center text-xs text-muted-foreground">
-              कोणताही विद्यार्थी सापडला नाही.
+              कोणताही विद्यार्थी सापडला नाही. कृपया फिल्टर बदला किंवा सर्च साफ करा.
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -357,106 +556,159 @@ function AdminStudentsPage() {
                   <tr className="border-b border-border bg-sand/40 font-semibold text-maroon">
                     <th className="py-3 px-4">विद्यार्थी (Student)</th>
                     <th className="py-3 px-4">Student ID</th>
-                    <th className="py-3 px-4">वर्ग / अभ्यासक्रम</th>
-                    <th className="py-3 px-4">स्थिती (Status)</th>
-                    <th className="py-3 px-4">शुल्क स्थिती (Fees)</th>
+                    <th className="py-3 px-4">अभ्यासक्रम / वर्ग</th>
+                    <th className="py-3 px-4">प्रवेश स्थिती</th>
+                    <th className="py-3 px-4">फी प्रगती व स्थिती</th>
+                    <th className="py-3 px-4">शुल्क तपशील (Fees ₹)</th>
                     <th className="py-3 px-4 text-right">कृती (Action)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
-                  {students.map((s) => (
-                    <tr key={s._id} className="hover:bg-accent/40 transition-colors">
-                      {/* Name & Photo */}
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          {s.personal?.photo ? (
-                            <img
-                              src={getGalleryImageUrl(s.personal.photo)}
-                              alt={s.personal.fullName}
-                              className="h-10 w-10 rounded-full object-cover border border-border"
-                            />
-                          ) : (
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-maroon/10 text-maroon font-bold text-sm">
-                              {(s.personal?.fullName || s.user?.name || "S")[0].toUpperCase()}
+                  {students.map((s) => {
+                    const feeStat = s.fees?.status || (s.fees?.remainingFees === 0 && s.fees?.totalFees > 0 ? "Paid" : s.fees?.paidFees > 0 ? "Partially Paid" : s.fees?.totalFees > 0 ? "Pending" : "Unassigned");
+                    const feePct = s.fees?.paymentPercentage ?? (s.fees?.totalFees > 0 ? Math.round((s.fees.paidFees / s.fees.totalFees) * 100) : 0);
+
+                    return (
+                      <tr key={s._id} className="hover:bg-accent/40 transition-colors">
+                        {/* Name & Photo */}
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            {s.personal?.photo ? (
+                              <img
+                                src={getGalleryImageUrl(s.personal.photo)}
+                                alt={s.personal.fullName}
+                                className="h-10 w-10 rounded-full object-cover border border-border"
+                              />
+                            ) : (
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-maroon/10 text-maroon font-bold text-sm">
+                                {(s.personal?.fullName || s.user?.name || "S")[0].toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-bold text-foreground">
+                                {s.personal?.fullName || s.user?.name || "निनावी"}
+                              </p>
+                              <p className="text-[11px] text-muted-foreground">
+                                {s.personal?.mobile || s.user?.mobile || s.personal?.email || s.user?.email}
+                              </p>
                             </div>
-                          )}
-                          <div>
-                            <p className="font-bold text-foreground">
-                              {s.personal?.fullName || s.user?.name || "निनावी"}
-                            </p>
-                            <p className="text-[11px] text-muted-foreground">
-                              {s.personal?.mobile || s.user?.mobile || s.personal?.email || s.user?.email}
-                            </p>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Student ID */}
-                      <td className="py-3 px-4 font-mono font-bold text-maroon">
-                        {s.studentId ? (
-                          <span className="rounded-md bg-maroon/10 px-2 py-0.5 border border-maroon/20">
-                            {s.studentId}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-[11px] italic">वाटप नाही</span>
-                        )}
-                      </td>
+                        {/* Student ID */}
+                        <td className="py-3 px-4 font-mono font-bold text-maroon">
+                          {s.studentId ? (
+                            <span className="rounded-md bg-maroon/10 px-2 py-0.5 border border-maroon/20">
+                              {s.studentId}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-[11px] italic">वाटप नाही</span>
+                          )}
+                        </td>
 
-                      {/* Class / Course */}
-                      <td className="py-3 px-4">
-                        <p className="font-medium text-foreground">{s.academic?.currentClass || "-"}</p>
-                        <p className="text-[11px] text-muted-foreground truncate max-w-[140px]">
-                          {s.academic?.course || "-"}
-                        </p>
-                      </td>
+                        {/* Class / Course */}
+                        <td className="py-3 px-4">
+                          <p className="font-medium text-foreground">{s.academic?.currentClass || "-"}</p>
+                          <p className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+                            {s.academic?.course || "-"}
+                          </p>
+                        </td>
 
-                      {/* Status */}
-                      <td className="py-3 px-4">
-                        {s.status === "Verified" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 font-semibold text-emerald-800">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Verified
-                          </span>
-                        )}
-                        {s.status === "Pending Verification" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 font-semibold text-amber-800">
-                            <Clock className="h-3 w-3" />
-                            Pending
-                          </span>
-                        )}
-                        {s.status === "Incomplete" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 font-semibold text-gray-700">
-                            <AlertCircle className="h-3 w-3" />
-                            Incomplete
-                          </span>
-                        )}
-                      </td>
+                        {/* Admission Status */}
+                        <td className="py-3 px-4">
+                          {s.status === "Verified" && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 font-semibold text-emerald-800">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Verified
+                            </span>
+                          )}
+                          {s.status === "Pending Verification" && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 font-semibold text-amber-800">
+                              <Clock className="h-3 w-3" />
+                              Pending
+                            </span>
+                          )}
+                          {s.status === "Incomplete" && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 font-semibold text-gray-700">
+                              <AlertCircle className="h-3 w-3" />
+                              Incomplete
+                            </span>
+                          )}
+                          {s.status === "Rejected" && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 font-semibold text-red-700">
+                              <X className="h-3 w-3" />
+                              Rejected
+                            </span>
+                          )}
+                        </td>
 
-                      {/* Fees */}
-                      <td className="py-3 px-4">
-                        <p className="font-semibold text-foreground">
-                          ₹{Number(s.fees?.paidFees || 0).toLocaleString("en-IN")}{" "}
-                          <span className="text-muted-foreground font-normal">
-                            / ₹{Number(s.fees?.totalFees || 0).toLocaleString("en-IN")}
-                          </span>
-                        </p>
-                        <p className="text-[11px] text-amber-700 font-medium">
-                          बाकी: ₹{Number(s.fees?.remainingFees || 0).toLocaleString("en-IN")}
-                        </p>
-                      </td>
+                        {/* Fee Status & Progress */}
+                        <td className="py-3 px-4 min-w-[130px]">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            {feeStat === "Paid" && (
+                              <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 font-bold text-[10px]">
+                                Paid (पूर्ण)
+                              </span>
+                            )}
+                            {feeStat === "Partially Paid" && (
+                              <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 font-bold text-[10px]">
+                                Partially Paid
+                              </span>
+                            )}
+                            {feeStat === "Pending" && (
+                              <span className="rounded-full bg-red-100 text-red-800 px-2 py-0.5 font-bold text-[10px]">
+                                Pending (थकीत)
+                              </span>
+                            )}
+                            {feeStat === "Unassigned" && (
+                              <span className="rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-[10px]">
+                                फी निश्चित नाही
+                              </span>
+                            )}
+                            <span className="text-[11px] font-semibold text-muted-foreground ml-auto">
+                              {feePct}%
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                feeStat === "Paid"
+                                  ? "bg-emerald-600"
+                                  : feeStat === "Partially Paid"
+                                  ? "bg-amber-500"
+                                  : "bg-red-500"
+                              }`}
+                              style={{ width: `${Math.min(feePct, 100)}%` }}
+                            />
+                          </div>
+                        </td>
 
-                      {/* Action */}
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => openStudentModal(s)}
-                          className="rounded-lg bg-primary/10 hover:bg-primary/20 text-maroon px-3 py-1.5 text-xs font-semibold transition-colors"
-                        >
-                          व्यवस्थापन करा (Manage)
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        {/* Fee Amounts */}
+                        <td className="py-3 px-4">
+                          <p className="font-semibold text-foreground">
+                            ₹{Number(s.fees?.paidFees || 0).toLocaleString("en-IN")}{" "}
+                            <span className="text-muted-foreground font-normal">
+                              / ₹{Number(s.fees?.totalFees || 0).toLocaleString("en-IN")}
+                            </span>
+                          </p>
+                          <p className="text-[11px] text-amber-800 font-medium">
+                            बाकी: ₹{Number(s.fees?.remainingFees || 0).toLocaleString("en-IN")}
+                          </p>
+                        </td>
+
+                        {/* Action Button */}
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            type="button"
+                            onClick={() => openStudentModal(s)}
+                            className="rounded-lg bg-primary/10 hover:bg-primary/20 text-maroon px-3 py-1.5 text-xs font-semibold transition-colors"
+                          >
+                            व्यवस्थापन करा
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -464,10 +716,12 @@ function AdminStudentsPage() {
         </Card>
       </div>
 
-      {/* ---------------- STUDENT MANAGEMENT MODAL ---------------- */}
+      {/* =========================================================
+          SECTION 4: COMPREHENSIVE STUDENT MANAGEMENT MODAL
+      ========================================================= */}
       {selectedStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-5 overflow-y-auto">
-          <div className="relative w-full max-w-3xl rounded-2xl bg-card p-5 sm:p-6 shadow-2xl border border-border my-8 max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-4xl rounded-2xl bg-card p-5 sm:p-6 shadow-2xl border border-border my-8 max-h-[92vh] overflow-y-auto">
             {/* Modal Close */}
             <button
               type="button"
@@ -477,58 +731,78 @@ function AdminStudentsPage() {
               <X className="h-5 w-5" />
             </button>
 
-            {/* Modal Title */}
+            {/* Modal Header */}
             <div className="flex items-center gap-3 border-b border-border/70 pb-4 mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-maroon/10 text-maroon font-bold text-lg">
                 {(selectedStudent.personal?.fullName || "S")[0].toUpperCase()}
               </div>
-              <div>
-                <h2 className="text-lg font-bold text-maroon">
-                  {selectedStudent.personal?.fullName || selectedStudent.user?.name}
-                </h2>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-lg font-bold text-maroon">
+                    {selectedStudent.personal?.fullName || selectedStudent.user?.name}
+                  </h2>
+                  {selectedStudent.studentId && (
+                    <span className="font-mono text-xs px-2 py-0.5 bg-maroon/10 text-maroon font-bold rounded border border-maroon/20">
+                      ID: {selectedStudent.studentId}
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   मोबाईल: {selectedStudent.personal?.mobile || selectedStudent.user?.mobile || "-"} •
-                  ई-मेल: {selectedStudent.personal?.email || selectedStudent.user?.email || "-"}
+                  ई-मेल: {selectedStudent.personal?.email || selectedStudent.user?.email || "-"} •
+                  वर्ग: {selectedStudent.academic?.currentClass || "-"}
                 </p>
               </div>
             </div>
 
-            {/* Modal Tabs */}
-            <div className="mb-4 flex rounded-lg bg-sand/60 p-1 border border-border/60">
+            {/* Modal Tabs: 4 tabs */}
+            <div className="mb-4 flex flex-wrap gap-1 rounded-lg bg-sand/60 p-1 border border-border/60">
               <button
                 type="button"
                 onClick={() => setModalTab("verify")}
-                className={`flex-1 rounded-md py-2 text-xs font-semibold transition-all ${
+                className={`flex-1 min-w-[120px] rounded-md py-2 text-xs font-semibold transition-all ${
                   modalTab === "verify"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                🔍 माहिती व पडताळणी (Verification)
+                🔍 माहिती व पडताळणी
               </button>
 
               <button
                 type="button"
                 onClick={() => setModalTab("fees")}
-                className={`flex-1 rounded-md py-2 text-xs font-semibold transition-all ${
+                className={`flex-1 min-w-[120px] rounded-md py-2 text-xs font-semibold transition-all ${
                   modalTab === "fees"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                ⚙️ फी रचना (Fee Structure)
+                ⚙️ फी रचना व ऑडिट लॉग
               </button>
 
               <button
                 type="button"
                 onClick={() => setModalTab("payment")}
-                className={`flex-1 rounded-md py-2 text-xs font-semibold transition-all ${
+                className={`flex-1 min-w-[120px] rounded-md py-2 text-xs font-semibold transition-all ${
                   modalTab === "payment"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                💵 पेमेंट नोंदणी (Record Payment)
+                💵 हप्ता / पेमेंट नोंदणी
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setModalTab("receipts")}
+                className={`flex-1 min-w-[120px] rounded-md py-2 text-xs font-semibold transition-all ${
+                  modalTab === "receipts"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                🧾 सर्व पावत्या व लेजर ({studentFees?.payments?.length || 0})
               </button>
             </div>
 
@@ -545,7 +819,7 @@ function AdminStudentsPage() {
               </div>
             )}
 
-            {/* ================= TAB 1: VERIFICATION & PROFILE ================= */}
+            {/* ---------------- TAB 1: VERIFICATION & PROFILE ---------------- */}
             {modalTab === "verify" && (
               <div className="grid gap-5 text-xs">
                 {/* Status & Student ID Control */}
@@ -597,7 +871,7 @@ function AdminStudentsPage() {
                 <div className="rounded-xl border border-border p-4 bg-background">
                   <h3 className="font-bold text-maroon mb-2 flex items-center gap-1.5">
                     <FileCheck className="h-4 w-4" />
-                    <span>विद्यार्थ्याने अपलोड केलेली सर्व ८ कागदपत्रे (Uploaded Documents)</span>
+                    <span>विद्यार्थ्याने अपलोड केलेली सर्व ८ कागदपत्रे</span>
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     {[
@@ -629,7 +903,7 @@ function AdminStudentsPage() {
                                 rel="noreferrer"
                                 className="inline-flex items-center gap-1 rounded bg-maroon/10 px-2 py-0.5 text-[10px] font-bold text-maroon hover:bg-maroon hover:text-white transition-colors"
                               >
-                                <Eye className="h-3 w-3" /> पहा (View)
+                                <Eye className="h-3 w-3" /> पहा
                               </a>
                             ) : (
                               <span className="text-[10px] text-muted-foreground/80">अपलोड नाही</span>
@@ -641,8 +915,7 @@ function AdminStudentsPage() {
                   </div>
                 </div>
 
-                {/* Details Breakdown */}
-                {/* Details Breakdown across all 5 sections */}
+                {/* Details Breakdown across all sections */}
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <div className="p-3 border rounded-xl bg-card">
                     <p className="font-bold text-maroon mb-1 border-b pb-1">१. वैयक्तिक माहिती</p>
@@ -689,13 +962,38 @@ function AdminStudentsPage() {
               </div>
             )}
 
-            {/* ================= TAB 2: FEE STRUCTURE ================= */}
+            {/* ---------------- TAB 2: FEE STRUCTURE & AUDIT LOG ---------------- */}
             {modalTab === "fees" && (
               <div className="grid gap-4 text-xs">
+                {/* Financial Summary Cards */}
+                {studentFees && (
+                  <div className="grid grid-cols-3 gap-3 p-3 rounded-xl bg-sand/30 border border-primary/20 text-center">
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">एकूण कोर्स फी</span>
+                      <span className="font-bold text-base text-foreground">
+                        ₹{Number(studentFees.totalFees || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">एकूण जमा रक्कम</span>
+                      <span className="font-bold text-base text-emerald-700">
+                        ₹{Number(studentFees.paidFees || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">शिल्लक बाकी (Pending)</span>
+                      <span className="font-bold text-base text-amber-800">
+                        ₹{Number(studentFees.remainingFees || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Edit Form */}
                 <div className="rounded-xl border border-border p-4 bg-background grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block font-bold mb-1">
-                      एकूण शैक्षणिक व निवास शुल्क (Total Fees ₹) *
+                    <label className="block font-bold mb-1 text-foreground">
+                      एकूण अभ्यासक्रम व निवास शुल्क (Total Course Fees ₹) *
                     </label>
                     <input
                       type="number"
@@ -704,10 +1002,13 @@ function AdminStudentsPage() {
                       onChange={(e) => setFeeTotal(Number(e.target.value))}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-primary/40"
                     />
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      या रकमेत बदल केल्यास त्याचा ऑडिट लॉग सुरक्षित ठेवला जातो.
+                    </p>
                   </div>
 
                   <div>
-                    <label className="block font-bold mb-1">शैक्षणिक वर्ष</label>
+                    <label className="block font-bold mb-1 text-foreground">शैक्षणिक वर्ष</label>
                     <input
                       type="text"
                       value={academicYear}
@@ -717,7 +1018,9 @@ function AdminStudentsPage() {
                   </div>
 
                   <div>
-                    <label className="block font-bold mb-1">पुढील हप्ता देय तारीख (Next Due Date)</label>
+                    <label className="block font-bold mb-1 text-foreground">
+                      पुढील हप्ता देय तारीख (Next Due Date)
+                    </label>
                     <input
                       type="date"
                       value={feeDueDate}
@@ -727,10 +1030,12 @@ function AdminStudentsPage() {
                   </div>
 
                   <div>
-                    <label className="block font-bold mb-1">हप्ते / फी शेड्युल शेरा</label>
+                    <label className="block font-bold mb-1 text-foreground">
+                      हप्ते / फी शेड्युल शेरा / बदल करण्याचे कारण
+                    </label>
                     <input
                       type="text"
-                      placeholder="उदा. २ समान हप्त्यांमध्ये भरणे"
+                      placeholder="उदा. सवलत दिली किंवा २ समान हप्त्यांमध्ये भरणे"
                       value={feeNotes}
                       onChange={(e) => setFeeNotes(e.target.value)}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs focus:ring-2 focus:ring-primary/40"
@@ -738,31 +1043,7 @@ function AdminStudentsPage() {
                   </div>
                 </div>
 
-                {/* Summary View */}
-                {studentFees && (
-                  <div className="grid grid-cols-3 gap-3 p-3 rounded-xl bg-sand/30 border text-center">
-                    <div>
-                      <span className="text-muted-foreground block text-[11px]">एकूण फी</span>
-                      <span className="font-bold text-sm">
-                        ₹{Number(studentFees.totalFees || 0).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block text-[11px]">जमा रक्कम</span>
-                      <span className="font-bold text-sm text-emerald-700">
-                        ₹{Number(studentFees.paidFees || 0).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block text-[11px]">शिल्लक बाकी</span>
-                      <span className="font-bold text-sm text-amber-800">
-                        ₹{Number(studentFees.remainingFees || 0).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-end pt-2">
+                <div className="flex justify-end">
                   <button
                     type="button"
                     onClick={handleSaveFees}
@@ -772,16 +1053,106 @@ function AdminStudentsPage() {
                     {modalLoading ? "सेव्ह होत आहे..." : "शुल्क रचना सेव्ह करा (Save Fees)"}
                   </button>
                 </div>
+
+                {/* Audit Trail Log */}
+                <div className="mt-2 rounded-xl border border-border bg-sand/20 p-4">
+                  <h4 className="font-bold text-maroon mb-2 flex items-center gap-1.5">
+                    <History className="h-4 w-4" />
+                    <span>शुल्क बदल ऑडिट इतिहास (Audit Trail)</span>
+                  </h4>
+                  {(!studentFees?.feeHistory || studentFees.feeHistory.length === 0) ? (
+                    <p className="text-muted-foreground text-xs italic">
+                      अद्याप कोणताही शुल्क बदल झालेला नाही. (No past modifications)
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto rounded-lg border border-border bg-background">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-sand/40 border-b font-semibold text-maroon">
+                          <tr>
+                            <th className="p-2">तारीख व वेळ</th>
+                            <th className="p-2">बदलकर्ता (By)</th>
+                            <th className="p-2">मागील शुल्क</th>
+                            <th className="p-2">नवीन शुल्क</th>
+                            <th className="p-2">कारण / शेरा</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/60">
+                          {studentFees.feeHistory.map((h: any, idx: number) => (
+                            <tr key={idx} className="hover:bg-accent/40">
+                              <td className="p-2 font-mono text-[11px]">
+                                {new Date(h.changedAt).toLocaleString("en-IN")}
+                              </td>
+                              <td className="p-2 font-medium">{h.changedBy}</td>
+                              <td className="p-2 text-muted-foreground">
+                                ₹{Number(h.oldTotal).toLocaleString("en-IN")}
+                              </td>
+                              <td className="p-2 font-bold text-emerald-700">
+                                ₹{Number(h.newTotal).toLocaleString("en-IN")}
+                              </td>
+                              <td className="p-2 text-muted-foreground italic">
+                                {h.reason || "-"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* ================= TAB 3: RECORD PAYMENT ================= */}
+            {/* ---------------- TAB 3: RECORD PAYMENT ---------------- */}
             {modalTab === "payment" && (
               <div className="grid gap-5 text-xs">
+                {/* Summary Banner */}
+                {studentFees && (
+                  <div className="rounded-xl bg-sand/30 border border-primary/20 p-3 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">एकूण कोर्स फी</span>
+                      <span className="font-bold text-sm">
+                        ₹{Number(studentFees.totalFees || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">आतापर्यंत जमा</span>
+                      <span className="font-bold text-sm text-emerald-700">
+                        ₹{Number(studentFees.paidFees || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">सध्याची शिल्लक बाकी</span>
+                      <span className="font-bold text-sm text-amber-800">
+                        ₹{Number(studentFees.remainingFees || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">हप्ता संख्या</span>
+                      <span className="font-bold text-sm text-blue-700">
+                        {(studentFees.payments?.length || 0)} भरलेले
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <form
                   onSubmit={handleRecordPayment}
-                  className="rounded-xl border border-primary/30 bg-sand/20 p-4 grid gap-3 sm:grid-cols-2"
+                  className="rounded-xl border border-primary/30 bg-background p-4 grid gap-3 sm:grid-cols-2"
                 >
+                  <div>
+                    <label className="block font-bold mb-1 text-foreground">
+                      हप्ता तपशील (Installment Details) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="उदा. हप्ता १, हप्ता २, अंतिम हप्ता, पूर्ण फी"
+                      value={installmentName}
+                      onChange={(e) => setInstallmentName(e.target.value)}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-primary/40"
+                    />
+                  </div>
+
                   <div>
                     <label className="block font-bold mb-1 text-foreground">
                       जमा रक्कम (Payment Amount ₹) *
@@ -799,7 +1170,7 @@ function AdminStudentsPage() {
 
                   <div>
                     <label className="block font-bold mb-1 text-foreground">
-                      पेमेंट माध्यम (Mode) *
+                      पेमेंट माध्यम (Payment Method) *
                     </label>
                     <select
                       value={paymentMode}
@@ -808,14 +1179,16 @@ function AdminStudentsPage() {
                     >
                       <option value="Cash">रोख (Cash)</option>
                       <option value="UPI">UPI / GPay / PhonePe</option>
-                      <option value="Bank Transfer">बँक ट्रान्सफर (NEFT/RTGS)</option>
+                      <option value="Bank Transfer">बँक ट्रान्सफर (NEFT/RTGS/IMPS)</option>
                       <option value="Cheque">धनादेश (Cheque)</option>
-                      <option value="Online">ऑनलाईन पोर्टल</option>
+                      <option value="Online">ऑनलाईन पेमेंट (Razorpay / Gateway)</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block font-bold mb-1 text-foreground">पेमेंट दिनांक</label>
+                    <label className="block font-bold mb-1 text-foreground">
+                      पेमेंट दिनांक (Payment Date) *
+                    </label>
                     <input
                       type="date"
                       required
@@ -827,20 +1200,20 @@ function AdminStudentsPage() {
 
                   <div>
                     <label className="block font-bold mb-1 text-foreground">
-                      UPI Ref / Cheque No
+                      व्यवहार आयडी / संदर्भ क्रमांक (Transaction ID / Ref)
                     </label>
                     <input
                       type="text"
-                      placeholder="उदा. UPI12345678"
+                      placeholder="उदा. UPI-2026-987654 / CHQ-10482"
                       value={transactionRef}
                       onChange={(e) => setTransactionRef(e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs focus:ring-2 focus:ring-primary/40"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs font-mono focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
 
                   <div>
                     <label className="block font-bold mb-1 text-foreground">
-                      स्वीकारकर्ता (Received By)
+                      स्वीकारकर्ता अधिकारी (Received By)
                     </label>
                     <input
                       type="text"
@@ -850,81 +1223,115 @@ function AdminStudentsPage() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block font-bold mb-1 text-foreground">नोंद / पावती शेरा</label>
+                  <div className="sm:col-span-2">
+                    <label className="block font-bold mb-1 text-foreground">पावती शेरा / टीप</label>
                     <input
                       type="text"
-                      placeholder="उदा. प्रथम हप्ता"
+                      placeholder="उदा. प्रथम हप्ता यशस्वीरित्या जमा झाला"
                       value={paymentNotes}
                       onChange={(e) => setPaymentNotes(e.target.value)}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
 
-                  <div className="sm:col-span-2 flex justify-end pt-1">
+                  <div className="sm:col-span-2 flex justify-end pt-2">
                     <button
                       type="submit"
                       disabled={modalLoading}
-                      className="rounded-full bg-primary px-6 py-2.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+                      className="rounded-full bg-primary px-6 py-2.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
                     >
-                      {modalLoading
-                        ? "नोंदणी होत आहे..."
-                        : "पेमेंट जमा करा व पावती बनवा (Record Payment)"}
+                      <Receipt className="h-4 w-4" />
+                      <span>{modalLoading ? "नोंदणी होत आहे..." : "पेमेंट जमा करा व अधिकृत पावती बनवा"}</span>
                     </button>
                   </div>
                 </form>
+              </div>
+            )}
 
-                {/* History */}
-                <div>
-                  <h4 className="font-bold text-maroon mb-2">पेमेंट इतिहास (Payments Recorded)</h4>
-                  {(!studentFees?.payments || studentFees.payments.length === 0) ? (
-                    <p className="text-muted-foreground italic">अद्याप पेमेंट नोंद नाही.</p>
-                  ) : (
-                    <div className="overflow-x-auto rounded-xl border border-border">
-                      <table className="w-full text-left">
-                        <thead className="bg-sand/40 border-b font-semibold text-maroon">
-                          <tr>
-                            <th className="p-2">पावती क्र.</th>
-                            <th className="p-2">तारीख</th>
-                            <th className="p-2">रक्कम</th>
-                            <th className="p-2">माध्यम</th>
-                            <th className="p-2 text-right">पावती</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                          {studentFees.payments.map((p: any, idx: number) => (
-                            <tr key={idx} className="hover:bg-accent/40">
-                              <td className="p-2 font-mono font-bold text-maroon">{p.receiptNo}</td>
-                              <td className="p-2">
-                                {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString("en-IN") : "-"}
-                              </td>
-                              <td className="p-2 font-bold text-emerald-700">
-                                ₹{Number(p.amount).toLocaleString("en-IN")}
-                              </td>
-                              <td className="p-2">{p.paymentMode}</td>
-                              <td className="p-2 text-right">
-                                <button
-                                  type="button"
-                                  onClick={() => setPrintableReceipt(p)}
-                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-maroon hover:underline"
-                                >
-                                  <Printer className="h-3 w-3" /> पावती पहा
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+            {/* ---------------- TAB 4: RECEIPTS & PAYMENT HISTORY ---------------- */}
+            {modalTab === "receipts" && (
+              <div className="grid gap-4 text-xs">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <h4 className="font-bold text-maroon flex items-center gap-1.5">
+                    <Receipt className="h-4 w-4" />
+                    <span>विद्यार्थी पेमेंट लेजर व अधिकृत पावत्या</span>
+                  </h4>
+                  <span className="text-muted-foreground text-[11px]">
+                    एकूण {studentFees?.payments?.length || 0} हप्ते नोंदवले
+                  </span>
                 </div>
+
+                {(!studentFees?.payments || studentFees.payments.length === 0) ? (
+                  <div className="py-8 text-center text-muted-foreground italic">
+                    अद्याप एकही पेमेंट नोंद झालेले नाही. 'पेमेंट नोंदणी' टॅबमधून पेमेंट जमा करा.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-border">
+                    <table className="w-full text-left">
+                      <thead className="bg-sand/40 border-b font-semibold text-maroon">
+                        <tr>
+                          <th className="p-2.5">पावती क्र.</th>
+                          <th className="p-2.5">हप्ता</th>
+                          <th className="p-2.5">तारीख</th>
+                          <th className="p-2.5">रक्कम (₹)</th>
+                          <th className="p-2.5">माध्यम / Ref</th>
+                          <th className="p-2.5">स्वीकारकर्ता</th>
+                          <th className="p-2.5 text-right">कृती</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/60">
+                        {studentFees.payments.map((p: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-accent/40">
+                            <td className="p-2.5 font-mono font-bold text-maroon">
+                              {p.receiptNo}
+                            </td>
+                            <td className="p-2.5 font-medium">
+                              {p.installmentName || `हप्ता ${idx + 1}`}
+                            </td>
+                            <td className="p-2.5">
+                              {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString("en-IN") : "-"}
+                            </td>
+                            <td className="p-2.5 font-bold text-emerald-700">
+                              ₹{Number(p.amount).toLocaleString("en-IN")}
+                            </td>
+                            <td className="p-2.5">
+                              <span className="rounded bg-sand px-1.5 py-0.5 text-[10px]">
+                                {p.paymentMode}
+                              </span>
+                              {p.transactionRef && (
+                                <span className="block font-mono text-[10px] text-muted-foreground mt-0.5">
+                                  {p.transactionRef}
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-2.5 text-muted-foreground">
+                              {p.receivedBy || "Admin"}
+                            </td>
+                            <td className="p-2.5 text-right">
+                              <button
+                                type="button"
+                                onClick={() => setPrintableReceipt(p)}
+                                className="inline-flex items-center gap-1 rounded bg-maroon/10 hover:bg-maroon hover:text-white text-maroon px-2.5 py-1 text-[11px] font-semibold transition-colors"
+                              >
+                                <Printer className="h-3.5 w-3.5" />
+                                <span>पावती प्रिंट</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* ---------------- ADMIN PRINTABLE RECEIPT MODAL ---------------- */}
+      {/* =========================================================
+          SECTION 5: OFFICIAL PRINTABLE RECEIPT MODAL
+      ========================================================= */}
       {printableReceipt && selectedStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto">
           <div className="relative w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl text-black">
@@ -937,6 +1344,7 @@ function AdminStudentsPage() {
             </button>
 
             <div ref={receiptRef} className="print:p-6">
+              {/* Trust & Header */}
               <div className="text-center border-b-2 border-amber-600 pb-4">
                 <p className="text-xs font-semibold uppercase tracking-widest text-amber-800">
                   ॥ श्री नर्मदा प्रसन्न ॥
@@ -945,13 +1353,14 @@ function AdminStudentsPage() {
                   मा नर्मदा आध्यात्मिक शिक्षण संस्था, आळंदी देवाची
                 </h2>
                 <p className="text-xs text-gray-600 mt-0.5">
-                  वडगाव रोड, आळंदी देवाची, ता. खेड, जि. पुणे — ४१२१०५
+                  पत्ता: वडगाव रोड, आळंदी देवाची, ता. खेड, जि. पुणे, महाराष्ट्र — ४१२१०५
                 </p>
-                <p className="text-[11px] text-gray-500">
-                  अधिकृत फी पावती (Official Fee Receipt)
+                <p className="text-[11px] text-gray-500 font-medium">
+                  संस्था नोंदणी क्र: १५ ९८४ बुलढाणा • अधिकृत फी पावती (Official Fee Receipt)
                 </p>
               </div>
 
+              {/* Receipt Details Header */}
               <div className="mt-4 flex justify-between items-center text-xs border-b border-gray-200 pb-2">
                 <div>
                   <span className="text-gray-500">पावती क्र: </span>
@@ -969,6 +1378,7 @@ function AdminStudentsPage() {
                 </div>
               </div>
 
+              {/* Student Info Box */}
               <div className="mt-3 text-xs grid grid-cols-2 gap-2 bg-amber-50/50 p-3 rounded-lg border border-amber-200/60">
                 <div>
                   <span className="text-gray-500 block">विद्यार्थ्याचे नाव:</span>
@@ -983,34 +1393,52 @@ function AdminStudentsPage() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500 block">वर्ग / अभ्यासक्रम:</span>
+                  <span className="text-gray-500 block">अभ्यासक्रम / वर्ग:</span>
                   <span className="font-medium text-gray-800">
-                    {selectedStudent.academic?.currentClass || "गुरुकुल शिक्षण वर्ग"}
+                    {selectedStudent.academic?.currentClass || selectedStudent.academic?.course || "गुरुकुल शिक्षण"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block">हप्ता तपशील:</span>
+                  <span className="font-semibold text-amber-900">
+                    {printableReceipt.installmentName || "फी हप्ता"}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-500 block">पेमेंट माध्यम:</span>
                   <span className="font-medium text-gray-800">
-                    {printableReceipt.paymentMode} {printableReceipt.transactionRef ? `(${printableReceipt.transactionRef})` : ""}
+                    {printableReceipt.paymentMode}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block">Transaction / Ref ID:</span>
+                  <span className="font-mono text-gray-800">
+                    {printableReceipt.transactionRef || "N/A"}
                   </span>
                 </div>
               </div>
 
+              {/* Particulars Table */}
               <div className="mt-4 border border-gray-300 rounded-lg overflow-hidden text-xs">
                 <table className="w-full">
                   <thead className="bg-gray-100 border-b border-gray-300">
                     <tr>
-                      <th className="p-2 text-left">तपशील</th>
-                      <th className="p-2 text-right">रक्कम</th>
+                      <th className="p-2 text-left">तपशील (Particulars)</th>
+                      <th className="p-2 text-right">रक्कम (Amount)</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td className="p-2.5">
                         गुरुकुल शैक्षणिक व निवास शुल्क
+                        {printableReceipt.installmentName && (
+                          <span className="block font-medium text-amber-900">
+                            [{printableReceipt.installmentName}]
+                          </span>
+                        )}
                         {printableReceipt.notes && (
                           <span className="block text-[11px] text-gray-500">
-                            नोंद: {printableReceipt.notes}
+                            शेरा: {printableReceipt.notes}
                           </span>
                         )}
                       </td>
@@ -1019,7 +1447,7 @@ function AdminStudentsPage() {
                       </td>
                     </tr>
                     <tr className="bg-amber-50/70 border-t border-gray-300 font-bold">
-                      <td className="p-2.5">एकूण जमा रक्कम</td>
+                      <td className="p-2.5">एकूण जमा रक्कम (Total Received)</td>
                       <td className="p-2.5 text-right text-base text-amber-950">
                         ₹{Number(printableReceipt.amount).toLocaleString("en-IN")}
                       </td>
@@ -1028,10 +1456,11 @@ function AdminStudentsPage() {
                 </table>
               </div>
 
+              {/* Signatures */}
               <div className="mt-8 flex justify-between items-end text-xs pt-4 border-t border-dashed border-gray-300">
                 <div className="text-center">
                   <div className="h-10 w-24 border-b border-gray-400 mb-1" />
-                  <span className="text-gray-500">पालक / विद्यार्थी स्वाक्षरी</span>
+                  <span className="text-gray-500">विद्यार्थी / पालक स्वाक्षरी</span>
                 </div>
                 <div className="text-center">
                   <p className="font-semibold text-gray-800 mb-1">
@@ -1042,6 +1471,7 @@ function AdminStudentsPage() {
               </div>
             </div>
 
+            {/* Actions */}
             <div className="mt-6 flex justify-end gap-3 border-t border-gray-200 pt-4 print:hidden">
               <button
                 type="button"

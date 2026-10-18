@@ -5,19 +5,23 @@ import {
   Building,
   CheckCircle2,
   Clock,
+  CreditCard,
   Download,
   FileCheck,
   FileText,
   GraduationCap,
   Home,
+  IndianRupee,
   LogOut,
   MapPin,
   Phone,
   Printer,
   ShieldAlert,
+  ShieldCheck,
   Upload,
   User,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 
@@ -36,12 +40,27 @@ export const Route = createFileRoute("/student/dashboard")({
 interface PaymentItem {
   _id?: string;
   receiptNo: string;
+  installmentName?: string;
   amount: number;
   paymentDate: string;
   paymentMode: string;
   transactionRef?: string;
   receivedBy?: string;
   notes?: string;
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && (window as any).Razorpay) {
+      return resolve(true);
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
 }
 
 function StudentDashboard() {
@@ -62,6 +81,14 @@ function StudentDashboard() {
   // Selected receipt for modal/printing
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentItem | null>(null);
   const receiptPrintRef = useRef<HTMLDivElement>(null);
+
+  // Online Fee Payment Modal State
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [payAmount, setPayAmount] = useState<number>(0);
+  const [payInstallmentName, setPayInstallmentName] = useState("");
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  const [paySuccessAlert, setPaySuccessAlert] = useState<string | null>(null);
 
   // Form states matching 5 key sections
   const [personal, setPersonal] = useState({
@@ -242,6 +269,106 @@ function StudentDashboard() {
 
   const handlePrintReceipt = () => {
     window.print();
+  };
+
+  const handleOpenPayModal = () => {
+    setPayError(null);
+    setPaySuccessAlert(null);
+    if (!fees || fees.remainingFees <= 0) return;
+
+    // Suggest remaining fees or partial installment
+    setPayAmount(fees.remainingFees);
+    const nextCount = (fees?.payments?.length || 0) + 1;
+    setPayInstallmentName(`हप्ता ${nextCount} (${nextCount}${nextCount === 1 ? "st" : nextCount === 2 ? "nd" : nextCount === 3 ? "rd" : "th"} Installment)`);
+    setShowPayModal(true);
+  };
+
+  const handleStartOnlinePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPayError(null);
+
+    if (!payAmount || payAmount <= 0) {
+      setPayError(lang === "mr" ? "कृपया वैध रक्कम प्रविष्ट करा (Enter a valid amount)" : "Enter a valid amount");
+      return;
+    }
+
+    if (fees && payAmount > fees.remainingFees) {
+      setPayError(
+        lang === "mr"
+          ? `रक्कम उर्वरित बाकीपेक्षा (₹${Number(fees.remainingFees).toLocaleString("en-IN")}) जास्त असू शकत नाही.`
+          : `Amount cannot exceed remaining balance (₹${Number(fees.remainingFees).toLocaleString("en-IN")}).`
+      );
+      return;
+    }
+
+    setPaying(true);
+
+    try {
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded) {
+        throw new Error("Razorpay SDK लोड करता आले नाही. कृपया इंटरनेट कनेक्शन तपासा.");
+      }
+
+      const orderRes = await api.studentCreateFeeOrder({
+        amount: payAmount,
+        installmentName: payInstallmentName || `हप्ता ${(fees?.payments?.length || 0) + 1}`,
+      });
+
+      if (!orderRes.success) {
+        throw new Error(orderRes.message || "ऑर्डर तयार करण्यात अडचण आली");
+      }
+
+      const options = {
+        key: orderRes.key,
+        amount: orderRes.amount * 100,
+        currency: orderRes.currency || "INR",
+        name: "मा नर्मदा आध्यात्मिक शिक्षण संस्था",
+        description: `फी हप्ता - ${payInstallmentName || "फी पेमेंट"}`,
+        order_id: orderRes.orderId,
+        handler: async function (response: any) {
+          try {
+            const verifyRes = await api.studentVerifyFeePayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              amount: payAmount,
+              installmentName: payInstallmentName || `हप्ता ${(fees?.payments?.length || 0) + 1}`,
+            });
+
+            if (verifyRes.success) {
+              setShowPayModal(false);
+              setPaySuccessAlert(`पेमेंट यशस्वीरीत्या जमा झाले! अधिकृत पावती क्र: ${verifyRes.payment.receiptNo}`);
+              loadStudentData();
+            } else {
+              setPayError(verifyRes.message || "पेमेंट पडताळणी अयशस्वी");
+            }
+          } catch (err: any) {
+            setPayError(err?.message || "पेमेंट पडताळणी अयशस्वी");
+          } finally {
+            setPaying(false);
+          }
+        },
+        prefill: {
+          name: personal.fullName || user?.name || "",
+          email: personal.email || user?.email || "",
+          contact: personal.mobile || (user as any)?.mobile || "",
+        },
+        theme: {
+          color: "#800000",
+        },
+        modal: {
+          ondismiss: function () {
+            setPaying(false);
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err: any) {
+      setPayError(err?.message || "पेमेंट सुरू करताना त्रुटी आली");
+      setPaying(false);
+    }
   };
 
   if (authLoading || (loading && !profile)) {
@@ -1013,12 +1140,130 @@ function StudentDashboard() {
         {/* ---------------- TAB 3: FEES SUMMARY & RECEIPTS ---------------- */}
         {activeTab === "fees" && (
           <div className="grid gap-6">
+            {/* Payment Success Alert */}
+            {paySuccessAlert && (
+              <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-300 p-4 text-xs font-semibold text-emerald-800 shadow-xs">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                <span className="flex-1">{paySuccessAlert}</span>
+                <button
+                  type="button"
+                  onClick={() => setPaySuccessAlert(null)}
+                  className="rounded-full p-1 text-emerald-700 hover:bg-emerald-100"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Overall Status & Progress Banner */}
+            {(() => {
+              const total = Number(fees?.totalFees || 0);
+              const paid = Number(fees?.paidFees || 0);
+              const remaining = Number(fees?.remainingFees || 0);
+              const percentage = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+              const statusLabel =
+                remaining === 0 && total > 0
+                  ? "Paid"
+                  : paid > 0 && remaining > 0
+                  ? "Partially Paid"
+                  : total > 0
+                  ? "Pending"
+                  : "Unassigned";
+
+              return (
+                <Card className="p-5 sm:p-6 shadow-sm border border-primary/20 bg-linear-to-r from-card via-sand/20 to-card">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          {lang === "mr" ? "शुल्क स्थिती (Fee Status)" : "Fee Status"}
+                        </span>
+                        {statusLabel === "Paid" && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 font-bold text-xs text-emerald-800 border border-emerald-300">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                            {lang === "mr" ? "पूर्ण शुल्क जमा (Paid)" : "Paid in Full"}
+                          </span>
+                        )}
+                        {statusLabel === "Partially Paid" && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 font-bold text-xs text-amber-800 border border-amber-300">
+                            <Clock className="h-3.5 w-3.5 text-amber-600" />
+                            {lang === "mr" ? "अंशतः जमा (Partially Paid)" : "Partially Paid"}
+                          </span>
+                        )}
+                        {statusLabel === "Pending" && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 font-bold text-xs text-red-800 border border-red-300">
+                            <AlertCircle className="h-3.5 w-3.5 text-red-600" />
+                            {lang === "mr" ? "थकीत फी (Pending)" : "Fee Pending"}
+                          </span>
+                        )}
+                        {statusLabel === "Unassigned" && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                            {lang === "mr" ? "शुल्क वाटप प्रलंबित" : "Fee Unassigned"}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="mt-2 text-sm text-foreground">
+                        {lang === "mr"
+                          ? `आपण एकूण फी पैकी ${percentage}% रक्कम भरली आहे.`
+                          : `You have completed ${percentage}% of your total course fee.`}
+                      </p>
+                    </div>
+
+                    {/* Online Payment CTA Button */}
+                    {remaining > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleOpenPayModal}
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-maroon px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-maroon/90 hover:shadow-lg transition-all"
+                      >
+                        <CreditCard className="h-4 w-4" />
+                        <span>
+                          {lang === "mr" ? "ऑनलाईन फी भरा (Pay Online)" : "Pay Pending Fees Online"}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Payment Progress Bar */}
+                  <div className="mt-5">
+                    <div className="flex items-center justify-between text-xs mb-1.5 font-semibold">
+                      <span className="text-muted-foreground">
+                        {lang === "mr" ? "पेमेंट प्रगती (Progress)" : "Payment Progress"}
+                      </span>
+                      <span className="font-bold text-maroon">{percentage}%</span>
+                    </div>
+                    <div className="h-3 w-full rounded-full bg-border overflow-hidden p-0.5">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${
+                          statusLabel === "Paid"
+                            ? "bg-emerald-600"
+                            : statusLabel === "Partially Paid"
+                            ? "bg-amber-600"
+                            : "bg-red-500"
+                        }`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                    <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+                      <span>भरले: ₹{paid.toLocaleString("en-IN")}</span>
+                      <span>शिल्लक बाकी: ₹{remaining.toLocaleString("en-IN")}</span>
+                      <span>एकूण: ₹{total.toLocaleString("en-IN")}</span>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })()}
+
             {/* 4 Metric Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Card className="p-5 shadow-xs border-primary/20 bg-card">
-                <p className="text-xs font-semibold text-muted-foreground">
-                  {lang === "mr" ? "एकूण शुल्क (Total Fees)" : "Total Fees"}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    {lang === "mr" ? "एकूण अभ्यासक्रम शुल्क" : "Total Course Fees"}
+                  </p>
+                  <IndianRupee className="h-4 w-4 text-muted-foreground" />
+                </div>
                 <p className="mt-2 text-2xl font-bold text-foreground">
                   ₹{Number(fees?.totalFees || 0).toLocaleString("en-IN")}
                 </p>
@@ -1028,21 +1273,27 @@ function StudentDashboard() {
               </Card>
 
               <Card className="p-5 shadow-xs border-emerald-500/20 bg-emerald-50/20">
-                <p className="text-xs font-semibold text-emerald-800">
-                  {lang === "mr" ? "भरलेले शुल्क (Paid Fees)" : "Paid Fees"}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-emerald-800">
+                    {lang === "mr" ? "भरलेले एकूण शुल्क" : "Total Fees Paid"}
+                  </p>
+                  <Wallet className="h-4 w-4 text-emerald-600" />
+                </div>
                 <p className="mt-2 text-2xl font-bold text-emerald-700">
                   ₹{Number(fees?.paidFees || 0).toLocaleString("en-IN")}
                 </p>
                 <p className="mt-1 text-[11px] text-emerald-800/80">
-                  {fees?.payments?.length || 0} {lang === "mr" ? "पेमेंट्स जमा" : "payments recorded"}
+                  {fees?.payments?.length || 0} {lang === "mr" ? "हप्ते / पावत्या जारी" : "installments recorded"}
                 </p>
               </Card>
 
               <Card className="p-5 shadow-xs border-amber-500/20 bg-amber-50/20">
-                <p className="text-xs font-semibold text-amber-800">
-                  {lang === "mr" ? "उर्वरित बाकी (Remaining Balance)" : "Remaining Balance"}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-amber-800">
+                    {lang === "mr" ? "उर्वरित बाकी रक्कम" : "Remaining Pending Amount"}
+                  </p>
+                  <Clock className="h-4 w-4 text-amber-600" />
+                </div>
                 <p className="mt-2 text-2xl font-bold text-amber-700">
                   ₹{Number(fees?.remainingFees || 0).toLocaleString("en-IN")}
                 </p>
@@ -1050,17 +1301,20 @@ function StudentDashboard() {
                   {fees?.remainingFees === 0
                     ? lang === "mr"
                       ? "सर्व फी पूर्ण भरली आहे"
-                      : "All fees clear"
+                      : "No pending balance"
                     : lang === "mr"
                       ? "हप्त्यानुसार भरणे बाकी"
-                      : "Pending installment"}
+                      : "Installment pending"}
                 </p>
               </Card>
 
               <Card className="p-5 shadow-xs border-blue-500/20 bg-blue-50/20">
-                <p className="text-xs font-semibold text-blue-800">
-                  {lang === "mr" ? "पुढील देय तारीख (Next Due Date)" : "Next Due Date"}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-blue-800">
+                    {lang === "mr" ? "पुढील देय तारीख" : "Next Due Date"}
+                  </p>
+                  <Clock className="h-4 w-4 text-blue-600" />
+                </div>
                 <p className="mt-2 text-xl font-bold text-blue-900">
                   {fees?.nextDueDate || (lang === "mr" ? "निश्चित नाही" : "Not set")}
                 </p>
@@ -1072,18 +1326,29 @@ function StudentDashboard() {
 
             {/* Payment History & Receipts Table */}
             <Card className="p-5 sm:p-6 shadow-sm">
-              <div className="flex items-center justify-between border-b border-border/70 pb-3 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/70 pb-3 mb-4 gap-2">
                 <div>
                   <h2 className="text-base font-bold text-maroon flex items-center gap-2">
                     <Printer className="h-4 w-4" />
-                    <span>{lang === "mr" ? "पेमेंट इतिहास व अधिकृत पावती" : "Payment History & Receipts"}</span>
+                    <span>{lang === "mr" ? "हप्ते व अधिकृत डिजिटल पावती इतिहास" : "Installment & Payment History"}</span>
                   </h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {lang === "mr"
-                      ? "प्रत्येक भरलेल्या फीची अधिकृत डिजिटल पावती येथे पाहू व डाऊनलोड करू शकता."
-                      : "View and download official fee receipts for every payment."}
+                      ? "प्रत्येक भरलेल्या फी हप्त्याची अधिकृत डिजिटल पावती येथे पाहू व डाऊनलोड करू शकता."
+                      : "View and download official fee receipts for each installment."}
                   </p>
                 </div>
+
+                {fees?.remainingFees > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleOpenPayModal}
+                    className="self-start sm:self-auto inline-flex items-center gap-1.5 rounded-lg bg-maroon/10 hover:bg-maroon hover:text-white text-maroon px-3 py-1.5 text-xs font-semibold transition-colors"
+                  >
+                    <CreditCard className="h-3.5 w-3.5" />
+                    <span>{lang === "mr" ? "बाकी फी भरा" : "Pay Remaining Fees"}</span>
+                  </button>
+                )}
               </div>
 
               {(!fees?.payments || fees.payments.length === 0) ? (
@@ -1093,8 +1358,8 @@ function StudentDashboard() {
                   </p>
                   <p className="mt-1">
                     {lang === "mr"
-                      ? "ऑफिसमध्ये फी जमा केल्यानंतर ॲडमिन पावती येथे अपडेट करेल."
-                      : "Receipt will appear here once payment is registered by the office administration."}
+                      ? "कार्यालयात फी भरल्यानंतर किंवा ऑनलाईन पेमेंट केल्यावर पावती येथे त्वरित दिसेल."
+                      : "Receipt will appear here once payment is confirmed."}
                   </p>
                 </div>
               ) : (
@@ -1103,9 +1368,10 @@ function StudentDashboard() {
                     <thead>
                       <tr className="border-b border-border bg-sand/40 font-semibold text-maroon">
                         <th className="py-2.5 px-3">पावती क्र. (Receipt No)</th>
+                        <th className="py-2.5 px-3">हप्ता तपशील (Installment)</th>
                         <th className="py-2.5 px-3">तारीख (Date)</th>
                         <th className="py-2.5 px-3">रक्कम (Amount)</th>
-                        <th className="py-2.5 px-3">माध्यम (Mode)</th>
+                        <th className="py-2.5 px-3">माध्यम / संदर्भ (Mode & Ref)</th>
                         <th className="py-2.5 px-3">नोंदणीकर्ता (Received By)</th>
                         <th className="py-2.5 px-3 text-right">कृती (Action)</th>
                       </tr>
@@ -1115,6 +1381,9 @@ function StudentDashboard() {
                         <tr key={idx} className="hover:bg-accent/40 transition-colors">
                           <td className="py-3 px-3 font-mono font-bold text-maroon">
                             {p.receiptNo}
+                          </td>
+                          <td className="py-3 px-3 font-medium">
+                            {p.installmentName || `हप्ता ${idx + 1}`}
                           </td>
                           <td className="py-3 px-3">
                             {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString("en-IN") : "-"}
@@ -1156,6 +1425,148 @@ function StudentDashboard() {
         )}
       </Container>
 
+      {/* ---------------- ONLINE FEE PAYMENT MODAL (RAZORPAY) ---------------- */}
+      {showPayModal && fees && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-2xl bg-card p-6 shadow-2xl border border-border">
+            <button
+              type="button"
+              onClick={() => setShowPayModal(false)}
+              className="absolute top-4 right-4 rounded-full p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-3 border-b border-border/70 pb-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-maroon/10 text-maroon">
+                <CreditCard className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-maroon">
+                  {lang === "mr" ? "सुरक्षित ऑनलाईन फी पेमेंट" : "Secure Online Fee Payment"}
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  UPI • Cards • NetBanking • QR Code
+                </p>
+              </div>
+            </div>
+
+            {payError && (
+              <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-2.5 text-xs text-red-700">
+                {payError}
+              </div>
+            )}
+
+            <form onSubmit={handleStartOnlinePayment} className="grid gap-4 text-xs">
+              {/* Remaining balance notice */}
+              <div className="rounded-xl bg-sand/40 border border-primary/20 p-3 flex justify-between items-center">
+                <span className="font-semibold text-muted-foreground">
+                  {lang === "mr" ? "सध्याची उर्वरित बाकी:" : "Current Pending Balance:"}
+                </span>
+                <span className="font-bold text-base text-amber-800">
+                  ₹{Number(fees.remainingFees).toLocaleString("en-IN")}
+                </span>
+              </div>
+
+              {/* Installment name */}
+              <div>
+                <label className="block font-bold mb-1 text-foreground">
+                  {lang === "mr" ? "हप्ता नाव / तपशील (Installment Details) *" : "Installment Name *"}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={payInstallmentName}
+                  onChange={(e) => setPayInstallmentName(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-primary/40"
+                  placeholder="उदा. हप्ता १ / हप्ता २ / संपूर्ण फी"
+                />
+              </div>
+
+              {/* Amount input */}
+              <div>
+                <label className="block font-bold mb-1 text-foreground">
+                  {lang === "mr" ? "भरण्याची रक्कम (Payment Amount ₹) *" : "Payment Amount ₹ *"}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-sm font-bold text-muted-foreground">₹</span>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    max={fees.remainingFees}
+                    value={payAmount || ""}
+                    onChange={(e) => setPayAmount(Number(e.target.value))}
+                    className="w-full rounded-lg border border-border bg-background pl-7 pr-3 py-2 text-base font-bold focus:ring-2 focus:ring-primary/40"
+                  />
+                </div>
+              </div>
+
+              {/* Quick Select Buttons */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPayAmount(fees.remainingFees)}
+                  className="flex-1 rounded-lg border border-maroon/30 bg-maroon/5 py-1.5 text-[11px] font-semibold text-maroon hover:bg-maroon/10"
+                >
+                  {lang === "mr" ? "संपूर्ण बाकी भरा (Full)" : "Pay Full Pending"}
+                </button>
+                {fees.remainingFees > 5000 && (
+                  <button
+                    type="button"
+                    onClick={() => setPayAmount(5000)}
+                    className="rounded-lg border border-border bg-sand/30 px-3 py-1.5 text-[11px] font-medium hover:bg-sand/60"
+                  >
+                    ₹५,०००
+                  </button>
+                )}
+                {fees.remainingFees > 10000 && (
+                  <button
+                    type="button"
+                    onClick={() => setPayAmount(10000)}
+                    className="rounded-lg border border-border bg-sand/30 px-3 py-1.5 text-[11px] font-medium hover:bg-sand/60"
+                  >
+                    ₹१०,०००
+                  </button>
+                )}
+              </div>
+
+              <div className="rounded-lg bg-emerald-50/70 border border-emerald-200 p-2 text-[11px] text-emerald-800 flex items-center gap-1.5">
+                <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                <span>पेमेंट पूर्ण होताच अधिकृत डिजिटल पावती त्वरित तयार होईल.</span>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPayModal(false)}
+                  className="rounded-lg border border-border px-4 py-2 text-xs font-semibold hover:bg-accent"
+                >
+                  रद्द करा
+                </button>
+                <button
+                  type="submit"
+                  disabled={paying}
+                  className="rounded-lg bg-maroon px-5 py-2 text-xs font-bold text-white hover:bg-maroon/90 disabled:opacity-50 flex items-center gap-2 shadow-xs"
+                >
+                  {paying ? (
+                    <>
+                      <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <span>प्रक्रिया सुरू आहे...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="h-4 w-4" />
+                      <span>₹{Number(payAmount || 0).toLocaleString("en-IN")} भरा</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* ---------------- OFFICIAL RECEIPT MODAL ---------------- */}
       {selectedReceipt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto">
@@ -1183,7 +1594,7 @@ function StudentDashboard() {
                   पत्ता: वडगाव रोड, आळंदी देवाची, ता. खेड, जि. पुणे, महाराष्ट्र — ४१२१०५
                 </p>
                 <p className="text-[11px] text-gray-500">
-                  अधिकृत फी पावती (Official Fee Receipt)
+                  संस्था नोंदणी क्र: १५ ९८४ बुलढाणा • अधिकृत फी पावती (Official Fee Receipt)
                 </p>
               </div>
 
@@ -1216,19 +1627,31 @@ function StudentDashboard() {
                 <div>
                   <span className="text-gray-500 block">विद्यार्थी आयडी (Student ID):</span>
                   <span className="font-mono font-bold text-amber-900">
-                    {studentId || "MNS-2026-TEMP"}
+                    {profile?.studentId || "MNS-2026-TEMP"}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-500 block">वर्ग / अभ्यासक्रम:</span>
                   <span className="font-medium text-gray-800">
-                    {academic.currentClass || "गुरुकुल शिक्षण वर्ग"}
+                    {academic.currentClass || academic.course || "गुरुकुल शिक्षण वर्ग"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block">हप्ता तपशील:</span>
+                  <span className="font-semibold text-amber-900">
+                    {selectedReceipt.installmentName || "फी हप्ता"}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-500 block">पेमेंट माध्यम (Payment Mode):</span>
                   <span className="font-medium text-gray-800">
-                    {selectedReceipt.paymentMode} {selectedReceipt.transactionRef ? `(${selectedReceipt.transactionRef})` : ""}
+                    {selectedReceipt.paymentMode}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block">Transaction / Ref ID:</span>
+                  <span className="font-mono text-gray-800">
+                    {selectedReceipt.transactionRef || "N/A"}
                   </span>
                 </div>
               </div>
@@ -1245,7 +1668,12 @@ function StudentDashboard() {
                   <tbody>
                     <tr>
                       <td className="p-2.5">
-                        गुरुकुल शैक्षणिक व निवास शुल्क (Gurukul Fees)
+                        गुरुकुल शैक्षणिक व निवास शुल्क
+                        {selectedReceipt.installmentName && (
+                          <span className="block font-medium text-amber-900">
+                            [{selectedReceipt.installmentName}]
+                          </span>
+                        )}
                         {selectedReceipt.notes && (
                           <span className="block text-[11px] text-gray-500">
                             नोंद: {selectedReceipt.notes}

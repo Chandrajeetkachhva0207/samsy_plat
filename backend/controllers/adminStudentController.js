@@ -8,12 +8,16 @@ const User = require("../models/User");
 
 const getAllStudents = async (req, res) => {
     try {
-        const { search, status } = req.query;
+        const { search, status, course, paymentStatus, onlyPending } = req.query;
 
         let query = {};
 
         if (status && status !== "ALL") {
             query.status = status;
+        }
+
+        if (course && course !== "ALL") {
+            query["academic.course"] = course;
         }
 
         if (search && search.trim()) {
@@ -25,6 +29,7 @@ const getAllStudents = async (req, res) => {
                 { studentId: regex },
                 { "academic.schoolName": regex },
                 { "academic.course": regex },
+                { "academic.currentClass": regex },
             ];
         }
 
@@ -32,7 +37,11 @@ const getAllStudents = async (req, res) => {
             .populate("user", "name email mobile createdAt")
             .sort({ createdAt: -1 });
 
-        // Also fetch fee records map for quick summary in table
+        // Retrieve distinct courses for filter dropdown
+        const distinctCourses = await StudentProfile.distinct("academic.course");
+        const coursesList = distinctCourses.filter(Boolean);
+
+        // Fetch fee records map
         const profileIds = students.map((s) => s._id);
         const feeRecords = await FeeRecord.find({
             studentProfile: { $in: profileIds },
@@ -40,25 +49,65 @@ const getAllStudents = async (req, res) => {
 
         const feeMap = {};
         feeRecords.forEach((f) => {
+            const total = f.totalFees || 0;
+            const paid = f.paidFees || 0;
+            const remaining = f.remainingFees || 0;
+
+            let computedStatus = "Unassigned";
+            if (total > 0) {
+                if (paid >= total) computedStatus = "Paid";
+                else if (paid > 0) computedStatus = "Partially Paid";
+                else computedStatus = "Pending";
+            }
+
+            const percentage = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+
             feeMap[f.studentProfile.toString()] = {
-                totalFees: f.totalFees,
-                paidFees: f.paidFees,
-                remainingFees: f.remainingFees,
-                nextDueDate: f.nextDueDate,
+                _id: f._id,
+                totalFees: total,
+                paidFees: paid,
+                remainingFees: remaining,
+                academicYear: f.academicYear || "2025-2026",
+                nextDueDate: f.nextDueDate || "",
+                feeScheduleNotes: f.feeScheduleNotes || "",
+                status: computedStatus,
+                paymentPercentage: percentage,
                 paymentsCount: f.payments?.length || 0,
+                payments: f.payments || [],
+                feeHistory: f.feeHistory || [],
             };
         });
 
-        const results = students.map((s) => ({
-            ...s.toObject(),
-            fees: feeMap[s._id.toString()] || {
+        let results = students.map((s) => {
+            const fees = feeMap[s._id.toString()] || {
                 totalFees: 0,
                 paidFees: 0,
                 remainingFees: 0,
+                academicYear: "2025-2026",
                 nextDueDate: "",
+                feeScheduleNotes: "",
+                status: "Unassigned",
+                paymentPercentage: 0,
                 paymentsCount: 0,
-            },
-        }));
+                payments: [],
+                feeHistory: [],
+            };
+
+            return {
+                ...s.toObject(),
+                fees,
+            };
+        });
+
+        // Filter by paymentStatus if requested
+        if (paymentStatus && paymentStatus !== "ALL") {
+            results = results.filter((s) => s.fees.status === paymentStatus);
+        }
+
+        // Filter by onlyPending if requested
+        if (onlyPending === "true" || onlyPending === true) {
+            results = results.filter((s) => s.fees.remainingFees > 0);
+        }
 
         // Summary counts
         const totalCount = await StudentProfile.countDocuments({});
@@ -72,14 +121,55 @@ const getAllStudents = async (req, res) => {
             status: "Incomplete",
         });
 
+        // Overall Fee Financial Totals across the institute
+        const allFees = await FeeRecord.find({});
+        let instituteTotalFees = 0;
+        let institutePaidFees = 0;
+        let instituteRemainingFees = 0;
+        let instituteReceipts = 0;
+        let paidStudentsCount = 0;
+        let partialStudentsCount = 0;
+        let pendingStudentsCount = 0;
+
+        allFees.forEach((f) => {
+            const tot = f.totalFees || 0;
+            const pd = f.paidFees || 0;
+            const rem = f.remainingFees || 0;
+
+            instituteTotalFees += tot;
+            institutePaidFees += pd;
+            instituteRemainingFees += rem;
+            instituteReceipts += f.payments?.length || 0;
+
+            if (tot > 0) {
+                if (pd >= tot) paidStudentsCount++;
+                else if (pd > 0) partialStudentsCount++;
+                else pendingStudentsCount++;
+            }
+        });
+
+        const collectionRate =
+            instituteTotalFees > 0
+                ? Math.round((institutePaidFees / instituteTotalFees) * 100)
+                : 0;
+
         return res.status(200).json({
             success: true,
             students: results,
+            courses: coursesList,
             stats: {
                 total: totalCount,
                 pending: pendingCount,
                 verified: verifiedCount,
                 incomplete: incompleteCount,
+                totalFees: instituteTotalFees,
+                totalPaid: institutePaidFees,
+                totalRemaining: instituteRemainingFees,
+                collectionPercentage: collectionRate,
+                totalReceipts: instituteReceipts,
+                paidStudents: paidStudentsCount,
+                partialStudents: partialStudentsCount,
+                pendingStudents: pendingStudentsCount,
             },
         });
     } catch (error) {
@@ -253,7 +343,22 @@ const setStudentFees = async (req, res) => {
             });
         }
 
-        if (totalFees !== undefined) feeRecord.totalFees = Number(totalFees);
+        if (totalFees !== undefined) {
+            const oldTotal = feeRecord.totalFees || 0;
+            const newTotal = Math.max(0, Number(totalFees));
+            if (oldTotal !== newTotal) {
+                if (!feeRecord.feeHistory) feeRecord.feeHistory = [];
+                feeRecord.feeHistory.push({
+                    changedAt: new Date(),
+                    changedBy: req.user?.name || "Admin",
+                    oldTotal,
+                    newTotal,
+                    reason: feeScheduleNotes || "Course fee updated by admin",
+                });
+            }
+            feeRecord.totalFees = newTotal;
+        }
+
         if (academicYear) feeRecord.academicYear = academicYear;
         if (nextDueDate !== undefined) feeRecord.nextDueDate = nextDueDate;
         if (feeScheduleNotes !== undefined) feeRecord.feeScheduleNotes = feeScheduleNotes;
@@ -285,6 +390,7 @@ const recordFeePayment = async (req, res) => {
             amount,
             paymentMode,
             transactionRef,
+            installmentName,
             paymentDate,
             receivedBy,
             notes,
@@ -316,6 +422,22 @@ const recordFeePayment = async (req, res) => {
             });
         }
 
+        // Prevent duplicate transaction ID if supplied
+        if (transactionRef && transactionRef.trim()) {
+            const cleanRef = transactionRef.trim();
+            const isDuplicate = feeRecord.payments.some(
+                (p) =>
+                    p.transactionRef &&
+                    p.transactionRef.toLowerCase() === cleanRef.toLowerCase()
+            );
+            if (isDuplicate) {
+                return res.status(409).json({
+                    success: false,
+                    message: `या Transaction ID (${cleanRef}) सह आधीच पेमेंट नोंदवले आहे (Duplicate Transaction ID)`,
+                });
+            }
+        }
+
         // Auto generate unique receipt number: RCP-YEAR-NUMBER
         const year = new Date().getFullYear();
         const rand = Math.floor(1000 + Math.random() * 9000);
@@ -326,8 +448,12 @@ const recordFeePayment = async (req, res) => {
             amount: numAmount,
             paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
             paymentMode: paymentMode || "Cash",
-            transactionRef: transactionRef || "",
-            receivedBy: receivedBy || "Office Admin",
+            transactionRef: transactionRef ? transactionRef.trim() : "",
+            installmentName:
+                installmentName && installmentName.trim()
+                    ? installmentName.trim()
+                    : `हप्ता ${feeRecord.payments.length + 1}`,
+            receivedBy: receivedBy || req.user?.name || "Office Admin",
             notes: notes || "",
             createdAt: new Date(),
         };
@@ -337,7 +463,7 @@ const recordFeePayment = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "पेमेंट यशस्वीरीत्या नोंदवले व पावती तयार झाली (Payment recorded)",
+            message: `पेमेंट यशस्वीरीत्या नोंदवले व पावती तयार झाली: ${receiptNo}`,
             payment,
             fees: feeRecord,
         });
