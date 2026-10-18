@@ -838,20 +838,6 @@ function LoginPage() {
             </div>
           )}
 
-          {/* Direct link to Admin Portal */}
-          <div className="mt-4 pt-3 border-t border-dashed border-border/70 text-center text-xs text-muted-foreground">
-            <Link
-              to="/admin/login"
-              className="text-maroon/80 hover:text-maroon hover:underline font-medium inline-flex items-center gap-1.5"
-            >
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span>
-                {lang === "mr"
-                  ? "संस्था प्रशासन लॉगिन (Admin Portal)"
-                  : "Admin Portal Sign In"}
-              </span>
-            </Link>
-          </div>
         </Card>
       </Container>
     </div>
