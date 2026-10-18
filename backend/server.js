@@ -32,6 +32,8 @@ const contactRoutes = require("./routes/contactRoutes");
 const contactMessageRoutes = require("./routes/contactMessageRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const adminStudentRoutes = require("./routes/adminStudentRoutes");
 
 const app = express();
 
@@ -174,6 +176,10 @@ app.use(
 app.use("/api/payment", paymentRoutes);
 
 app.use("/api/admin", adminRoutes);
+
+app.use("/api/students", studentRoutes);
+
+app.use("/api/admin/students", adminStudentRoutes);
 
 // =====================================================
 // 404 - API ROUTE NOT FOUND

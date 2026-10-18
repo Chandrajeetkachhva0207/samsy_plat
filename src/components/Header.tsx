@@ -76,15 +76,28 @@ export function Header() {
 
           {/* Login / Admin / User */}
           {!user ? (
-            <Link
-              to="/login"
-              className="rounded-full border border-primary/50 bg-sand/60 px-3 py-1.5 text-xs font-semibold text-maroon hover:bg-sand transition-colors"
-            >
-              {t({
-                mr: "लॉगिन",
-                en: "Login",
-              })}
-            </Link>
+            <div className="flex items-center gap-1.5">
+              <Link
+                to="/login"
+                search={{ mode: "register" }}
+                className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-colors"
+              >
+                {t({
+                  mr: "१. नोंदणी (Register)",
+                  en: "1. Register",
+                })}
+              </Link>
+              <Link
+                to="/login"
+                search={{ mode: "login" }}
+                className="rounded-full border border-primary/50 bg-sand/60 px-3 py-1.5 text-xs font-semibold text-maroon hover:bg-sand transition-colors"
+              >
+                {t({
+                  mr: "२. लॉगिन (Sign In)",
+                  en: "2. Sign In",
+                })}
+              </Link>
+            </div>
           ) : isAdmin ? (
             <>
               <Link
@@ -109,16 +122,28 @@ export function Header() {
               </button>
             </>
           ) : (
-            <button
-              type="button"
-              onClick={logout}
-              className="rounded-full border border-primary/50 bg-sand/60 px-3 py-1.5 text-xs font-semibold text-maroon hover:bg-sand transition-colors"
-            >
-              {t({
-                mr: "लॉगआउट",
-                en: "Logout",
-              })}
-            </button>
+            <>
+              <Link
+                to="/student/dashboard"
+                className="rounded-full border border-primary/50 bg-sand/60 px-3 py-1.5 text-xs font-semibold text-maroon hover:bg-sand transition-colors"
+              >
+                {t({
+                  mr: "विद्यार्थी डॅशबोर्ड",
+                  en: "Student Portal",
+                })}
+              </Link>
+
+              <button
+                type="button"
+                onClick={logout}
+                className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-maroon transition-colors"
+              >
+                {t({
+                  mr: "लॉगआउट",
+                  en: "Logout",
+                })}
+              </button>
+            </>
           )}
 
           {/* Support */}
@@ -265,19 +290,33 @@ export function Header() {
             {/* Mobile Auth */}
             <div className="mt-3 border-t border-border pt-3">
               {!user ? (
-                <Link
-                  to="/login"
-                  onClick={() => setOpen(false)}
-                  className="block rounded-lg px-3 py-2.5 font-semibold text-maroon hover:bg-accent"
-                >
-                  {t({
-                    mr: "लॉगिन",
-                    en: "Login",
-                  })}
-                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    to="/login"
+                    search={{ mode: "register" }}
+                    onClick={() => setOpen(false)}
+                    className="block rounded-lg bg-primary px-3 py-2 text-center text-xs font-semibold text-primary-foreground shadow-xs"
+                  >
+                    {t({
+                      mr: "१. नोंदणी (Register)",
+                      en: "1. Register",
+                    })}
+                  </Link>
+                  <Link
+                    to="/login"
+                    search={{ mode: "login" }}
+                    onClick={() => setOpen(false)}
+                    className="block rounded-lg border border-primary/40 bg-sand/40 px-3 py-2 text-center text-xs font-semibold text-maroon hover:bg-sand"
+                  >
+                    {t({
+                      mr: "२. लॉगिन (Sign In)",
+                      en: "2. Sign In",
+                    })}
+                  </Link>
+                </div>
               ) : (
                 <div className="grid gap-1">
-                  {isAdmin && (
+                  {isAdmin ? (
                     <Link
                       to="/admin"
                       onClick={() => setOpen(false)}
@@ -286,6 +325,17 @@ export function Header() {
                       {t({
                         mr: "प्रशासन",
                         en: "Admin Dashboard",
+                      })}
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/student/dashboard"
+                      onClick={() => setOpen(false)}
+                      className="block rounded-lg px-3 py-2.5 font-semibold text-maroon hover:bg-accent"
+                    >
+                      {t({
+                        mr: "🎓 विद्यार्थी डॅशबोर्ड",
+                        en: "🎓 Student Dashboard",
                       })}
                     </Link>
                   )}

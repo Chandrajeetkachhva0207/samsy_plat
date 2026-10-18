@@ -16,8 +16,8 @@ export const Route = createFileRoute("/admin/login")({
 function AdminLogin() {
   const { login, admin } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@maanarmada.com");
+  const [password, setPassword] = useState("admin123");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -117,8 +117,13 @@ function AdminLogin() {
             </button>
           </form>
 
-          <div className="mt-6 border-t border-border/60 pt-4 text-center text-xs text-muted-foreground">
-            <p>डिफॉल्ट लॉगिन: <code className="bg-sand px-1.5 py-0.5 rounded text-maroon">admin@maanarmada.com</code></p>
+          <div className="mt-6 border-t border-border/60 pt-4 text-center text-xs text-muted-foreground space-y-1">
+            <p>
+              डिफॉल्ट लॉगिन: <code className="bg-sand px-1.5 py-0.5 rounded text-maroon font-semibold">admin@maanarmada.com</code>
+            </p>
+            <p>
+              पासवर्ड: <code className="bg-sand px-1.5 py-0.5 rounded text-maroon font-semibold">admin123</code>
+            </p>
           </div>
         </Card>
       </Container>

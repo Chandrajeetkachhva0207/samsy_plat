@@ -1,4 +1,6 @@
 const User = require("../models/User");
+const StudentProfile = require("../models/StudentProfile");
+const FeeRecord = require("../models/FeeRecord");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -11,25 +13,24 @@ const generateToken = (user) => {
         },
         process.env.JWT_SECRET || "maanarmada_jwt_secret_key_2026",
         {
-            expiresIn: "1d",
+            expiresIn: "7d",
         }
     );
 };
 
-
 // =====================================================
-// REGISTER NORMAL USER
+// REGISTER STUDENT / USER
 // =====================================================
 
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, mobile, password, role } = req.body;
 
         // Check required fields
         if (!name || !email || !password) {
             return res.status(400).json({
                 success: false,
-                message: "Name, email and password are required",
+                message: "नाव, ई-मेल आणि पासवर्ड आवश्यक आहेत (Name, email and password are required)",
             });
         }
 
@@ -37,101 +38,138 @@ const registerUser = async (req, res) => {
         if (password.length < 6) {
             return res.status(400).json({
                 success: false,
-                message: "Password must be at least 6 characters",
+                message: "पासवर्ड किमान ६ अक्षरांचा असावा (Password must be at least 6 characters)",
             });
         }
 
         const normalizedEmail = email.toLowerCase().trim();
+        const cleanMobile = mobile ? String(mobile).trim() : "";
 
-        // Check if user already exists
-        const existingUser = await User.findOne({
+        // Check if user already exists with this email
+        const existingEmailUser = await User.findOne({
             email: normalizedEmail,
         });
 
-        if (existingUser) {
+        if (existingEmailUser) {
             return res.status(409).json({
                 success: false,
-                message: "An account with this email already exists",
+                message: "या ई-मेल पत्त्यावर आधीच खाते अस्तित्वात आहे (Account with this email already exists)",
             });
+        }
+
+        // If mobile is provided, check if mobile already exists
+        if (cleanMobile) {
+            const existingMobileUser = await User.findOne({
+                mobile: cleanMobile,
+            });
+
+            if (existingMobileUser) {
+                return res.status(409).json({
+                    success: false,
+                    message: "या मोबाईल क्रमांकावर आधीच खाते अस्तित्वात आहे (Account with this mobile already exists)",
+                });
+            }
         }
 
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create normal user
+        const assignedRole = role === "admin" ? "admin" : "student";
+
+        // Create user
         const user = await User.create({
             name: name.trim(),
             email: normalizedEmail,
+            mobile: cleanMobile,
             password: hashedPassword,
-            role: "user",
+            role: assignedRole,
         });
+
+        // If student, create profile and fee record automatically
+        if (assignedRole === "student") {
+            const profile = await StudentProfile.create({
+                user: user._id,
+                status: "Incomplete",
+                personal: {
+                    fullName: user.name,
+                    email: user.email,
+                    mobile: cleanMobile,
+                },
+            });
+
+            await FeeRecord.create({
+                user: user._id,
+                studentProfile: profile._id,
+                totalFees: 0,
+                paidFees: 0,
+                remainingFees: 0,
+            });
+        }
 
         // Generate token
         const token = generateToken(user);
 
         return res.status(201).json({
             success: true,
-            message: "Registration successful",
+            message: "नोंदणी यशस्वी झाली (Registration successful)",
             token,
             user: {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                mobile: user.mobile,
                 role: user.role,
             },
         });
-
     } catch (error) {
         console.error("User registration error:", error);
 
         return res.status(500).json({
             success: false,
-            message: "Server error",
+            message: error.message || "सर्व्हर त्रुटी (Server error)",
         });
     }
 };
 
-
 // =====================================================
-// USER + ADMIN LOGIN
+// USER + ADMIN + STUDENT LOGIN (Email OR Mobile)
 // =====================================================
 
 const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, identifier, password } = req.body;
+        const loginIdentifier = (identifier || email || "").trim();
 
         // Check fields
-        if (!email || !password) {
+        if (!loginIdentifier || !password) {
             return res.status(400).json({
                 success: false,
-                message: "Email and password are required",
+                message: "ई-मेल / मोबाईल आणि पासवर्ड आवश्यक आहेत (Email/Mobile and password are required)",
             });
         }
 
-        const normalizedEmail = email.toLowerCase().trim();
-
-        // Find user by email
+        // Search by email OR mobile
         const user = await User.findOne({
-            email: normalizedEmail,
+            $or: [
+                { email: loginIdentifier.toLowerCase() },
+                { mobile: loginIdentifier },
+            ],
         });
 
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid email or password",
+                message: "चुकीचा ई-मेल / मोबाईल किंवा संकेतशब्द (Invalid credentials)",
             });
         }
 
         // Compare password
-        const isPasswordCorrect = await bcrypt.compare(
-            password,
-            user.password
-        );
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
         if (!isPasswordCorrect) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid email or password",
+                message: "चुकीचा ई-मेल / मोबाईल किंवा संकेतशब्द (Invalid credentials)",
             });
         }
 
@@ -142,6 +180,7 @@ const loginUser = async (req, res) => {
             id: user._id,
             name: user.name,
             email: user.email,
+            mobile: user.mobile,
             role: user.role,
         };
 
@@ -151,40 +190,158 @@ const loginUser = async (req, res) => {
                 user.role === "admin"
                     ? "Admin login successful"
                     : "Login successful",
-
             token,
-
-            // Normal user
             user: userData,
-
-            // Keep admin response for existing admin frontend compatibility
-            ...(user.role === "admin"
-                ? {
-                    admin: userData,
-                }
-                : {}),
+            ...(user.role === "admin" ? { admin: userData } : {}),
         });
-
     } catch (error) {
         console.error("Login error:", error);
 
         return res.status(500).json({
             success: false,
-            message: "Server error",
+            message: "सर्व्हर त्रुटी (Server error)",
         });
     }
 };
 
+// =====================================================
+// FORGOT PASSWORD — GENERATE OTP
+// =====================================================
+
+const forgotPassword = async (req, res) => {
+    try {
+        const { identifier } = req.body;
+
+        if (!identifier) {
+            return res.status(400).json({
+                success: false,
+                message: "ई-मेल किंवा मोबाईल नंबर आवश्यक आहे",
+            });
+        }
+
+        const clean = identifier.trim();
+
+        const user = await User.findOne({
+            $or: [
+                { email: clean.toLowerCase() },
+                { mobile: clean },
+            ],
+        });
+
+        if (!user) {
+            // For security, still return generic success message or clear response
+            return res.status(404).json({
+                success: false,
+                message: "हा ई-मेल किंवा मोबाईल क्रमांक नोंदणीकृत नाही (No account found)",
+            });
+        }
+
+        // Generate 6-digit secure OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedOtp = await bcrypt.hash(otp, 8);
+
+        user.resetPasswordOtp = hashedOtp;
+        user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+        await user.save();
+
+        console.log(`[AUTH] Password Reset OTP for ${user.email} / ${user.mobile}: ${otp}`);
+
+        return res.status(200).json({
+            success: true,
+            message: "पासवर्ड रिसेट OTP पाठवण्यात आला आहे (15 मिनिटांसाठी वैध)",
+            // Return otp in dev/response for easy local verification & client testing
+            demoOtp: otp,
+            email: user.email,
+            mobile: user.mobile,
+        });
+    } catch (error) {
+        console.error("Forgot password error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "OTP तयार करण्यात त्रुटी आली",
+        });
+    }
+};
 
 // =====================================================
-// GET CURRENT LOGGED-IN USER / ADMIN
+// RESET PASSWORD WITH OTP
+// =====================================================
+
+const resetPasswordWithOtp = async (req, res) => {
+    try {
+        const { identifier, otp, newPassword } = req.body;
+
+        if (!identifier || !otp || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "ई-मेल/मोबाईल, OTP आणि नवीन पासवर्ड आवश्यक आहेत",
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "नवीन पासवर्ड किमान ६ अक्षरांचा असावा",
+            });
+        }
+
+        const clean = identifier.trim();
+
+        const user = await User.findOne({
+            $or: [
+                { email: clean.toLowerCase() },
+                { mobile: clean },
+            ],
+        });
+
+        if (!user || !user.resetPasswordOtp || !user.resetPasswordExpires) {
+            return res.status(400).json({
+                success: false,
+                message: "अवैध किंवा कालबाह्य झालेला OTP (Invalid or expired request)",
+            });
+        }
+
+        if (new Date() > user.resetPasswordExpires) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP ची मुदत संपली आहे. कृपया पुन्हा प्रयत्न करा (OTP expired)",
+            });
+        }
+
+        const isOtpValid = await bcrypt.compare(String(otp).trim(), user.resetPasswordOtp);
+        if (!isOtpValid) {
+            return res.status(400).json({
+                success: false,
+                message: "चुकीचा OTP प्रविष्ट केला आहे (Incorrect OTP)",
+            });
+        }
+
+        // Hash new password
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetPasswordOtp = null;
+        user.resetPasswordExpires = null;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "पासवर्ड यशस्वीरीत्या बदलला आहे. आता लॉगिन करा (Password reset successful)",
+        });
+    } catch (error) {
+        console.error("Reset password error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "पासवर्ड रिसेट करताना सर्व्हर त्रुटी आली",
+        });
+    }
+};
+
+// =====================================================
+// GET CURRENT LOGGED-IN USER / ADMIN / STUDENT
 // =====================================================
 
 const getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select(
-            "-password"
-        );
+        const user = await User.findById(req.user.id).select("-password");
 
         if (!user) {
             return res.status(404).json({
@@ -197,22 +354,15 @@ const getMe = async (req, res) => {
             id: user._id,
             name: user.name,
             email: user.email,
+            mobile: user.mobile,
             role: user.role,
         };
 
         return res.status(200).json({
             success: true,
-
             user: userData,
-
-            // Keep admin response for existing admin frontend compatibility
-            ...(user.role === "admin"
-                ? {
-                    admin: userData,
-                }
-                : {}),
+            ...(user.role === "admin" ? { admin: userData } : {}),
         });
-
     } catch (error) {
         console.error("Get user profile error:", error);
 
@@ -223,13 +373,10 @@ const getMe = async (req, res) => {
     }
 };
 
-
-// =====================================================
-// EXPORT
-// =====================================================
-
 module.exports = {
     registerUser,
     loginUser,
+    forgotPassword,
+    resetPasswordWithOtp,
     getMe,
 };

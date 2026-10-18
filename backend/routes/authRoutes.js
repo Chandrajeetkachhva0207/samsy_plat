@@ -3,48 +3,29 @@ const express = require("express");
 const {
     registerUser,
     loginUser,
+    forgotPassword,
+    resetPasswordWithOtp,
     getMe,
 } = require("../controllers/authController");
 
 const protect = require("../middleware/authMiddleware");
-
-const {
-    loginLimiter,
-} = require("../middleware/rateLimitMiddleware");
+const { loginLimiter } = require("../middleware/rateLimitMiddleware");
 
 const router = express.Router();
 
+// Register
+router.post("/register", registerUser);
 
-// =====================================================
-// REGISTER
-// =====================================================
+// Login (email or mobile)
+router.post("/login", loginLimiter, loginUser);
 
-router.post(
-    "/register",
-    registerUser
-);
+// Forgot Password OTP
+router.post("/forgot-password", forgotPassword);
 
+// Reset Password with OTP
+router.post("/reset-password", resetPasswordWithOtp);
 
-// =====================================================
-// LOGIN
-// =====================================================
-
-router.post(
-    "/login",
-    loginLimiter,
-    loginUser
-);
-
-
-// =====================================================
-// CURRENT LOGGED-IN USER
-// =====================================================
-
-router.get(
-    "/me",
-    protect,
-    getMe
-);
-
+// Current Logged-in User
+router.get("/me", protect, getMe);
 
 module.exports = router;

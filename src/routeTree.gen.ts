@@ -32,8 +32,10 @@ import { Route as AdminGalleryRouteImport } from './routes/admin/gallery'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminMessagesRouteImport } from './routes/admin/messages'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminStudentsRouteImport } from './routes/admin/students'
 import { Route as AdminVideosRouteImport } from './routes/admin/videos'
 import { Route as EventsSlugRouteImport } from './routes/events.$slug'
+import { Route as StudentDashboardRouteImport } from './routes/student/dashboard'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -150,6 +152,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
   path: '/admin/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminStudentsRoute = AdminStudentsRouteImport.update({
+  id: '/admin/students',
+  path: '/admin/students',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminVideosRoute = AdminVideosRouteImport.update({
   id: '/admin/videos',
   path: '/admin/videos',
@@ -159,6 +166,11 @@ const EventsSlugRoute = EventsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => EventsRoute,
+} as any)
+const StudentDashboardRoute = StudentDashboardRouteImport.update({
+  id: '/student/dashboard',
+  path: '/student/dashboard',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -184,8 +196,10 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/students': typeof AdminStudentsRoute
   '/admin/videos': typeof AdminVideosRoute
   '/events/$slug': typeof EventsSlugRoute
+  '/student/dashboard': typeof StudentDashboardRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -211,8 +225,10 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/students': typeof AdminStudentsRoute
   '/admin/videos': typeof AdminVideosRoute
   '/events/$slug': typeof EventsSlugRoute
+  '/student/dashboard': typeof StudentDashboardRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -239,8 +255,10 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/students': typeof AdminStudentsRoute
   '/admin/videos': typeof AdminVideosRoute
   '/events/$slug': typeof EventsSlugRoute
+  '/student/dashboard': typeof StudentDashboardRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -268,8 +286,10 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/messages'
     | '/admin/reports'
+    | '/admin/students'
     | '/admin/videos'
     | '/events/$slug'
+    | '/student/dashboard'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -295,8 +315,10 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/messages'
     | '/admin/reports'
+    | '/admin/students'
     | '/admin/videos'
     | '/events/$slug'
+    | '/student/dashboard'
     | '/admin'
   id:
     | '__root__'
@@ -322,8 +344,10 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/messages'
     | '/admin/reports'
+    | '/admin/students'
     | '/admin/videos'
     | '/events/$slug'
+    | '/student/dashboard'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -350,7 +374,9 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminReportsRoute: typeof AdminReportsRoute
+  AdminStudentsRoute: typeof AdminStudentsRoute
   AdminVideosRoute: typeof AdminVideosRoute
+  StudentDashboardRoute: typeof StudentDashboardRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -517,6 +543,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/students': {
+      id: '/admin/students'
+      path: '/admin/students'
+      fullPath: '/admin/students'
+      preLoaderRoute: typeof AdminStudentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/videos': {
       id: '/admin/videos'
       path: '/admin/videos'
@@ -530,6 +563,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/events/$slug'
       preLoaderRoute: typeof EventsSlugRouteImport
       parentRoute: typeof EventsRoute
+    }
+    '/student/dashboard': {
+      id: '/student/dashboard'
+      path: '/student/dashboard'
+      fullPath: '/student/dashboard'
+      preLoaderRoute: typeof StudentDashboardRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -568,7 +608,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminReportsRoute: AdminReportsRoute,
+  AdminStudentsRoute: AdminStudentsRoute,
   AdminVideosRoute: AdminVideosRoute,
+  StudentDashboardRoute: StudentDashboardRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport

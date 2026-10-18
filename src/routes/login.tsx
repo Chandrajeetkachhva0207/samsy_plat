@@ -3,10 +3,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   AlertCircle,
   ArrowLeft,
+  CheckCircle2,
   Eye,
   EyeOff,
+  KeyRound,
   Lock,
   Mail,
+  Phone,
   ShieldCheck,
   User,
 } from "lucide-react";
@@ -16,11 +19,22 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/lang";
 
+type LoginSearch = {
+  mode?: "register" | "login" | "forgot";
+};
+
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>): LoginSearch => {
+    const mode = search["mode"] as string;
+    if (mode === "login" || mode === "register" || mode === "forgot") {
+      return { mode };
+    }
+    return { mode: "register" };
+  },
   head: () => ({
     meta: [
       {
-        title: "लॉगिन — मा नर्मदा आध्यात्मिक शिक्षण संस्था",
+        title: "विद्यार्थी नोंदणी व लॉगिन — मा नर्मदा आध्यात्मिक शिक्षण संस्था",
       },
     ],
   }),
@@ -31,12 +45,35 @@ function LoginPage() {
   const { lang, t } = useLang();
   const { user, login } = useAuth();
   const navigate = useNavigate();
+  const search = Route.useSearch();
 
-  const [mode, setMode] = useState<"login" | "register">("login");
+  // Every panel: FIRST REGISTRATION, then Sign In
+  const [mode, setMode] = useState<"login" | "register" | "forgot">(
+    search.mode || "register"
+  );
 
+  useEffect(() => {
+    if (search.mode && (search.mode === "login" || search.mode === "register" || search.mode === "forgot")) {
+      setMode(search.mode);
+    }
+  }, [search.mode]);
+
+  // Registration fields
   const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Login identifier (Email or Mobile)
+  const [loginIdentifier, setLoginIdentifier] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
+  // Forgot password fields
+  const [forgotIdentifier, setForgotIdentifier] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [demoOtpNotice, setDemoOtpNotice] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -48,154 +85,71 @@ function LoginPage() {
       if (user.role === "admin") {
         navigate({ to: "/admin" });
       } else {
-        navigate({ to: "/" });
+        navigate({ to: "/student/dashboard" });
       }
     }
   }, [user, navigate]);
 
-  const text = {
-    loginTitle: {
-      mr: "लॉगिन",
-      en: "Login",
-    },
-    registerTitle: {
-      mr: "नोंदणी करा",
-      en: "Create Account",
-    },
-    loginSubtitle: {
-      mr: "आपल्या खात्यात प्रवेश करण्यासाठी लॉगिन करा",
-      en: "Sign in to access your account",
-    },
-    registerSubtitle: {
-      mr: "नवीन खाते तयार करण्यासाठी खालील माहिती भरा",
-      en: "Fill in the details below to create a new account",
-    },
-    name: {
-      mr: "नाव",
-      en: "Full Name",
-    },
-    email: {
-      mr: "ई-मेल",
-      en: "Email Address",
-    },
-    password: {
-      mr: "संकेतशब्द",
-      en: "Password",
-    },
-    namePlaceholder: {
-      mr: "आपले पूर्ण नाव",
-      en: "Enter your full name",
-    },
-    emailPlaceholder: {
-      mr: "आपला ई-मेल",
-      en: "Enter your email",
-    },
-    passwordPlaceholder: {
-      mr: "संकेतशब्द प्रविष्ट करा",
-      en: "Enter your password",
-    },
-    loginButton: {
-      mr: "लॉगिन करा",
-      en: "Sign In",
-    },
-    registerButton: {
-      mr: "नोंदणी करा",
-      en: "Create Account",
-    },
-    noAccount: {
-      mr: "खाते नाही?",
-      en: "Don't have an account?",
-    },
-    haveAccount: {
-      mr: "आधीपासून खाते आहे?",
-      en: "Already have an account?",
-    },
-    registerLink: {
-      mr: "नोंदणी करा",
-      en: "Register",
-    },
-    loginLink: {
-      mr: "लॉगिन करा",
-      en: "Login",
-    },
-    backHome: {
-      mr: "मुख्यपृष्ठावर परत जा",
-      en: "Back to Home",
-    },
-    loginSuccess: {
-      mr: "लॉगिन यशस्वी.",
-      en: "Login successful.",
-    },
-    registerSuccess: {
-      mr: "नोंदणी यशस्वी.",
-      en: "Registration successful.",
-    },
-    invalidLogin: {
-      mr: "ई-मेल किंवा संकेतशब्द चुकीचा आहे.",
-      en: "Invalid email or password.",
-    },
-    registerError: {
-      mr: "नोंदणी करता आली नाही. कृपया पुन्हा प्रयत्न करा.",
-      en: "Registration failed. Please try again.",
-    },
-    loginError: {
-      mr: "लॉगिन करता आले नाही. कृपया पुन्हा प्रयत्न करा.",
-      en: "Unable to login. Please try again.",
-    },
-    processing: {
-      mr: "प्रक्रिया सुरू आहे...",
-      en: "Processing...",
-    },
-    passwordMin: {
-      mr: "संकेतशब्द किमान ६ अक्षरांचा असावा.",
-      en: "Password must be at least 6 characters.",
-    },
-  };
-
   const clearMessages = () => {
     setError(null);
     setSuccess(null);
+    setDemoOtpNotice(null);
   };
 
+  // 1. Handle Login (Email or Mobile)
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
     clearMessages();
     setLoading(true);
 
     try {
       const res = await api.login({
-        email,
-        password,
+        identifier: loginIdentifier,
+        password: loginPassword,
       });
 
       if (res.success && res.token && res.user) {
         login(res.token, res.user);
-
-        setSuccess(t(text.loginSuccess));
+        setSuccess(
+          lang === "mr" ? "लॉगिन यशस्वी झाले!" : "Login successful!"
+        );
 
         if (res.user.role === "admin") {
           navigate({ to: "/admin" });
         } else {
-          navigate({ to: "/" });
+          navigate({ to: "/student/dashboard" });
         }
       } else {
-        setError(res.message || t(text.invalidLogin));
+        setError(
+          res.message ||
+            (lang === "mr"
+              ? "ई-मेल/मोबाईल किंवा संकेतशब्द चुकीचा आहे."
+              : "Invalid email/mobile or password.")
+        );
       }
     } catch (err: any) {
-      setError(err?.message || t(text.loginError));
+      setError(
+        err?.message ||
+          (lang === "mr"
+            ? "लॉगिन करता आले नाही. कृपया पुन्हा प्रयत्न करा."
+            : "Unable to login. Please try again.")
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // 2. Handle Register (Name, Mobile, Email, Password)
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-
     clearMessages();
 
     if (password.length < 6) {
-      setError(t(text.passwordMin));
+      setError(
+        lang === "mr"
+          ? "संकेतशब्द किमान ६ अक्षरांचा असावा."
+          : "Password must be at least 6 characters."
+      );
       return;
     }
 
@@ -205,235 +159,689 @@ function LoginPage() {
       const res = await api.register({
         name,
         email,
+        mobile,
         password,
+        role: "student",
       });
 
-      if (res.success && res.token && res.user) {
-        login(res.token, res.user);
-
-        setSuccess(t(text.registerSuccess));
-
-        navigate({ to: "/" });
+      if (res.success) {
+        setSuccess(
+          lang === "mr"
+            ? "✅ विद्यार्थी नोंदणी यशस्वी झाली! आता खालील फॉर्ममध्ये आपला Email किंवा Mobile आणि Password टाकून Student Panel मध्ये लॉगिन (Sign In) करा."
+            : "✅ Registration successful! Please Sign In below with your credentials to access the Student Panel."
+        );
+        // Pre-fill login identifier for easy Sign In
+        setLoginIdentifier(email || mobile);
+        setLoginPassword("");
+        // Switch to Step 2: Sign In
+        setMode("login");
       } else {
-        setError(res.message || t(text.registerError));
+        setError(
+          res.message ||
+            (lang === "mr"
+              ? "नोंदणी करता आली नाही."
+              : "Registration failed.")
+        );
       }
     } catch (err: any) {
-      setError(err?.message || t(text.registerError));
+      setError(
+        err?.message ||
+          (lang === "mr"
+            ? "नोंदणी करता आली नाही. कृपया पुन्हा प्रयत्न करा."
+            : "Registration failed. Please try again.")
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const isLogin = mode === "login";
+  // 3. Handle Forgot Password - Request OTP
+  const handleRequestOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearMessages();
+    setLoading(true);
+
+    try {
+      const res = await api.forgotPassword(forgotIdentifier);
+      if (res.success) {
+        setOtpSent(true);
+        setSuccess(
+          lang === "mr"
+            ? "OTP पाठवण्यात आला आहे (१५ मिनिटांसाठी वैध)."
+            : "OTP sent successfully (valid for 15 minutes)."
+        );
+        if (res.demoOtp) {
+          setDemoOtpNotice(res.demoOtp);
+        }
+      } else {
+        setError(res.message);
+      }
+    } catch (err: any) {
+      setError(
+        err?.message ||
+          (lang === "mr"
+            ? "OTP पाठवता आला नाही. ई-मेल किंवा मोबाईल तपासा."
+            : "Failed to send OTP. Please check email/mobile.")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 4. Handle Forgot Password - Submit New Password with OTP
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearMessages();
+
+    if (newPassword.length < 6) {
+      setError(
+        lang === "mr"
+          ? "नवीन पासवर्ड किमान ६ अक्षरांचा असावा."
+          : "New password must be at least 6 characters."
+      );
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await api.resetPasswordWithOtp({
+        identifier: forgotIdentifier,
+        otp,
+        newPassword,
+      });
+
+      if (res.success) {
+        setSuccess(
+          lang === "mr"
+            ? "पासवर्ड यशस्वीरीत्या बदलला आहे! आता नवीन पासवर्डने लॉगिन करा."
+            : "Password reset successful! Please login with your new password."
+        );
+        setMode("login");
+        setOtpSent(false);
+        setLoginIdentifier(forgotIdentifier);
+      } else {
+        setError(res.message);
+      }
+    } catch (err: any) {
+      setError(
+        err?.message ||
+          (lang === "mr"
+            ? "पासवर्ड बदलता आला नाही. OTP तपासून पुन्हा प्रयत्न करा."
+            : "Password reset failed. Please check OTP.")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-[80vh] flex flex-col justify-center py-12 bg-sand/20">
+    <div className="min-h-[85vh] flex flex-col justify-center py-12 bg-sand/20">
       <Container className="max-w-md">
         {/* Back to Home */}
-        <div className="mb-6">
+        <div className="mb-5">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-maroon"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-maroon transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-
-            <span>{t(text.backHome)}</span>
+            <span>
+              {lang === "mr" ? "मुख्यपृष्ठावर परत जा" : "Back to Home"}
+            </span>
           </Link>
         </div>
 
-        <Card className="p-6 sm:p-8 shadow-md">
+        <Card className="p-6 sm:p-8 shadow-md border-border/80">
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-maroon/10 text-maroon">
-              <ShieldCheck className="h-7 w-7" />
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-maroon/10 text-maroon shadow-inner">
+              {mode === "forgot" ? (
+                <KeyRound className="h-7 w-7 text-maroon" />
+              ) : (
+                <ShieldCheck className="h-7 w-7 text-maroon" />
+              )}
             </div>
 
+            {/* 2-Step Flow Indicator */}
+            {mode !== "forgot" && (
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-sand/80 px-3.5 py-1 text-[11px] font-semibold border border-primary/20">
+                <span
+                  className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-colors ${
+                    mode === "register"
+                      ? "bg-maroon text-white shadow-xs"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <span>Step 1:</span> {lang === "mr" ? "प्रथम नोंदणी (Register)" : "Register"}
+                </span>
+                <span className="text-muted-foreground font-bold">➔</span>
+                <span
+                  className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-colors ${
+                    mode === "login"
+                      ? "bg-maroon text-white shadow-xs"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <span>Step 2:</span> {lang === "mr" ? "लॉगिन करा (Sign In)" : "Sign In"}
+                </span>
+              </div>
+            )}
+
             <h1 className="text-xl font-bold text-maroon">
-              {isLogin ? t(text.loginTitle) : t(text.registerTitle)}
+              {mode === "register"
+                ? lang === "mr"
+                  ? "१. नवीन विद्यार्थी नोंदणी (Step 1: Register)"
+                  : "Step 1: Student Registration"
+                : mode === "login"
+                  ? lang === "mr"
+                    ? "२. विद्यार्थी पॅनेल लॉगिन (Step 2: Sign In)"
+                    : "Step 2: Sign In to Student Panel"
+                  : lang === "mr"
+                    ? "संकेतशब्द विसरलात? (Forgot Password)"
+                    : "Forgot Password"}
             </h1>
 
             <p className="mt-1 text-xs text-muted-foreground">
-              {isLogin
-                ? t(text.loginSubtitle)
-                : t(text.registerSubtitle)}
+              {mode === "register"
+                ? lang === "mr"
+                  ? "नोंदणीसाठी आपले नाव, मोबाईल, ईमेल व पासवर्ड भरा"
+                  : "Fill in your details to create a student account"
+                : mode === "login"
+                  ? lang === "mr"
+                    ? "नोंदणीकृत ई-मेल किंवा मोबाईल नंबर आणि पासवर्ड टाकून डॅशबोर्ड उघडा"
+                    : "Enter your registered Email/Mobile and Password to open dashboard"
+                  : lang === "mr"
+                    ? "सुरक्षित OTP द्वारे नवीन संकेतशब्द सेट करा"
+                    : "Reset your password securely via OTP"}
             </p>
           </div>
 
-          {/* Login / Register Switch */}
-          <div className="mb-6 grid grid-cols-2 rounded-full bg-sand/70 p-1">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("login");
-                clearMessages();
-              }}
-              className={`rounded-full py-2 text-sm font-semibold transition-colors ${
-                isLogin
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t(text.loginLink)}
-            </button>
+          {/* Mode Switcher Tabs: 1. Registration First, 2. Sign In Second */}
+          {mode !== "forgot" && (
+            <div className="mb-6 grid grid-cols-2 rounded-full bg-sand/70 p-1 border border-border/50">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("register");
+                  clearMessages();
+                }}
+                className={`rounded-full py-2 text-xs font-semibold transition-all ${
+                  mode === "register"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {lang === "mr" ? "१. विद्यार्थी नोंदणी (Register)" : "1. Register (Sign Up)"}
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setMode("register");
-                clearMessages();
-              }}
-              className={`rounded-full py-2 text-sm font-semibold transition-colors ${
-                !isLogin
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t(text.registerLink)}
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("login");
+                  clearMessages();
+                }}
+                className={`rounded-full py-2 text-xs font-semibold transition-all ${
+                  mode === "login"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {lang === "mr" ? "२. लॉगिन करा (Sign In)" : "2. Sign In (Login)"}
+              </button>
+            </div>
+          )}
 
-          {/* Error */}
+          {/* Error Alert */}
           {error && (
             <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-700 border border-red-200">
               <AlertCircle className="h-4 w-4 shrink-0" />
-
               <span>{error}</span>
             </div>
           )}
 
-          {/* Success */}
+          {/* Success Alert */}
           {success && (
-            <div className="mb-4 rounded-lg bg-green-50 p-3 text-xs text-green-700 border border-green-200">
-              {success}
+            <div className="mb-4 flex items-center gap-2 rounded-lg bg-emerald-50 p-3 text-xs text-emerald-800 border border-emerald-200">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span>{success}</span>
             </div>
           )}
 
-          {/* Form */}
-          <form
-            onSubmit={isLogin ? handleLogin : handleRegister}
-            className="grid gap-4 text-sm"
-          >
-            {/* Name - Register only */}
-            {!isLogin && (
+          {/* Demo OTP Alert for fast testing */}
+          {demoOtpNotice && (
+            <div className="mb-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-900 border border-amber-300">
+              <p className="font-bold">
+                {lang === "mr" ? "पडताळणी OTP:" : "Verification OTP:"}{" "}
+                <span className="font-mono text-base tracking-widest text-maroon">
+                  {demoOtpNotice}
+                </span>
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                {lang === "mr"
+                  ? "(हा OTP खालील बॉक्समध्ये टाकून नवीन पासवर्ड सेट करा)"
+                  : "(Enter this OTP below to set a new password)"}
+              </p>
+            </div>
+          )}
+
+          {/* ----------------- 1. LOGIN FORM ----------------- */}
+          {mode === "login" && (
+            <form onSubmit={handleLogin} className="grid gap-4 text-sm">
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1">
-                  {t(text.name)}
+                  {lang === "mr"
+                    ? "ई-मेल किंवा मोबाईल क्रमांक"
+                    : "Email or Mobile Number"}
                 </label>
-
                 <div className="relative">
                   <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    required
+                    value={loginIdentifier}
+                    onChange={(e) => setLoginIdentifier(e.target.value)}
+                    placeholder={
+                      lang === "mr"
+                        ? "उदा. student@gmail.com किंवा 9876543210"
+                        : "e.g. student@gmail.com or 9876543210"
+                    }
+                    className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                  />
+                </div>
+              </div>
 
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-foreground">
+                    {lang === "mr" ? "संकेतशब्द (Password)" : "Password"}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("forgot");
+                      clearMessages();
+                    }}
+                    className="text-xs font-medium text-maroon hover:underline"
+                  >
+                    {lang === "mr" ? "संकेतशब्द विसरलात?" : "Forgot Password?"}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder={
+                      lang === "mr"
+                        ? "संकेतशब्द प्रविष्ट करा"
+                        : "Enter password"
+                    }
+                    className="w-full rounded-lg border border-border bg-background pl-9 pr-10 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-2.5 text-muted-foreground hover:text-maroon"
+                    aria-label="Toggle password"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-2 w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                {loading
+                  ? lang === "mr"
+                    ? "प्रक्रिया सुरू आहे..."
+                    : "Signing in..."
+                  : lang === "mr"
+                    ? "Step 2: लॉगिन करा (Sign In)"
+                    : "Step 2: Sign In"}
+              </button>
+
+              <div className="mt-3 text-center text-xs text-muted-foreground border-t border-border/50 pt-3">
+                {lang === "mr" ? "अजून नोंदणी केली नाही का?" : "Not registered yet?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearMessages();
+                    setMode("register");
+                  }}
+                  className="font-semibold text-maroon hover:underline ml-1"
+                >
+                  {lang === "mr"
+                    ? "➔ Step 1: प्रथम येथे नोंदणी करा (Register First)"
+                    : "➔ Step 1: Register First"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* ----------------- 2. REGISTRATION FORM ----------------- */}
+          {mode === "register" && (
+            <form onSubmit={handleRegister} className="grid gap-3.5 text-sm">
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  {lang === "mr" ? "विद्यार्थ्याचे पूर्ण नाव" : "Student Full Name"} *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder={t(text.namePlaceholder)}
+                    placeholder={
+                      lang === "mr"
+                        ? "आपले पूर्ण नाव प्रविष्ट करा"
+                        : "Enter full name"
+                    }
                     className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                   />
                 </div>
               </div>
-            )}
 
-            {/* Email */}
-            <div>
-              <label className="block text-xs font-semibold text-foreground mb-1">
-                {t(text.email)}
-              </label>
-
-              <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t(text.emailPlaceholder)}
-                  className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
-                />
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  {lang === "mr" ? "मोबाईल क्रमांक" : "Mobile Number"} *
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="tel"
+                    required
+                    maxLength={10}
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    placeholder={
+                      lang === "mr" ? "१० अंकी मोबाईल नंबर" : "10-digit mobile"
+                    }
+                    className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-xs font-semibold text-foreground mb-1">
-                {t(text.password)}
-              </label>
-
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t(text.passwordPlaceholder)}
-                  className="w-full rounded-lg border border-border bg-background pl-9 pr-10 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-2.5 text-muted-foreground hover:text-maroon"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  {lang === "mr" ? "ई-मेल पत्ता" : "Email Address"} *
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={
+                      lang === "mr" ? "ई-मेल प्रविष्ट करा" : "Enter email"
+                    }
+                    className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-2 w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              {loading
-                ? t(text.processing)
-                : isLogin
-                  ? t(text.loginButton)
-                  : t(text.registerButton)}
-            </button>
-          </form>
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  {lang === "mr"
+                    ? "संकेतशब्द तयार करा (Password)"
+                    : "Create Password"}{" "}
+                  *
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={
+                      lang === "mr"
+                        ? "किमान ६ अक्षरांचा पासवर्ड"
+                        : "At least 6 characters"
+                    }
+                    className="w-full rounded-lg border border-border bg-background pl-9 pr-10 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-2.5 text-muted-foreground hover:text-maroon"
+                    aria-label="Toggle password"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
 
-          {/* Bottom switch */}
-          <div className="mt-6 border-t border-border/60 pt-4 text-center text-xs text-muted-foreground">
-            {isLogin ? (
-              <p>
-                {t(text.noAccount)}{" "}
+              <div className="rounded-lg bg-amber-50/70 p-2.5 text-[11px] text-amber-900 border border-amber-200">
+                ℹ️{" "}
+                {lang === "mr"
+                  ? "नोंदणीनंतर प्रोफाइलमध्ये शैक्षणिक माहिती व कागदपत्रे अपलोड करावी लागतील. पडताळणीनंतर अधिकृत Student ID मिळेल."
+                  : "After registration, upload educational details & documents in your dashboard for verification."}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-1 w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                {loading
+                  ? lang === "mr"
+                    ? "नोंदणी होत आहे..."
+                    : "Registering..."
+                  : lang === "mr"
+                    ? "Step 1: विद्यार्थी नोंदणी पूर्ण करा (Register)"
+                    : "Step 1: Complete Registration"}
+              </button>
+
+              <div className="mt-3 text-center text-xs text-muted-foreground border-t border-border/50 pt-3">
+                {lang === "mr" ? "आधीच नोंदणी केली आहे का?" : "Already registered?"}{" "}
                 <button
                   type="button"
                   onClick={() => {
-                    setMode("register");
                     clearMessages();
+                    setMode("login");
                   }}
-                  className="font-semibold text-maroon hover:underline"
+                  className="font-semibold text-maroon hover:underline ml-1"
                 >
-                  {t(text.registerLink)}
+                  {lang === "mr"
+                    ? "➔ Step 2: येथे लॉगिन करा (Sign In to Student Panel)"
+                    : "➔ Step 2: Sign In to Student Panel"}
                 </button>
-              </p>
-            ) : (
-              <p>
-                {t(text.haveAccount)}{" "}
+              </div>
+            </form>
+          )}
+
+          {/* ----------------- 3. FORGOT PASSWORD FLOW ----------------- */}
+          {mode === "forgot" && (
+            <div className="grid gap-4 text-sm">
+              {!otpSent ? (
+                <form onSubmit={handleRequestOtp} className="grid gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-foreground mb-1">
+                      {lang === "mr"
+                        ? "नोंदणीकृत ई-मेल किंवा मोबाईल नंबर"
+                        : "Registered Email or Mobile"}
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="text"
+                        required
+                        value={forgotIdentifier}
+                        onChange={(e) => setForgotIdentifier(e.target.value)}
+                        placeholder={
+                          lang === "mr"
+                            ? "ई-मेल किंवा मोबाईल नंबर टाका"
+                            : "Enter email or mobile"
+                        }
+                        className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {loading
+                      ? lang === "mr"
+                        ? "OTP पाठवला जात आहे..."
+                        : "Sending OTP..."
+                      : lang === "mr"
+                        ? "OTP मिळवा (Send OTP)"
+                        : "Send Reset OTP"}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleResetPassword} className="grid gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-foreground mb-1">
+                      {lang === "mr" ? "६-अंकी OTP प्रविष्ट करा" : "Enter 6-Digit OTP"}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      placeholder="e.g. 123456"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-center text-lg font-mono tracking-widest focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-foreground mb-1">
+                      {lang === "mr" ? "नवीन पासवर्ड (New Password)" : "New Password"}
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        minLength={6}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder={
+                          lang === "mr"
+                            ? "नवीन संकेतशब्द टाका"
+                            : "Enter new password"
+                        }
+                        className="w-full rounded-lg border border-border bg-background pl-9 pr-10 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="absolute right-3 top-2.5 text-muted-foreground hover:text-maroon"
+                        aria-label="Toggle password"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {loading
+                      ? lang === "mr"
+                        ? "बदलत आहे..."
+                        : "Resetting..."
+                      : lang === "mr"
+                        ? "पासवर्ड बदला (Reset Password)"
+                        : "Reset Password"}
+                  </button>
+                </form>
+              )}
+
+              <div className="text-center pt-2">
                 <button
                   type="button"
                   onClick={() => {
                     setMode("login");
                     clearMessages();
                   }}
-                  className="font-semibold text-maroon hover:underline"
+                  className="text-xs font-semibold text-maroon hover:underline"
                 >
-                  {t(text.loginLink)}
+                  ← {lang === "mr" ? "लॉगिन स्क्रीनवर परत जा" : "Back to Sign In"}
                 </button>
-              </p>
-            )}
+              </div>
+            </div>
+          )}
+
+          {/* Bottom Switch between Login / Register */}
+          {mode !== "forgot" && (
+            <div className="mt-6 border-t border-border/60 pt-4 text-center text-xs text-muted-foreground">
+              {mode === "login" ? (
+                <p>
+                  {lang === "mr"
+                    ? "अजून खाते नाही?"
+                    : "Don't have an account?"}{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("register");
+                      clearMessages();
+                    }}
+                    className="font-semibold text-maroon hover:underline"
+                  >
+                    {lang === "mr" ? "नवीन नोंदणी करा" : "Register here"}
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  {lang === "mr"
+                    ? "आधीपासून खाते आहे?"
+                    : "Already have an account?"}{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("login");
+                      clearMessages();
+                    }}
+                    className="font-semibold text-maroon hover:underline"
+                  >
+                    {lang === "mr" ? "येथे लॉगिन करा" : "Sign in here"}
+                  </button>
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Direct link to Admin Portal */}
+          <div className="mt-4 pt-3 border-t border-dashed border-border/70 text-center text-xs text-muted-foreground">
+            <Link
+              to="/admin/login"
+              className="text-maroon/80 hover:text-maroon hover:underline font-medium inline-flex items-center gap-1.5"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span>
+                {lang === "mr"
+                  ? "संस्था प्रशासन लॉगिन (Admin Portal)"
+                  : "Admin Portal Sign In"}
+              </span>
+            </Link>
           </div>
         </Card>
       </Container>

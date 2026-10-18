@@ -16,6 +16,12 @@ const userSchema = new mongoose.Schema(
             trim: true,
         },
 
+        mobile: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+
         password: {
             type: String,
             required: true,
@@ -23,8 +29,19 @@ const userSchema = new mongoose.Schema(
 
         role: {
             type: String,
-            enum: ["user", "admin"],
-            default: "user",
+            enum: ["user", "student", "admin"],
+            default: "student",
+        },
+
+        // For forgot password OTP flow
+        resetPasswordOtp: {
+            type: String,
+            default: null,
+        },
+
+        resetPasswordExpires: {
+            type: Date,
+            default: null,
         },
     },
     {

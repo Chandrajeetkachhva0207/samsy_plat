@@ -136,12 +136,14 @@ export const api = {
   =================================================== */
 
   /**
-   * Register normal user
+   * Register normal user or student
    */
   register: (credentials: {
     name: string;
     email: string;
+    mobile?: string;
     password: string;
+    role?: string;
   }) =>
     request("/auth/register", {
       method: "POST",
@@ -149,15 +151,45 @@ export const api = {
     }),
 
   /**
-   * Login user or admin
+   * Login user, student or admin (by email or mobile)
    */
   login: (credentials: {
-    email: string;
+    email?: string;
+    identifier?: string;
     password: string;
   }) =>
     request("/auth/login", {
       method: "POST",
       body: JSON.stringify(credentials),
+    }),
+
+  /**
+   * Request forgot password OTP
+   */
+  forgotPassword: (identifier: string) =>
+    request<{
+      success: boolean;
+      message: string;
+      demoOtp?: string;
+    }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ identifier }),
+    }),
+
+  /**
+   * Reset password using OTP
+   */
+  resetPasswordWithOtp: (payload: {
+    identifier: string;
+    otp: string;
+    newPassword: string;
+  }) =>
+    request<{
+      success: boolean;
+      message: string;
+    }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(payload),
     }),
 
   /**
@@ -427,6 +459,144 @@ export const api = {
   updateSupportDetails: (payload: any) =>
     request("/support", {
       method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+
+  /* ===================================================
+     STUDENT PORTAL
+  =================================================== */
+
+  getStudentProfile: () =>
+    request<{
+      success: boolean;
+      profile: any;
+      fees: any;
+    }>("/students/profile"),
+
+  updateStudentProfile: (payload: {
+    personal?: any;
+    academic?: any;
+    submitForVerification?: boolean;
+  }) =>
+    request<{
+      success: boolean;
+      message: string;
+      profile: any;
+    }>("/students/profile", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+
+  uploadStudentDocument: (formData: FormData) =>
+    request<{
+      success: boolean;
+      message: string;
+      fileUrl: string;
+      docType: string;
+      profile: any;
+    }>("/students/upload-document", {
+      method: "POST",
+      body: formData,
+    }),
+
+  getStudentFees: () =>
+    request<{
+      success: boolean;
+      fees: any;
+      studentInfo: any;
+    }>("/students/fees"),
+
+  /* ===================================================
+     ADMIN STUDENT MANAGEMENT & FEES
+  =================================================== */
+
+  adminGetStudents: (query?: { search?: string; status?: string }) => {
+    const params = new URLSearchParams();
+    if (query?.search) params.append("search", query.search);
+    if (query?.status) params.append("status", query.status);
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    return request<{
+      success: boolean;
+      students: any[];
+      stats: {
+        total: number;
+        pending: number;
+        verified: number;
+        incomplete: number;
+      };
+    }>(`/admin/students${qs}`);
+  },
+
+  adminGetStudent: (id: string) =>
+    request<{
+      success: boolean;
+      student: any;
+      fees: any;
+    }>(`/admin/students/${id}`),
+
+  adminVerifyStudent: (
+    id: string,
+    payload: {
+      status?: string;
+      studentId?: string;
+      adminNotes?: string;
+    }
+  ) =>
+    request<{
+      success: boolean;
+      message: string;
+      student: any;
+    }>(`/admin/students/${id}/verify`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+
+  adminUpdateStudentProfile: (id: string, payload: any) =>
+    request<{
+      success: boolean;
+      message: string;
+      student: any;
+    }>(`/admin/students/${id}/profile`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+
+  adminSetStudentFees: (
+    id: string,
+    payload: {
+      totalFees?: number;
+      academicYear?: string;
+      nextDueDate?: string;
+      feeScheduleNotes?: string;
+    }
+  ) =>
+    request<{
+      success: boolean;
+      message: string;
+      fees: any;
+    }>(`/admin/students/${id}/fees`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+
+  adminRecordFeePayment: (
+    id: string,
+    payload: {
+      amount: number;
+      paymentMode?: string;
+      transactionRef?: string;
+      paymentDate?: string;
+      receivedBy?: string;
+      notes?: string;
+    }
+  ) =>
+    request<{
+      success: boolean;
+      message: string;
+      payment: any;
+      fees: any;
+    }>(`/admin/students/${id}/payments`, {
+      method: "POST",
       body: JSON.stringify(payload),
     }),
 };

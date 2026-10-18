@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Video,
   HeartHandshake,
+  GraduationCap,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -54,6 +55,11 @@ export function AdminLayout({
       to: "/admin",
       label: "डॅशबोर्ड (Dashboard)",
       icon: LayoutDashboard,
+    },
+    {
+      to: "/admin/students",
+      label: "विद्यार्थी व फी (Students & Fees)",
+      icon: GraduationCap,
     },
     {
       to: "/admin/events",

@@ -10,6 +10,7 @@ import {
   FileText,
   ArrowRight,
   Video,
+  GraduationCap,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({
@@ -84,7 +85,41 @@ function AdminDashboard() {
           आकडेवारी लोड होत आहे...
         </div>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+          {/* =====================================================
+              STUDENTS & FEES
+          ===================================================== */}
+          <Card className="flex flex-col justify-between p-5 transition-colors hover:border-primary/50">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">
+                  विद्यार्थी व फी (Students & Fees)
+                </span>
+
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                  <GraduationCap className="h-5 w-5" />
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <span className="text-sm font-semibold text-foreground">
+                  नोंदणी, पडताळणी व फी व्यवस्थापन
+                </span>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  कागदपत्रे तपासा, आयडी द्या, फी व पावत्या बनवा
+                </p>
+              </div>
+            </div>
+
+            <Link
+              to="/admin/students"
+              className="mt-4 flex items-center gap-1 text-xs font-semibold text-maroon hover:underline"
+            >
+              <span>विद्यार्थी पोर्टल उघडा</span>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </Card>
 
           {/* =====================================================
               CONTACT MESSAGES
