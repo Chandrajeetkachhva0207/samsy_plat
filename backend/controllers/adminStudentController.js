@@ -610,6 +610,9 @@ const deleteStudent = async (req, res) => {
         }
 
         await FeeRecord.deleteOne({ studentProfile: profile._id });
+        if (profile.user) {
+            await User.findByIdAndDelete(profile.user);
+        }
         await StudentProfile.findByIdAndDelete(id);
 
         return res.status(200).json({

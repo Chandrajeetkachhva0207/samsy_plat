@@ -324,6 +324,29 @@ function AdminStudentsPage() {
     }
   };
 
+  // Delete Entire Student Record
+  const handleDeleteStudent = async (studentId: string, studentName: string) => {
+    if (!studentId) return;
+    const isConfirmed = window.confirm(
+      `तुम्हाला खात्री आहे का? विद्यार्थी "${studentName}" आणि त्याचे संपूर्ण फी व शैक्षणिक रेकॉर्ड कायमचे डिलीट केले जाईल.`
+    );
+    if (!isConfirmed) return;
+
+    try {
+      const res = await api.adminDeleteStudent(studentId);
+      if (res.success) {
+        if (selectedStudent && selectedStudent._id === studentId) {
+          setSelectedStudent(null);
+        }
+        fetchStudents();
+      } else {
+        alert(res.message || "विद्यार्थी डिलीट करताना अडचण आली");
+      }
+    } catch (err: any) {
+      alert(err?.message || "विद्यार्थी डिलीट करताना अडचण आली");
+    }
+  };
+
   // Record Payment
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -769,15 +792,30 @@ function AdminStudentsPage() {
                           </p>
                         </td>
 
-                        {/* Action Button */}
+                        {/* Action Buttons */}
                         <td className="py-3 px-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => openStudentModal(s)}
-                            className="rounded-lg bg-primary/10 hover:bg-primary/20 text-maroon px-3 py-1.5 text-xs font-semibold transition-colors"
-                          >
-                            व्यवस्थापन करा
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => openStudentModal(s)}
+                              className="rounded-lg bg-primary/10 hover:bg-primary/20 text-maroon px-3 py-1.5 text-xs font-semibold transition-colors"
+                            >
+                              व्यवस्थापन करा
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteStudent(
+                                  s._id,
+                                  s.personal?.fullName || s.user?.name || "विद्यार्थी"
+                                )
+                              }
+                              title="विद्यार्थी डिलीट करा (Delete Student)"
+                              className="inline-flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-600 hover:text-white text-red-600 p-1.5 text-xs font-semibold transition-colors border border-red-200"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -826,6 +864,21 @@ function AdminStudentsPage() {
                   वर्ग: {selectedStudent.academic?.currentClass || "-"}
                 </p>
               </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  handleDeleteStudent(
+                    selectedStudent._id,
+                    selectedStudent.personal?.fullName || selectedStudent.user?.name || "विद्यार्थी"
+                  )
+                }
+                title="विद्यार्थी खाते डिलीट करा"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-600 hover:text-white text-red-600 px-3 py-1.5 text-xs font-semibold transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>विद्यार्थी डिलीट</span>
+              </button>
             </div>
 
             {/* Modal Tabs: 4 tabs */}
