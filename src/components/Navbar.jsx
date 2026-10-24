@@ -38,7 +38,7 @@ export default function Navbar() {
         </nav>
 
         <div className="navbar__actions">
-          <button
+          {/* <button
             className="lang-btn"
             type="button"
             aria-label="Select language"
@@ -46,7 +46,7 @@ export default function Navbar() {
             <Globe size={14} aria-hidden="true" />
             <span>EN</span>
             <ChevronDown size={12} aria-hidden="true" />
-          </button>
+          </button> */}
 
           <button
             className="btn btn--primary btn--sm"

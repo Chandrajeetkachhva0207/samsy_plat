@@ -1,0 +1,830 @@
+
+/* ==========================================
+   SAMSY ECOSYSTEM — PREMIUM PAGE STYLES
+   Scoped to Ecosystem.jsx only
+========================================== */
+
+.ecosystem-page {
+  --eco-blue: #075cff;
+  --eco-cyan: #00bce8;
+  --eco-ink: #10213e;
+  --eco-muted: #6c7d98;
+  --eco-line: #e1eafa;
+
+  overflow: hidden;
+  background: #fff;
+  color: var(--eco-ink);
+  scroll-behavior: smooth;
+}
+
+.ecosystem-container {
+  width: min(100% - 64px, 1440px);
+  margin-inline: auto;
+}
+
+.ecosystem-page .ecosystem-eyebrow {
+  display: inline-block;
+  color: #008bb8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+/* Platform overview */
+
+.ecosystem-overview {
+  position: relative;
+  padding: 48px 0 54px;
+  background:
+    radial-gradient(
+      ellipse at 16% 45%,
+      rgba(37, 111, 255, 0.075),
+      transparent 38%
+    ),
+    #fff;
+}
+
+.ecosystem-overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 5vw, 76px);
+  align-items: center;
+}
+
+.ecosystem-visual {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 340px;
+  place-items: center;
+  isolation: isolate;
+}
+
+.ecosystem-visual-glow {
+  position: absolute;
+  z-index: -2;
+  width: 65%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(0, 106, 255, 0.17);
+  filter: blur(65px);
+  animation: ecosystemGlow 5s ease-in-out infinite alternate;
+}
+
+.ecosystem-visual > img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  max-width: 450px;
+  max-height: 360px;
+  object-fit: contain;
+}
+
+.ecosystem-orbit {
+  position: absolute;
+  z-index: -1;
+  width: 76%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(0, 119, 255, 0.13);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ecosystem-orbit--two {
+  width: 94%;
+  border-style: dashed;
+  border-color: rgba(0, 170, 226, 0.15);
+}
+
+.ecosystem-visual-caption {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 15px;
+  color: #526987;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--eco-line);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(13, 53, 115, 0.08);
+  font-size: 11px;
+  font-weight: 650;
+  backdrop-filter: blur(10px);
+}
+
+.ecosystem-status-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  background: #10bd91;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(16, 189, 145, 0.11);
+}
+
+.ecosystem-overview-content h2 {
+  margin: 13px 0 16px;
+  color: var(--eco-ink);
+  font-size: clamp(28px, 3vw, 41px);
+  font-weight: 850;
+  line-height: 1.17;
+  letter-spacing: -1.2px;
+}
+
+.ecosystem-overview-content h2 span {
+  display: block;
+  color: var(--eco-blue);
+}
+
+.ecosystem-overview-content > p {
+  max-width: 530px;
+  margin: 0;
+  color: var(--eco-muted);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.ecosystem-benefits {
+  display: grid;
+  gap: 17px;
+  margin-top: 24px;
+}
+
+.ecosystem-benefit {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.ecosystem-benefit-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  color: var(--eco-blue);
+  background: #eff5ff;
+  border: 1px solid #dfebff;
+  border-radius: 13px;
+  transition:
+    color 0.25s ease,
+    background 0.25s ease,
+    transform 0.25s ease;
+}
+
+.ecosystem-benefit:hover .ecosystem-benefit-icon {
+  color: #fff;
+  background: var(--eco-blue);
+  transform: translateY(-2px);
+}
+
+.ecosystem-benefit h3 {
+  margin: 0 0 4px;
+  color: #142441;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.ecosystem-benefit p {
+  margin: 0;
+  color: #7586a0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ecosystem-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 27px;
+  padding: 13px 20px;
+  color: #fff;
+  background: linear-gradient(110deg, #075cff, #087eea);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  box-shadow: 0 8px 22px rgba(7, 92, 255, 0.2);
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.ecosystem-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(7, 92, 255, 0.29);
+}
+
+.ecosystem-cta span {
+  font-size: 17px;
+  transition: transform 0.25s ease;
+}
+
+.ecosystem-cta:hover span {
+  transform: translateX(4px);
+}
+
+/* Services — main visual focus */
+
+.ecosystem-services-section {
+  position: relative;
+  padding: 62px 0 46px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(7, 92, 255, 0.065),
+      transparent 34%
+    ),
+    #f4f7fc;
+  border-top: 1px solid #edf2fa;
+}
+
+.ecosystem-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 30px;
+}
+
+.ecosystem-section-heading h2 {
+  margin: 10px 0 0;
+  color: var(--eco-ink);
+  font-size: clamp(27px, 3vw, 36px);
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: -0.9px;
+}
+
+.ecosystem-section-heading > p {
+  max-width: 390px;
+  margin: 0 0 3px;
+  color: #687b98;
+  font-size: 13px;
+  line-height: 1.85;
+}
+
+/* Balanced, premium service cards */
+
+
+/* =========================================
+   SAMSY ECOSYSTEM — PREMIUM SERVICE CARDS
+========================================= */
+
+/* Services section */
+.ecosystem-services-section {
+  position: relative;
+  padding: 64px 0 54px;
+  background:
+    radial-gradient(
+      ellipse at 0% 0%,
+      rgba(7, 92, 255, 0.045),
+      transparent 42%
+    ),
+    #f5f8fd;
+}
+
+.ecosystem-container {
+  width: min(100% - 64px, 1320px);
+  margin-inline: auto;
+}
+
+/* Section heading */
+.ecosystem-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.ecosystem-section-heading h2 {
+  margin: 10px 0 0;
+  color: #10213e;
+  font-size: clamp(27px, 2.5vw, 34px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+}
+
+.ecosystem-section-heading > p {
+  max-width: 390px;
+  margin: 0 0 3px;
+  color: #687b98;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* Balanced three-column service layout */
+.ecosystem-services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  align-items: stretch;
+}
+
+/* Individual service card */
+.ecosystem-service-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  min-height: 235px;
+  padding: 25px 24px 22px;
+  overflow: hidden;
+  isolation: isolate;
+
+  background: linear-gradient(
+    145deg,
+    #ffffff 45%,
+    #f8fbff 100%
+  );
+
+  border: 1px solid #e1eaf7;
+  border-radius: 17px;
+
+  box-shadow:
+    0 3px 12px rgba(14, 46, 91, 0.035),
+    0 12px 28px rgba(14, 46, 91, 0.025);
+
+  transition:
+    transform 0.28s ease,
+    border-color 0.28s ease,
+    box-shadow 0.28s ease;
+}
+
+/* Subtle decorative corner glow */
+.ecosystem-service-card::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -65px;
+  right: -65px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(7, 92, 255, 0.055);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.ecosystem-service-card:hover {
+  transform: translateY(-5px);
+  border-color: #bcd4ff;
+  box-shadow:
+    0 12px 28px rgba(12, 69, 160, 0.075),
+    0 22px 42px rgba(12, 69, 160, 0.045);
+}
+
+.ecosystem-service-card:hover::before {
+  opacity: 1;
+}
+
+/* Icon and numbered label */
+.ecosystem-service-top {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ecosystem-service-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  place-items: center;
+
+  color: #075cff;
+  background: linear-gradient(145deg, #eff5ff, #e4eeff);
+  border: 1px solid #dce8ff;
+  border-radius: 14px;
+
+  box-shadow: 0 4px 10px rgba(7, 92, 255, 0.055);
+
+  transition:
+    color 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.ecosystem-service-card:hover .ecosystem-service-icon {
+  color: #ffffff;
+  background: linear-gradient(135deg, #075cff, #00a8e8);
+  border-color: transparent;
+  transform: translateY(-2px);
+}
+
+.ecosystem-service-number {
+  color: #c5d2e5;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.6px;
+  transition: color 0.25s ease;
+}
+
+.ecosystem-service-card:hover .ecosystem-service-number {
+  color: #8caef2;
+}
+
+/* Service title */
+.ecosystem-service-card h3 {
+  margin: 0 0 7px;
+  color: #142441;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: -0.3px;
+}
+
+/* Service category */
+.ecosystem-service-tag {
+  display: inline-block;
+  margin-bottom: 11px;
+  color: #087cb7;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* Service description */
+.ecosystem-service-card > p {
+  margin: 0 0 20px;
+  color: #6b7c96;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.8;
+}
+
+/* Bottom accent */
+.ecosystem-service-accent {
+  display: block;
+  width: 36px;
+  height: 3px;
+  flex-shrink: 0;
+  margin-top: auto;
+
+  background: linear-gradient(90deg, #075cff, #00cce8);
+  border-radius: 20px;
+
+  transition: width 0.3s ease;
+}
+
+.ecosystem-service-card:hover .ecosystem-service-accent {
+  width: 58px;
+}
+
+/* Bottom brand strip */
+.ecosystem-bottom-note {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 28px;
+  padding: 20px 23px;
+
+  background: linear-gradient(110deg, #ffffff, #edf4ff);
+  border: 1px solid #e0eafa;
+  border-radius: 15px;
+  box-shadow: 0 4px 16px rgba(14, 46, 91, 0.025);
+}
+
+.ecosystem-bottom-mark {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  flex: 0 0 43px;
+  place-items: center;
+
+  color: #ffffff;
+  background: linear-gradient(145deg, #087bff, #0737b8);
+  border-radius: 12px;
+  box-shadow: 0 5px 14px rgba(7, 92, 255, 0.18);
+
+  font-size: 21px;
+  font-weight: 850;
+  font-style: italic;
+}
+
+.ecosystem-bottom-note p {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.ecosystem-bottom-note strong {
+  color: #142441;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.ecosystem-bottom-note p > span {
+  color: #7586a0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 950px) {
+  .ecosystem-container {
+    width: min(100% - 44px, 760px);
+  }
+
+  .ecosystem-services-section {
+    padding: 52px 0 44px;
+  }
+
+  .ecosystem-section-heading {
+    gap: 22px;
+    margin-bottom: 26px;
+  }
+
+  .ecosystem-services-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .ecosystem-service-card {
+    min-height: 225px;
+    padding: 23px;
+  }
+
+  .ecosystem-service-card h3 {
+    font-size: 17px;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .ecosystem-container {
+    width: calc(100% - 36px);
+  }
+
+  .ecosystem-services-section {
+    padding: 40px 0 34px;
+  }
+
+  .ecosystem-section-heading {
+    display: block;
+    margin-bottom: 23px;
+  }
+
+  .ecosystem-section-heading h2 {
+    font-size: 27px;
+    line-height: 1.25;
+  }
+
+  .ecosystem-section-heading > p {
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.75;
+  }
+
+  .ecosystem-services-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 15px;
+  }
+
+  .ecosystem-service-card {
+    min-height: 0;
+    padding: 21px;
+    border-radius: 15px;
+  }
+
+  .ecosystem-service-top {
+    margin-bottom: 15px;
+  }
+
+  .ecosystem-service-icon {
+    width: 45px;
+    height: 45px;
+    flex-basis: 45px;
+    border-radius: 12px;
+  }
+
+  .ecosystem-service-number {
+    font-size: 20px;
+  }
+
+  .ecosystem-service-card h3 {
+    font-size: 17px;
+  }
+
+  .ecosystem-service-card > p {
+    margin-bottom: 17px;
+    font-size: 13px;
+    line-height: 1.75;
+  }
+
+  .ecosystem-bottom-note {
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 22px;
+    padding: 16px;
+  }
+
+  .ecosystem-bottom-mark {
+    width: 39px;
+    height: 39px;
+    flex-basis: 39px;
+  }
+
+  .ecosystem-bottom-note strong {
+    font-size: 12px;
+  }
+
+  .ecosystem-bottom-note p > span {
+    font-size: 11px;
+  }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .ecosystem-service-card,
+  .ecosystem-service-card *,
+  .ecosystem-bottom-note {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Bottom brand strip */
+
+.ecosystem-bottom-note {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 27px;
+  padding: 19px 22px;
+  background: linear-gradient(110deg, #fff, #edf4ff);
+  border: 1px solid #e0eafa;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(14, 46, 91, 0.025);
+}
+
+.ecosystem-bottom-mark {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  flex: 0 0 43px;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(145deg, #087bff, #0737b8);
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(7, 92, 255, 0.2);
+  font-size: 21px;
+  font-weight: 850;
+  font-style: italic;
+}
+
+.ecosystem-bottom-note p {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.ecosystem-bottom-note strong {
+  color: #142441;
+  font-size: 13px;
+}
+
+.ecosystem-bottom-note p > span {
+  color: #7586a0;
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+/* Ambient animation */
+
+@keyframes ecosystemGlow {
+  from {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+/* Tablet */
+
+@media (max-width: 950px) {
+  .ecosystem-container {
+    width: min(100% - 44px, 760px);
+  }
+
+  .ecosystem-overview-grid {
+    gap: 30px;
+  }
+
+  .ecosystem-visual {
+    min-height: 290px;
+  }
+
+  .ecosystem-services-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 650px) {
+  .ecosystem-container {
+    width: min(100% - 36px, 520px);
+  }
+
+  .ecosystem-overview {
+    padding: 30px 0 40px;
+  }
+
+  .ecosystem-overview-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .ecosystem-visual {
+    min-height: 270px;
+  }
+
+  .ecosystem-visual > img {
+    max-height: 275px;
+  }
+
+  .ecosystem-visual-caption {
+    bottom: -4px;
+    font-size: 10px;
+  }
+
+  .ecosystem-overview-content h2 {
+    font-size: 29px;
+  }
+
+  .ecosystem-overview-content > p {
+    font-size: 13px;
+  }
+
+  .ecosystem-services-section {
+    padding: 40px 0 34px;
+  }
+
+  .ecosystem-section-heading {
+    display: block;
+    margin-bottom: 23px;
+  }
+
+  .ecosystem-section-heading h2 {
+    font-size: 27px;
+  }
+
+  .ecosystem-section-heading > p {
+    margin-top: 12px;
+  }
+
+  .ecosystem-services-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .ecosystem-service-card {
+    min-height: 195px;
+    padding: 22px;
+  }
+
+  .ecosystem-service-top {
+    margin-bottom: 17px;
+  }
+
+  .ecosystem-bottom-note {
+    align-items: flex-start;
+    padding: 16px;
+  }
+}
+
+/* Accessibility: respect reduced-motion preference */
+
+@media (prefers-reduced-motion: reduce) {
+  .ecosystem-page *,
+  .ecosystem-page *::before,
+  .ecosystem-page *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

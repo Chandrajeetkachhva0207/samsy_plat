@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import Icon from "../Icon.jsx";
-import stack from "../../assets/ecosystem-stack.svg"; // replace with real 3D stack image
+import stack from "../../assets/ecosystem_img_bg.png"; // replace with real 3D stack image
 import lion from "../../assets/lion.svg";             // replace with SMZ emblem
 import eagle from "../../assets/eagle.svg";           // replace with SM9 emblem
 import { services, tokens } from "../../data/siteData.js";
