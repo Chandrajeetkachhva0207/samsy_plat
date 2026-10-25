@@ -69,11 +69,33 @@ export const about = {
 };
 
 export const news = [
-  { date: "22 Apr 2026", title: "Samsy Blockchain Testnet to Mainnet Launch Announcement", tag: "New", body: "Our testnet has completed its final audit and the mainnet launch roadmap is now live." },
+
+  {
+    date: "6 Oct 2026",
+    tag: "Update",
+    title:
+      "SAMSY UNI PRIVATE LIMITED: Building an Integrated Indian Ecosystem Across Blockchain Technology, Education and Wellness",
+    body:
+      "Read about Samsy Uni's integrated ecosystem spanning blockchain technology, education, wellness, and entrepreneurship.",
+    source: "The Economic Wires",
+    url: "https://www.theeconomicwires.com/article/samsy-uni-private-limited-building-an-integrated-indian-ecosystem-across"
+  },
   { date: "19 Apr 2026", title: "Samsy Uni Sponsored State Level Dr. Babasaheb Ambedkar Karate Championship 2026 – Pune", tag: "Event", body: "Samsy Uni proudly supported young athletes at the state level championship." },
   { date: "25 Apr 2026", title: "Tiger Leader International Award 2026 – Indore", tag: "Event", body: "Samsy leadership was honoured at the Tiger Leader International Award 2026." },
   { date: "10 Apr 2026", title: "SMZ Listing Soon – Stay Tuned!", tag: "Update", body: "SMZ listing details will be shared with the community very soon." },
   { date: "01 Apr 2026", title: "Samsy Uni – MSME & Freelancer Registration Initiative", tag: "Initiative", body: "Registrations are open for MSMEs and freelancers joining the Samsy ecosystem." },
+
+  {
+    date: "22 Oct 2026",
+    tag: "Update",
+    title:
+      "Samsy Uni Private Limited: Building a Connected Digital Ecosystem Through the SM9 Initiative",
+    body:
+      "Discover Samsy Uni's vision for connecting digital media, e-commerce, memberships, and blockchain technology through the SM9 ecosystem.",
+    source: "Daily News Axis",
+    url: "https://dailynewsaxis.com/business/samsy-uni-private-limited-building-a-connected-digital-ecosystem-through"
+  },
+
 ];
 
 export const quickLinks = [
