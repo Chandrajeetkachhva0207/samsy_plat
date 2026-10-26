@@ -151,13 +151,42 @@ export default function Ecosystem() {
               <motion.article
                 className="ecosystem-service-card"
                 key={service.title}
+                id={service.id}
                 variants={fadeUp}
                 whileHover={{ y: -6 }}
                 transition={{ duration: 0.25 }}
               >
+                {/* Official Brand Logo Showcase */}
+                <div
+                  className={`ecosystem-service-logo-box ${
+                    service.logoTheme === "light"
+                      ? "ecosystem-service-logo-box--light"
+                      : "ecosystem-service-logo-box--dark"
+                  }`}
+                >
+                  {service.logo ? (
+                    <img
+                      src={service.logo}
+                      alt={`${service.title} Logo`}
+                      className="ecosystem-service-logo-img"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="ecosystem-service-logo-fallback">
+                      <Icon name={service.icon} size={44} />
+                      <span>{service.title}</span>
+                    </div>
+                  )}
+                  {service.badge && (
+                    <span className="ecosystem-service-pill">
+                      {service.badge}
+                    </span>
+                  )}
+                </div>
+
                 <div className="ecosystem-service-top">
                   <span className="ecosystem-service-icon">
-                    <Icon name={service.icon} size={24} />
+                    <Icon name={service.icon} size={22} />
                   </span>
 
                   <span className="ecosystem-service-number">
@@ -165,13 +194,38 @@ export default function Ecosystem() {
                   </span>
                 </div>
 
-                <h3>{service.title}</h3>
+                <div className="ecosystem-service-heading">
+                  <h3>{service.title}</h3>
+                  {service.brandTitle && service.brandTitle !== service.title && (
+                    <span className="ecosystem-service-brand-sub">
+                      ({service.brandTitle})
+                    </span>
+                  )}
+                </div>
 
-                <span className="ecosystem-service-tag">
-                  {service.text}
-                </span>
+                <div className="ecosystem-service-meta">
+                  <span className="ecosystem-service-tag">
+                    {service.text}
+                  </span>
+                  {service.tagline && (
+                    <span className="ecosystem-service-tagline">
+                      {service.tagline}
+                    </span>
+                  )}
+                </div>
 
                 <p>{service.desc}</p>
+
+                {service.features && (
+                  <ul className="ecosystem-service-features">
+                    {service.features.map((feat) => (
+                      <li key={feat}>
+                        <span className="ecosystem-feature-dot" />
+                        {feat}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 <span
                   className="ecosystem-service-accent"

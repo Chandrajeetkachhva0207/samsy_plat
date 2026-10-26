@@ -3,8 +3,15 @@
 //  Change text, links, numbers, news etc. in this one file.
 // ============================================================
 
+import samsyPayLogo from "../assets/services/samsy-pay.png";
+import samsyTalkLogo from "../assets/services/samsy-talk.png";
+import samzoneLogo from "../assets/services/samzone.jpg";
+import samsyAiToolsLogo from "../assets/services/samsy-ai-tools.jpg";
+import samflixyLogo from "../assets/services/samflixy.jpg";
+import samsyUtilitiesLogo from "../assets/services/samsy-utilities.jpg";
+
 export const site = {
-  name: "SAMSY",
+  name: "SAMSY UNI",
   tagline: "Digital Independence",
   email: "samsyunipvtltd@gmail.com",
   website: "www.samsy.in",
@@ -41,12 +48,84 @@ export const market = [
 ];
 
 export const services = [
-  { icon: "wallet", title: "Samsy Pay", text: "Payments & Wallet", desc: "Send, receive and store digital value with a secure wallet built for India and the world." },
-  { icon: "chat", title: "Samsy Tok", text: "Social & Content", desc: "A social platform where creators own their content and audience." },
-  { icon: "cart", title: "E-Commerce", text: "Shop & Grow", desc: "Marketplace tools that help MSMEs sell online and reach new customers." },
-  { icon: "ai", title: "AI Tools", text: "Smart Solutions", desc: "AI-powered tools for writing, design, analytics and automation." },
-  { icon: "play", title: "OTT Platform", text: "Entertainment", desc: "Stream movies, shows and regional content on the Samsy network." },
-  { icon: "bill", title: "Utilities", text: "Bills & Services", desc: "Pay bills, recharge and access everyday services in one place." },
+  {
+    id: "samsy-pay",
+    icon: "wallet",
+    title: "Samsy Pay",
+    brandTitle: "SAMSY PAY",
+    text: "Payments & Wallet",
+    tagline: "Secure • Fast • Decentralized",
+    badge: "Web3 Pay",
+    desc: "Send, receive and store digital value with a secure decentralized wallet powered by blockchain technology for India and the world.",
+    logo: samsyPayLogo,
+    logoTheme: "light",
+    features: ["Decentralized Wallet", "UPI & Crypto", "Zero Hassle Settlement"]
+  },
+  {
+    id: "samsy-tok",
+    icon: "chat",
+    title: "Samsy Tok",
+    brandTitle: "SAMSY TALK",
+    text: "Social & Content",
+    tagline: "Connect • Communicate • Collaborate",
+    badge: "Creator Network",
+    desc: "A decentralized social and communication platform where creators own their content, voice, and audience.",
+    logo: samsyTalkLogo,
+    logoTheme: "dark",
+    features: ["Creator Ownership", "Voice & Video Chat", "Encrypted Messaging"]
+  },
+  {
+    id: "e-commerce",
+    icon: "cart",
+    title: "E-Commerce",
+    brandTitle: "Samzone",
+    text: "Shop & Grow",
+    tagline: "Next-Gen Web3 Marketplace",
+    badge: "MSME Commerce",
+    desc: "Marketplace tools and decentralized commerce enabling MSMEs and merchants to sell globally, accept digital assets, and scale.",
+    logo: samzoneLogo,
+    logoTheme: "dark",
+    features: ["MSME Digital Stores", "Blockchain Checkout", "Global Reach"]
+  },
+  {
+    id: "ai-tools",
+    icon: "ai",
+    title: "AI Tools",
+    brandTitle: "SAMSY AI TOOLS",
+    text: "Smart Solutions",
+    tagline: "Create • Automate • Innovate",
+    badge: "AI Powered",
+    desc: "AI-powered suite for writing, code generation, creative design, data analytics, and intelligent workflow automation.",
+    logo: samsyAiToolsLogo,
+    logoTheme: "dark",
+    features: ["Generative AI", "Code & Content", "Workflow Automation"]
+  },
+  {
+    id: "ott-platform",
+    icon: "play",
+    title: "OTT Platform",
+    brandTitle: "Samflixy",
+    text: "Entertainment",
+    tagline: "Stream & Entertain",
+    badge: "Web3 Streaming",
+    desc: "Stream movies, original series, creator channels, and regional entertainment directly on the high-speed Samsy network.",
+    logo: samflixyLogo,
+    logoTheme: "dark",
+    features: ["4K Video Streaming", "Creator Originals", "Decentralized CDN"]
+  },
+  {
+    id: "utilities",
+    icon: "bill",
+    title: "Utilities",
+    brandTitle: "Samsy Utilities",
+    text: "Bills & Services",
+    tagline: "Pay, Recharge & Access",
+    badge: "Everyday Hub",
+    desc: "Pay utility bills, mobile recharges, electricity, and everyday civic digital services seamlessly from a single unified hub.",
+    logo: samsyUtilitiesLogo,
+    logoTheme: "dark",
+    features: ["Instant Bill Pay", "Mobile & DTH Recharge", "Unified Dashboard"]
+  },
 ];
 
 export const tokens = {

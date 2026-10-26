@@ -1,7 +1,7 @@
 
 import PageHero from "../components/PageHero.jsx";
 import Icon from "../components/Icon.jsx";
-import eagle from "../assets/eagle.svg";
+import sm9Logo from "../assets/sm9-logo.png";
 import "../styles/sm9_project.css";
 
 const features = [
@@ -39,7 +39,7 @@ export default function SM9Project() {
       <section className="section container two-col sm9-project-section">
         <div className="panel panel--gold token-hero sm9-token-hero">
           <div className="sm9-eagle-wrap">
-            <img src={eagle} alt="SM9 blockchain emblem" />
+            <img src={sm9Logo} alt="SM9 blockchain emblem" />
           </div>
 
           <div className="sm9-token-content">

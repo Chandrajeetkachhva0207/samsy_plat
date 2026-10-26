@@ -1,14 +1,19 @@
 import { Link } from "react-router-dom";
-import logo from "../assets/logo.svg"; // <-- replace src/assets/logo.svg with your real logo
+import samsyMark from "../assets/samsy-mark.png";
 import { site } from "../data/siteData.js";
 
 export default function Logo({ small = false }) {
   return (
-    <Link to="/" className={`logo ${small ? "logo--small" : ""}`} aria-label={site.name}>
-      <img src={logo} alt="" className="logo__img" />
+    <Link
+      to="/"
+      className={`logo ${small ? "logo--small" : ""}`}
+      aria-label="Samsy Uni"
+    >
+      <span className="logo__mark">
+        <img src={samsyMark} alt="Samsy Uni" className="logo__img" />
+      </span>
       <span className="logo__text">
-        <strong>{site.name}</strong>
-        <small>{site.tagline}</small>
+        <strong className="logo__title">SAMSY UNI</strong>
       </span>
     </Link>
   );

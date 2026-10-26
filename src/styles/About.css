@@ -36,6 +36,34 @@
   align-items: center;
 }
 
+.about-company-identity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  padding: 22px 34px;
+  background: #ffffff;
+  border: 1px solid #dce8ff;
+  border-radius: 20px;
+  box-shadow:
+    0 10px 30px rgba(10, 50, 120, 0.1),
+    0 2px 8px rgba(10, 50, 120, 0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.about-company-identity:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 38px rgba(10, 50, 120, 0.16);
+}
+
+.about-company-identity-img {
+  width: 270px;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 .about-purpose h2,
 .about-section-heading h2 {
   margin: 12px 0 26px;

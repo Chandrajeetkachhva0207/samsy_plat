@@ -1,13 +1,22 @@
 import { Link } from "react-router-dom";
 import Sparkline from "../Sparkline.jsx";
-import logo from "../../assets/logo.svg";
+import sm9Logo from "../../assets/sm9-logo.png";
+import samsyMark from "../../assets/samsy-mark.png";
 import { market } from "../../data/siteData.js";
 
 function Coin({ type, symbol }) {
+  if (symbol === "SM9") {
+    return (
+      <span className="coin coin--sm9">
+        <img src={sm9Logo} alt={symbol} />
+      </span>
+    );
+  }
+
   if (type === "samsy") {
     return (
       <span className="coin coin--samsy">
-        <img src={logo} alt={symbol} />
+        <img src={samsyMark} alt={symbol} />
       </span>
     );
   }

@@ -386,26 +386,110 @@
   opacity: 1;
 }
 
+/* Logo Box inside each Service Card */
+.ecosystem-service-logo-box {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  border: 1px solid rgba(225, 234, 247, 0.9);
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+  box-shadow: 0 4px 16px rgba(10, 30, 60, 0.04);
+}
+
+.ecosystem-service-logo-box--light {
+  background: radial-gradient(circle at center, #ffffff 45%, #eff5ff 100%);
+  border-color: #dbe6f6;
+}
+
+.ecosystem-service-logo-box--dark {
+  background: radial-gradient(circle at center, #101c36 0%, #060b14 100%);
+  border-color: #1c2b48;
+  box-shadow: 0 6px 20px rgba(2, 6, 20, 0.25);
+}
+
+.ecosystem-service-logo-img {
+  width: 100%;
+  height: 100%;
+  max-height: 170px;
+  object-fit: contain;
+  padding: 14px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+}
+
+.ecosystem-service-card:hover .ecosystem-service-logo-img {
+  transform: scale(1.06);
+}
+
+.ecosystem-service-card:hover .ecosystem-service-logo-box--dark {
+  border-color: rgba(7, 92, 255, 0.5);
+  box-shadow: 0 10px 28px rgba(7, 92, 255, 0.22);
+}
+
+.ecosystem-service-card:hover .ecosystem-service-logo-box--light {
+  border-color: rgba(7, 92, 255, 0.4);
+  box-shadow: 0 10px 28px rgba(7, 92, 255, 0.14);
+}
+
+.ecosystem-service-logo-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #075cff;
+}
+
+.ecosystem-service-logo-fallback span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #5a6d8c;
+}
+
+.ecosystem-service-pill {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(7, 92, 255, 0.92);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  box-shadow: 0 3px 10px rgba(7, 92, 255, 0.35);
+}
+
 /* Icon and numbered label */
 .ecosystem-service-top {
   display: flex;
   width: 100%;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .ecosystem-service-icon {
   display: grid;
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
   place-items: center;
 
   color: #075cff;
   background: linear-gradient(145deg, #eff5ff, #e4eeff);
   border: 1px solid #dce8ff;
-  border-radius: 14px;
+  border-radius: 13px;
 
   box-shadow: 0 4px 10px rgba(7, 92, 255, 0.055);
 
@@ -436,33 +520,91 @@
   color: #8caef2;
 }
 
-/* Service title */
+/* Service heading */
+.ecosystem-service-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
 .ecosystem-service-card h3 {
-  margin: 0 0 7px;
+  margin: 0;
   color: #142441;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 800;
-  line-height: 1.4;
+  line-height: 1.35;
   letter-spacing: -0.3px;
 }
 
-/* Service category */
+.ecosystem-service-brand-sub {
+  color: #075cff;
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: -0.1px;
+}
+
+/* Service meta & tagline */
+.ecosystem-service-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
 .ecosystem-service-tag {
   display: inline-block;
-  margin-bottom: 11px;
   color: #087cb7;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.5;
 }
 
+.ecosystem-service-tagline {
+  color: #3e506d;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
 /* Service description */
 .ecosystem-service-card > p {
-  margin: 0 0 20px;
+  margin: 0 0 16px;
   color: #6b7c96;
   font-size: 13px;
   font-weight: 400;
-  line-height: 1.8;
+  line-height: 1.75;
+}
+
+/* Features bullet list */
+.ecosystem-service-features {
+  list-style: none;
+  padding: 12px 0 0;
+  margin: 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  border-top: 1px dashed #e1eaf7;
+}
+
+.ecosystem-service-features li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #3b4d66;
+  font-size: 12.5px;
+  font-weight: 550;
+}
+
+.ecosystem-feature-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #075cff;
+  box-shadow: 0 0 6px rgba(7, 92, 255, 0.5);
+  flex-shrink: 0;
 }
 
 /* Bottom accent */
